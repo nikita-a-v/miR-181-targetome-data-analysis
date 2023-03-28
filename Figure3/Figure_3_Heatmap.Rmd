@@ -1,0 +1,380 @@
+---
+title: "Figure 3 Heatmap"
+author: "Nikita Verheyden"
+date: '2023-01-02'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+Set directory
+```{r directory}
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3")
+```
+
+Load packages
+```{r load_packages}
+library(ComplexHeatmap)
+library(ggplot2)
+library(circlize)
+library(dplyr)
+library(eulerr)
+library(xlsx)
+
+
+```
+
+
+Load data
+```{r load_data}
+#Ribo
+RNA <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Figure_3/RNA_masterframe.csv")
+RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Figure_3/RPF_masterframe.csv")
+#ms
+ms <- as.data.frame(read.xlsx("D:/Krueger_Lab/R/ECDF plots/Kreuger_analysis_ms.xlsx", 
+                              sheetName = "Analysis"))
+#adjust upper case lower case of gene names of MS data:
+#function
+capFirst <- function(s) {
+  paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")
+}
+ms$Gene.Symbol <- tolower(ms$Gene.Symbol)
+ms$Gene.Symbol <- capFirst(ms$Gene.Symbol)
+names(ms)[names(ms) == 'Gene.Symbol'] <- 'GeneName'
+head(ms$GeneName)
+#diff clip
+eclipGR <- readRDS("D:/Krueger_Lab/miReCLIP/Mirco/DifferentialBinding/BsDifferentialResult.rds")
+eclip <- as.data.frame(eclipGR)
+tframe <- eclip[eclip$res.log2FoldChange < 0 & eclip$res.padj <= 0.05,] 
+head(tframe)
+
+#Translational efficiency
+TEframe <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Supporting scipts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+head(TEframe)
+```
+
+
+colour pattern
+```{r colours}
+#colours
+farbeneg <- "#b4b4b4"
+farbe1 <- "#0073C2FF"
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF"
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+  
+RNApcol <- "#b56504"
+RNAncol <- "#027d73"
+RPFpcol <- "#c4c404"
+RPFncol <- "#8d0391"
+```
+
+
+
+# Venn diagram to figure out the dataset for the joint heatmaps
+
+## create column for heatmap
+
+Make columns to indentify genes included in both datasets and that are significant
+```{r filter}
+mID <- RNA[RNA$LFCandPADJSig %in% c("Significant up", "Significant down") & RNA$Gene %in% 
+               RPF[RPF$LFCandPADJSig %in% c("Significant up", "Significant down"),"Gene"],"Gene"]
+
+RNA$mID <- "One dataset"
+RNA$mID[RNA$Gene %in% mID] <- "Both datasets"
+RPF$mID <- "One dataset"
+RPF$mID[RPF$Gene %in% mID] <- "Both datasets"
+
+head(RNA)
+head(RPF)
+```
+## plot with venn
+
+Make Venn diagrams for the significant genes
+
+List
+```{r venn_list}
+vlist <- list(RNA[RNA$LFCandPADJSig  %in% c("Significant up", "Significant down"),"Gene"], 
+              RPF[RPF$LFCandPADJSig  %in% c("Significant up", "Significant down"),"Gene"])
+names(vlist) <- c("RNA", "RPF")
+
+
+str(vlist)
+```
+
+plot
+```{r plot_venn, fig.dim = c(2, 2)}
+plot(euler(vlist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2), main = "Overlap of differentially regulated genes")
+
+pdf("Venn_Overlap of differentially regulated genes.pdf", width = 3, height = 3)
+plot(euler(vlist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2), main = "Overlap of differentially regulated genes")
+dev.off()
+```
+
+
+# Heatmap scaled together
+
+## Combine experiments into one df and scale
+
+```{r hm_df}
+head(RNA)
+RNAhframe <- RNA[RNA$Gene %in% mID, c(16, 9:14)]
+RPFhframe <- RPF[RPF$Gene %in% mID, c(16, 9:14)]
+
+colnames(RNAhframe) <- c("Gene", "WT1 RNA", "WT2 RNA", "WT3 RNA", "KO1 RNA", "KO2 RNA", "KO3 RNA")
+colnames(RPFhframe) <- c("Gene", "WT1 RPF", "WT2 RPF", "WT3 RPF", "KO1 RPF", "KO2 RPF", "KO3 RPF")
+
+head(RNAhframe)
+head(RPFhframe)
+
+
+heatframe <- left_join(RNAhframe, RPFhframe, by="Gene")
+rownames(heatframe) <- heatframe$Gene
+heatframe <- heatframe[,-1]
+heatframe <- heatframe[!(rownames(heatframe)=="") & !is.na(rownames(heatframe)),]
+head(heatframe)
+```
+
+scale
+```{r scale}
+heat_scaled = t(scale(t(heatframe)))
+colnames(heat_scaled) <- c(rep("WT", 3), rep("miR-181-KO", 3), rep("WT", 3), rep("miR-181-KO", 3))
+
+head(as.data.frame(heat_scaled))
+```
+
+## cluster without heatmap (this is not done yet)
+```{r kmeans}
+# heat_ks <- kmeans(heat_scaled, centers = 5)
+# heat_k_names <- as.data.frame(heat_ks$cluster)
+# merge(heat_scaled, heat_k_names, by=0)
+```
+
+
+## make heatmaps
+
+make annotations for the heatmap
+```{r hm_annotation}
+ha1 <- HeatmapAnnotation(Genotype=colnames(heat_scaled),col = list(Genotype= c("WT"=farbe1, "miR-181-KO"=farbe3)), show_annotation_name = F)
+```
+
+
+
+### make annotation heatmaps as seperate heatmaps
+ms
+```{r ms_annotation_heatmap}
+mshmat <- data.frame(row.names = rownames(heatframe), rownames(heatframe))
+colnames(mshmat) <- "GeneName"
+mshmat <- left_join(mshmat, ms[,c("GeneName", "Log2.FC.")], by="GeneName")
+mshma <- as.data.frame(mshmat[,"Log2.FC."])
+rownames(mshma) <- mshmat$GeneName
+colnames(mshma) <- "Log2FC in MS"
+head(mshma)
+
+hmms <- Heatmap(mshma, show_row_dend = F, show_column_dend = F, show_row_names = F, colorRamp2(c(-0.5, 0, 0.5), c("#f205fa", "black", "#fafa05")),
+                name = "Mass spec")
+```
+
+Targets
+```{r target_annotation_heatmap}
+targethmt <- data.frame(row.names = rownames(heatframe), rownames(heatframe))
+colnames(targethmt) <- "GeneName"
+targethmt$Target <- "Non-target"
+targethmt[targethmt$GeneName %in% tframe$geneName, "Target"] <- "Target"
+
+targethm <- as.data.frame(targethmt[,"Target"])
+rownames(targethm) <- targethmt$GeneName
+colnames(targethm) <- "miR-181 target"
+head(targethm)
+
+hmtarget <- Heatmap(targethm, show_row_dend = F, show_column_dend = F, show_row_names = F , col = c(farbeneg, farbe12),
+                    name = "miR-181 target")
+```
+## TE annotation
+```{r TE_annotation}
+TEsel = TEframe[unique(TEframe$gene_symbol) %in% rownames(heatframe), c("log2FoldChange")]
+names(TEsel) = TEframe[unique(TEframe$gene_symbol) %in% rownames(heatframe), c("gene_symbol")]
+
+TEsel = TEsel[order(factor(names(TEsel), levels = rownames(heat_scaled)))]
+
+#set maximum
+TElim = 0.5
+
+TEsel[TEsel > TElim] = TElim
+TEsel[TEsel < -TElim] = -TElim
+
+haTE = rowAnnotation(TE = anno_barplot(TEsel, ylim = c(-TElim,TElim)))
+
+```
+
+
+### plot
+```{r plot_heatmap, fig.dim = c(5, 7)}
+set.seed(666)
+
+
+HRNA <- Heatmap(heat_scaled, show_row_dend = F, show_column_dend = F, show_row_names = F,show_column_names = F, colorRamp2(c(-2, 0, 2), c("#05fae6", "black", "#fa8c05")), 
+                column_order=1:12 , top_annotation =c(ha1), column_split = c(rep("RNA",6), rep("RPF",6)), row_km = 5,
+                name = "Ribo profiling", right_annotation = haTE)
+
+
+HRNA + hmms
+
+```
+
+
+# Heatmap scald seperately
+
+## scale
+```{r scalesep}
+RNA2hframe <- RNAhframe
+rownames(RNA2hframe) <- RNA2hframe$Gene
+RNA2hframe <- RNA2hframe[,-1]
+head(RNA2hframe)
+
+RPF2hframe <- RPFhframe
+rownames(RPF2hframe) <- RPF2hframe$Gene
+RPF2hframe <- RPF2hframe[,-1]
+head(RPF2hframe)
+
+RNA_scaled = as.data.frame(t(scale(t(RNA2hframe))))
+colnames(RNA_scaled) <- c(rep("WT", 3), rep("miR-181-KO", 3))
+head(RNA_scaled)
+
+RPF_scaled = as.data.frame(t(scale(t(RPF2hframe))))
+colnames(RPF_scaled) <- c(rep("WT", 3), rep("miR-181-KO", 3))
+head(RPF_scaled)
+
+
+```
+
+## now combine the tables
+
+```{r combinescaledsep}
+RNA_scaled$gene.symbol <- rownames(RNA_scaled)
+colnames(RNA_scaled) <- c(rep("WT_RNA", 3), rep("miR-181-KO_RNA", 3), "gene.symbol")
+RPF_scaled$gene.symbol <- rownames(RPF_scaled)
+colnames(RPF_scaled) <- c(rep("WT_RPF", 3), rep("miR-181-KO_RPF", 3), "gene.symbol")
+
+
+SepScaleframe <- merge(RNA_scaled, 
+                           RPF_scaled, by="gene.symbol")
+
+SepScaleframe = SepScaleframe[!(SepScaleframe$gene.symbol == ""),]
+
+rownames(SepScaleframe) <- SepScaleframe$gene.symbol
+SepScaleframe <- SepScaleframe[,-1]
+colnames(SepScaleframe) <- c(rep("WT", 3), rep("miR-181-KO", 3), rep("WT", 3), rep("miR-181-KO", 3))
+head(SepScaleframe)
+
+```
+
+
+## make heatmaps
+
+make annotations for the heatmap
+```{r sephm_annotation}
+ha3 <- HeatmapAnnotation(Genotype=colnames(SepScaleframe),col = list(Genotype= c("WT"=farbe1, "miR-181-KO"=farbe3)), show_annotation_name = F)
+ha4 <- HeatmapAnnotation(Experiment=c(rep("RNA",6), rep("RPF",6)),col = list(Experiment= c("RNA"=farbe2, "RPF"=farbe14)), show_annotation_name = F)
+```
+
+TE annotation
+```{r TE_annotation_hm2}
+TEsel2 = TEframe[unique(TEframe$gene_symbol) %in% rownames(heatframe), c("log2FoldChange")]
+names(TEsel2) = TEframe[unique(TEframe$gene_symbol) %in% rownames(heatframe), c("gene_symbol")]
+
+TEsel2 = TEsel2[order(factor(names(TEsel2), levels = rownames(SepScaleframe)))]
+
+TEsel2[TEsel2 > TElim] = TElim
+TEsel2[TEsel2 < -TElim] = -TElim
+
+haTE2 = rowAnnotation(TE = anno_barplot(TEsel2, ylim = c(-TElim,TElim)))
+
+```
+
+
+plot
+```{r plot_sepheatmap, fig.dim = c(5, 7)}
+set.seed(666)
+HRNAsep <- Heatmap(SepScaleframe, show_row_dend = F, show_column_dend = F, show_row_names = F,show_column_names = F, colorRamp2(c(-2, 0, 2), c("#05fae6", "black", "#fa8c05")), column_order=1:12 , top_annotation =c(ha3), column_split = c(rep("RNA",6), rep("RPF",6)), row_km = 2,
+                name = "Ribo profiling", right_annotation = haTE2)
+
+
+HRNAsep + hmms + hmtarget
+
+```
+
+
+
+# Heatmap (x-mean)/mean
+
+## different scale that kathi proposed
+
+```{r kathi_scale}
+
+kheatframe <- (heatframe - rowMeans(heatframe))/rowMeans(heatframe)
+head(kheatframe)
+
+
+```
+
+## make heatmaps
+
+make annotations for the heatmap
+```{r khm_annotation}
+ha5 <- HeatmapAnnotation(Genotype=colnames(kheatframe),col = list(Genotype= c("WT"=farbe1, "miR-181-KO"=farbe3)), show_annotation_name = F)
+ha6 <- HeatmapAnnotation(Experiment=c(rep("RNA",6), rep("RPF",6)),col = list(Experiment= c("RNA"=farbe2, "RPF"=farbe14)), show_annotation_name = F)
+```
+
+TE annotation
+```{r TE_annotation_hm3}
+TEsel3 = TEframe[unique(TEframe$gene_symbol) %in% rownames(heatframe), c("log2FoldChange")]
+names(TEsel3) = TEframe[unique(TEframe$gene_symbol) %in% rownames(heatframe), c("gene_symbol")]
+
+TEsel3 = TEsel3[order(factor(names(TEsel3), levels = rownames(kheatframe)))]
+
+
+TEsel3[TEsel3 > TElim] = TElim
+TEsel3[TEsel3 < -TElim] = -TElim
+
+haTE3 = rowAnnotation(TE = anno_barplot(TEsel3, ylim = c(-TElim,TElim)))
+
+```
+
+
+plot
+```{r plot_kheatmap, fig.dim = c(5, 7)}
+set.seed(666)
+HRNAk <- Heatmap(kheatframe, show_row_dend = F, show_column_dend = F, show_row_names = F, show_column_names = F, colorRamp2(c(-1, 0, 1), c("#05fae6", "black", "#fa8c05")), column_order=1:12 , bottom_annotation =c(ha3), column_split = c(rep("RNA",6), rep("RPF",6)), row_km = 5,
+                name = "Ribo profiling", right_annotation = haTE3, 
+                border = TRUE
+                )
+
+
+HRNAk + hmms 
+
+```
+
+
+
+
+#session info
+```{r session_info}
+sessionInfo()
+```
