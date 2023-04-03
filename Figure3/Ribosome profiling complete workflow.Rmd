@@ -1,0 +1,347 @@
+---
+title: "Ribosome profiling complete workflow"
+author:
+- name: Nikita Verheyden
+  affiliation: JLU Giessen
+  date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+      toc: TRUE
+      toc_float: TRUE
+      code_folding: hide
+
+header-includes:
+- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+- \usepackage{placeins}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#Setup
+
+```{r}
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3")
+```
+
+load packages
+```{r}
+library(DESeq2)
+library(ggplot2)
+library(ggrepel)
+library(sva)
+library(ggrastr)
+library(grid)
+```
+
+Load countmatrices
+Reference genome used: Gencode m23
+```{r}
+#RNA
+KOtotal1411 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKOtotal1411_S12_R1_001Aligned.txt")
+KOtotal1601 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKOtotal1601_S4_R1_001Aligned.txt")
+KOtotal1710 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKOtotal1710_S2_R1_001Aligned.txt")
+WTtotal1411 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBWTtotal1411_S11_R1_001Aligned.txt")
+WTtotal1601 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBWTtotal1601_S8_R1_001Aligned.txt")
+WTtotal1710 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBWTtotal1710_S1_R1_001Aligned.txt")
+
+#RPF
+KORPF1411 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKORFP1411_S5_R1_001Aligned.txt")
+KORPF1601 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKORFP1601_S7_R1_001Aligned.txt")
+KORPF1710 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKORFP1710_S9_R1_001Aligned.txt")
+WTRPF1411 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBWTRFP1411_S10_R1_001Aligned.txt")
+WTRPF1601 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBWTRFP1601_S3_R1_001Aligned.txt")
+WTRPF1710 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBWTRFP1710_S6_R1_001Aligned.txt")
+
+#combine tables
+total <- cbind(WTtotal1411, WTtotal1601$V2, WTtotal1710$V2, KOtotal1411$V2, KOtotal1601$V2, KOtotal1710$V2)
+totalRPF <- cbind(WTRPF1411, WTRPF1601$V2, WTRPF1710$V2, KORPF1411$V2, KORPF1601$V2, KORPF1710$V2)
+
+#make header nicer:
+names(total) <- c("Gene", "WT_1411", "WT_1601", "WT_1710", "KO_1411", "KO_1601", "KO_1710")
+names(totalRPF) <- c("Gene", "WT_1411", "WT_1601", "WT_1710", "KO_1411", "KO_1601", "KO_1710")
+rownames(total) <- total[,1]
+rownames(totalRPF) <- total[,1]
+total <- total[,-1]
+totalRPF <- totalRPF[,-1]
+head(total)
+head(totalRPF)
+```
+
+
+# Combat seq
+
+Adjust with combat seq
+```{r}
+batch <- c("1411", "1601", "1710", "1411", "1601", "1710")
+genotype <- c("WT","WT","WT","KO","KO","KO")
+adjustedtotal <-ComBat_seq(as.matrix(total), batch = batch, group = genotype)
+adjustedtotalRPF <-ComBat_seq(as.matrix(totalRPF), batch = batch, group = genotype)
+
+head(adjustedtotal)
+head(adjustedtotalRPF)
+```
+
+
+write adjusted count matrices
+```{r}
+write.csv(adjustedtotal, "RNAadjusted_countmatrix_15112022.csv")
+write.csv(adjustedtotalRPF, "RPFadjusted_countmatrix_15112022.csv")
+```
+
+# deseq2
+
+now analyze the data side by side
+```{r}
+coldata <- data.frame(row.names = colnames(total), genotype)
+coldataadj <- data.frame(row.names = colnames(adjustedtotal), genotype)
+coldataRPF <- data.frame(row.names = colnames(totalRPF), genotype)
+coldataadjRPF <- data.frame(row.names = colnames(adjustedtotalRPF), genotype)
+
+
+#make dds object
+dds <- DESeqDataSetFromMatrix(countData=total, colData=coldata, design=~genotype)
+ddsadj <- DESeqDataSetFromMatrix(countData=adjustedtotal, colData=coldataadj, design=~genotype)
+ddsRPF <- DESeqDataSetFromMatrix(countData=totalRPF, colData=coldataRPF, design=~genotype)
+ddsadjRPF <- DESeqDataSetFromMatrix(countData=adjustedtotalRPF, colData=coldataadjRPF, design=~genotype)
+#check
+dds
+ddsadj
+ddsRPF
+ddsadjRPF
+
+
+dds$genotype <- relevel(dds$genotype, ref = "WT")
+ddsadj$genotype <- relevel(ddsadj$genotype, ref = "WT")
+ddsRPF$genotype <- relevel(ddsRPF$genotype, ref = "WT")
+ddsadjRPF$genotype <- relevel(ddsadjRPF$genotype, ref = "WT")
+
+dds <- DESeq(dds, betaPrior=T)
+ddsadj <- DESeq(ddsadj, betaPrior=T)
+ddsRPF <- DESeq(ddsRPF, betaPrior=T)
+ddsadjRPF <- DESeq(ddsadjRPF, betaPrior=T)
+```
+
+
+## plot PCAs
+```{r}
+rld <- rlog(dds)
+rldadj <- rlog(ddsadj)
+rldRPF <- rlog(ddsRPF)
+rldadjRPF <- rlog(ddsadjRPF)
+
+
+names(rld$sizeFactor)
+#work this out and make a proper pca plot with the stuff that melina sent
+
+
+PCA <- plotPCA(rld, intgroup = "genotype") + ggtitle("RNAseq") + theme_classic() + geom_text_repel(aes(label = name)) + scale_color_manual(values=c("#5e81ff", "#c21f13")) + scale_x_continuous(limits = c(-18, 18)) + scale_y_continuous(limits = c(-12, 12)) + theme(legend.position = "none", axis.title=element_text(size=16), plot.title = element_text(size=16))
+
+PCAadj <- plotPCA(rldadj, intgroup = "genotype") + ggtitle("RNAseq CombatSeq adjusted")+ theme_classic() + geom_text_repel(aes(label = name)) + scale_color_manual(values=c("#5e81ff", "#c21f13")) + scale_x_continuous(limits = c(-18, 18)) + scale_y_continuous(limits = c(-12, 12)) + theme(legend.position = "none", axis.title=element_text(size=16), plot.title = element_text(size=16))
+
+PCARPF <- plotPCA(rldRPF, intgroup = "genotype") + ggtitle("Ribosome footprint")+ theme_classic() + geom_text_repel(aes(label = name)) + scale_color_manual(values=c("#5e81ff", "#c21f13")) + scale_x_continuous(limits = c(-18, 18)) + scale_y_continuous(limits = c(-12, 12)) + theme(legend.position = "none", axis.title=element_text(size=16), plot.title = element_text(size=16))
+
+PCAadjRPF <- plotPCA(rldadjRPF, intgroup = "genotype") + ggtitle("Ribosome footprint CombatSeq adjusted")+ theme_classic() + geom_text_repel(aes(label = name)) + scale_color_manual(values=c("#5e81ff", "#c21f13")) + scale_x_continuous(limits = c(-18, 18)) + scale_y_continuous(limits = c(-12, 12)) + theme(legend.position = "none", axis.title=element_text(size=16), plot.title = element_text(size=16))
+
+
+#plot together
+library(gridExtra)
+
+grid.arrange(PCA, PCAadj, PCARPF, PCAadjRPF,
+             layout_matrix = rbind(c(1,2),
+                                   c(3,4))
+)
+
+pdf("pca before and after combat seq 22032022.pdf", width = 7, height = 6)
+grid.arrange(PCA, PCAadj, PCARPF, PCAadjRPF,
+             layout_matrix = rbind(c(1,2),
+                                   c(3,4))
+)
+dev.off()
+```
+
+
+## Get differential expression results
+```{r}
+res <- results(dds)
+resadj <- results(ddsadj)
+resRPF <- results(ddsRPF)
+resRPFadj <- results(ddsadjRPF)
+
+table(res$padj<0.05)
+table(resadj$padj<0.05)
+table(resRPF$padj<0.05)
+table(resRPFadj$padj<0.05)
+
+## Order by adjusted p-value
+res <- res[order(res$padj), ]
+resadj <- resadj[order(resadj$padj), ]
+resRPF <- resRPF[order(resRPF$padj), ]
+resRPFadj <- resRPFadj[order(resRPFadj$padj), ]
+
+## Merge with normalized count data
+resdata <- merge(as.data.frame(res), as.data.frame(counts(dds, normalized=TRUE)), by="row.names", sort=FALSE)
+resdataadj <- merge(as.data.frame(resadj), as.data.frame(counts(ddsadj, normalized=TRUE)), by="row.names", sort=FALSE)
+resdataRPF <- merge(as.data.frame(resRPF), as.data.frame(counts(ddsRPF, normalized=TRUE)), by="row.names", sort=FALSE)
+resdataRPFadj <- merge(as.data.frame(resRPFadj), as.data.frame(counts(ddsadjRPF, normalized=TRUE)), by="row.names", sort=FALSE)
+
+names(resdata)[1] <- "Gene"
+names(resdataadj)[1] <- "Gene"
+names(resdataRPF)[1] <- "Gene"
+names(resdataRPFadj)[1] <- "Gene"
+
+head(resdata)
+head(resdataadj)
+head(resdataRPF)
+head(resdataRPFadj)
+```
+
+
+# MA plots
+
+
+Colours
+```{r}
+RNApcol <- "#b56504"
+RNAncol <- "#027d73"
+RPFpcol <- "#c4c404"
+RPFncol <- "#8d0391"
+
+negcol <- "#b4b4b4"
+```
+
+Add columns with identifiers for significance 
+```{r}
+lfcsig <- 0
+pvsig <- 0.05
+
+#RNA
+resdataadj$LFCandPADJSig <- "Not significant"
+resdataadj$LFCandPADJSig[resdataadj$padj <= pvsig & resdataadj$log2FoldChange >= lfcsig] <- "Significant up"
+resdataadj$LFCandPADJSig[resdataadj$padj <= pvsig & resdataadj$log2FoldChange <= -lfcsig] <- "Significant down"
+
+#RPF
+resdataRPFadj$LFCandPADJSig <- "Not significant"
+resdataRPFadj$LFCandPADJSig[resdataRPFadj$padj <= pvsig & resdataRPFadj$log2FoldChange >= lfcsig] <- "Significant up"
+resdataRPFadj$LFCandPADJSig[resdataRPFadj$padj <= pvsig & resdataRPFadj$log2FoldChange <= -lfcsig] <- "Significant down"
+
+
+head(resdataadj)
+head(resdataRPFadj)
+```
+## Make new data tables that cut off the data at the borders of the ma plots
+
+RNA
+```{r}
+ylim <- 2
+xlim <- 10^6
+xmin <- 10
+
+#make columns with identifiers
+RNAdat <- resdataadj[resdataadj$baseMean >= xmin,]
+RNAdat$ycutoff <- "in"
+RNAdat$ycutoff[RNAdat$log2FoldChange > ylim] <- "high"
+RNAdat$ycutoff[RNAdat$log2FoldChange < -ylim] <- "low"
+
+RNAdat$xcutoff <- "in"
+RNAdat$xcutoff[RNAdat$baseMean > xlim] <- "high"
+
+#implement cutoff
+RNAdat$log2FoldChange[RNAdat$log2FoldChange > ylim] <- ylim
+RNAdat$log2FoldChange[RNAdat$log2FoldChange < -ylim] <- -ylim
+RNAdat$baseMean[RNAdat$baseMean > xlim] <- xlim
+
+```
+
+RPF
+```{r}
+#make columns with identifiers
+RPFdat <- resdataRPFadj[resdataRPFadj$baseMean >= xmin,]
+RPFdat$ycutoff <- "in"
+RPFdat$ycutoff[RPFdat$log2FoldChange > ylim] <- "high"
+RPFdat$ycutoff[RPFdat$log2FoldChange < -ylim] <- "low"
+
+RPFdat$xcutoff <- "in"
+RPFdat$xcutoff[RPFdat$baseMean > xlim] <- "high"
+
+#implement cutoff
+RPFdat$log2FoldChange[RPFdat$log2FoldChange > ylim] <- ylim
+RPFdat$log2FoldChange[RPFdat$log2FoldChange < -ylim] <- -ylim
+RPFdat$baseMean[RPFdat$baseMean > xlim] <- xlim
+
+```
+
+## Plots
+
+RNA MA plot
+```{r}
+RNAma <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 1, 
+     aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
+  scale_fill_manual(values = c(negcol, RNAncol, RNApcol)) + scale_colour_manual(values = c(negcol, "black", "black")) +
+  geom_point_rast(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=RNAncol) +
+  geom_point_rast(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=RNApcol) +
+  geom_point_rast(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="high" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=24, size = 2, colour="black", fill=RNApcol) +
+  geom_point_rast(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="low" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=25, size = 2, colour="black", fill=RNAncol) +
+  theme_bw() +
+  geom_point_rast(data=RNAdat[RNAdat$xcutoff == "high",], aes(y=log2FoldChange, x=log10(baseMean)), shape="\u25BA", size = 3, colour=negcol) +
+  theme_bw() +
+  geom_hline(yintercept = 0, linetype="solid", colour="black") + 
+  geom_hline(yintercept = lfcsig, linetype="dashed", colour="black") + 
+  geom_hline(yintercept = -lfcsig, linetype="dashed", colour="black") + 
+  scale_y_continuous("Fold change miR-181a/b-1 KO/WT (log2)", limits = c(-ylim, ylim)) + scale_x_continuous("Base mean expression ratio (log10)", limits = c(log10(xmin), log10(xlim))) +
+  theme(legend.title = element_blank(), panel.background = element_rect(fill = "transparent",
+                                  colour = NA_character_), # necessary to avoid drawing panel outline
+  plot.background = element_rect(fill = "transparent",
+                                 colour = NA_character_), # necessary to avoid drawing plot outline
+  legend.background = element_rect(fill = "transparent"),
+  legend.box.background = element_rect(fill = "transparent"),
+  legend.key = element_rect(fill = "transparent"), legend.position = c(0.8, 0.2)
+) +
+  guides(color = guide_legend(override.aes = list(size = 3)))
+
+RNAma
+
+pdf("MAplot_RNA.pdf", width = 5, height = 4)
+RNAma
+dev.off()
+```
+RPF MA plot
+```{r}
+RPFma <- ggplot(RPFdat[!(RPFdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 1, 
+     aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
+  scale_fill_manual(values = c(negcol, RPFncol, RPFpcol)) + scale_colour_manual(values = c(negcol, "black", "black")) +
+  geom_point_rast(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=RPFncol) +
+  geom_point_rast(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=RPFpcol) +
+  geom_point_rast(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="high" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=24, size = 2, colour="black", fill=RPFpcol) +
+  geom_point_rast(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="low" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=25, size = 2, colour="black", fill=RPFncol) +
+  theme_bw() +
+  geom_point_rast(data=RPFdat[RPFdat$xcutoff == "high",], aes(y=log2FoldChange, x=log10(baseMean)), shape="\u25BA", size = 3, colour=negcol) +
+  theme_bw() +
+  geom_hline(yintercept = 0, linetype="solid", colour="black") + 
+  geom_hline(yintercept = lfcsig, linetype="dashed", colour="black") + 
+  geom_hline(yintercept = -lfcsig, linetype="dashed", colour="black") + 
+  scale_y_continuous("Fold change miR-181a/b-1 KO/WT (log2)", limits = c(-ylim, ylim)) + scale_x_continuous("Base mean expression ratio (log10)", limits = c(log10(xmin), log10(xlim))) +
+  theme(legend.title = element_blank(), panel.background = element_rect(fill = "transparent",
+                                  colour = NA_character_), # necessary to avoid drawing panel outline
+  plot.background = element_rect(fill = "transparent",
+                                 colour = NA_character_), # necessary to avoid drawing plot outline
+  legend.background = element_rect(fill = "transparent"),
+  legend.box.background = element_rect(fill = "transparent"),
+  legend.key = element_rect(fill = "transparent"), legend.position = c(0.8, 0.2)
+) +
+  guides(color = guide_legend(override.aes = list(size = 3)))
+
+RPFma
+
+pdf("MAplot_RPF.pdf", width = 5, height = 4)
+RPFma
+dev.off()
+```
+
+
+# Session info
+```{r}
+sessionInfo()
+```
