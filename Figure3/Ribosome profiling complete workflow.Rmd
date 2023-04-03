@@ -26,19 +26,23 @@ knitr::opts_chunk$set(echo = TRUE)
 setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3")
 ```
 
+
 load packages
-```{r}
+```{r packages}
 library(DESeq2)
 library(ggplot2)
 library(ggrepel)
 library(sva)
 library(ggrastr)
 library(grid)
+library(biomaRt)
+library(dplyr)
+
 ```
 
 Load countmatrices
 Reference genome used: Gencode m23
-```{r}
+```{r dataimport}
 #RNA
 KOtotal1411 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKOtotal1411_S12_R1_001Aligned.txt")
 KOtotal1601 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKOtotal1601_S4_R1_001Aligned.txt")
@@ -74,7 +78,7 @@ head(totalRPF)
 # Combat seq
 
 Adjust with combat seq
-```{r}
+```{r combatseq}
 batch <- c("1411", "1601", "1710", "1411", "1601", "1710")
 genotype <- c("WT","WT","WT","KO","KO","KO")
 adjustedtotal <-ComBat_seq(as.matrix(total), batch = batch, group = genotype)
@@ -86,7 +90,7 @@ head(adjustedtotalRPF)
 
 
 write adjusted count matrices
-```{r}
+```{r writeadjtable}
 write.csv(adjustedtotal, "RNAadjusted_countmatrix_15112022.csv")
 write.csv(adjustedtotalRPF, "RPFadjusted_countmatrix_15112022.csv")
 ```
@@ -94,7 +98,7 @@ write.csv(adjustedtotalRPF, "RPFadjusted_countmatrix_15112022.csv")
 # deseq2
 
 now analyze the data side by side
-```{r}
+```{r deseq}
 coldata <- data.frame(row.names = colnames(total), genotype)
 coldataadj <- data.frame(row.names = colnames(adjustedtotal), genotype)
 coldataRPF <- data.frame(row.names = colnames(totalRPF), genotype)
@@ -126,7 +130,7 @@ ddsadjRPF <- DESeq(ddsadjRPF, betaPrior=T)
 
 
 ## plot PCAs
-```{r}
+```{r PCA}
 rld <- rlog(dds)
 rldadj <- rlog(ddsadj)
 rldRPF <- rlog(ddsRPF)
@@ -164,7 +168,7 @@ dev.off()
 
 
 ## Get differential expression results
-```{r}
+```{r resulttables}
 res <- results(dds)
 resadj <- results(ddsadj)
 resRPF <- results(ddsRPF)
@@ -203,7 +207,7 @@ head(resdataRPFadj)
 
 
 Colours
-```{r}
+```{r colours}
 RNApcol <- "#b56504"
 RNAncol <- "#027d73"
 RPFpcol <- "#c4c404"
@@ -213,7 +217,7 @@ negcol <- "#b4b4b4"
 ```
 
 Add columns with identifiers for significance 
-```{r}
+```{r significance}
 lfcsig <- 0
 pvsig <- 0.05
 
@@ -231,10 +235,11 @@ resdataRPFadj$LFCandPADJSig[resdataRPFadj$padj <= pvsig & resdataRPFadj$log2Fold
 head(resdataadj)
 head(resdataRPFadj)
 ```
+
 ## Make new data tables that cut off the data at the borders of the ma plots
 
 RNA
-```{r}
+```{r MAmodifyRNA}
 ylim <- 2
 xlim <- 10^6
 xmin <- 10
@@ -256,7 +261,7 @@ RNAdat$baseMean[RNAdat$baseMean > xlim] <- xlim
 ```
 
 RPF
-```{r}
+```{r MAmodifyRPF}
 #make columns with identifiers
 RPFdat <- resdataRPFadj[resdataRPFadj$baseMean >= xmin,]
 RPFdat$ycutoff <- "in"
@@ -276,7 +281,7 @@ RPFdat$baseMean[RPFdat$baseMean > xlim] <- xlim
 ## Plots
 
 RNA MA plot
-```{r}
+```{r RNAMA, fig.width=3}
 RNAma <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 1, 
      aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
   scale_fill_manual(values = c(negcol, RNAncol, RNApcol)) + scale_colour_manual(values = c(negcol, "black", "black")) +
@@ -297,7 +302,8 @@ RNAma <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x=lo
                                  colour = NA_character_), # necessary to avoid drawing plot outline
   legend.background = element_rect(fill = "transparent"),
   legend.box.background = element_rect(fill = "transparent"),
-  legend.key = element_rect(fill = "transparent"), legend.position = c(0.8, 0.2)
+  legend.key = element_rect(fill = "transparent"), legend.position = c(0.8, 0.2),
+  aspect.ratio = 0.8
 ) +
   guides(color = guide_legend(override.aes = list(size = 3)))
 
@@ -308,7 +314,7 @@ RNAma
 dev.off()
 ```
 RPF MA plot
-```{r}
+```{r RPFMA}
 RPFma <- ggplot(RPFdat[!(RPFdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 1, 
      aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
   scale_fill_manual(values = c(negcol, RPFncol, RPFpcol)) + scale_colour_manual(values = c(negcol, "black", "black")) +
@@ -340,6 +346,39 @@ RPFma
 dev.off()
 ```
 
+# Export mAster data.frames
+
+make master DFs
+```{r}
+RNAexp <- resdataadj[resdataadj$baseMean >= xmin,]
+
+RPFexp <- resdataRPFadj[resdataRPFadj$baseMean >= xmin,]
+
+head(RNAexp)
+head(RPFexp)
+```
+# Add gene symbols
+```{r}
+mart <- useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = "https://jul2019.archive.ensembl.org")
+genes <- RNAexp$Gene
+G_list <- getBM(filters= "ensembl_gene_id_version", attributes= c("ensembl_gene_id_version","mgi_symbol"),values=genes,mart= mart)
+colnames(G_list) <- c("Gene", "gene_symbol")
+RNAexp <- left_join(RNAexp,G_list,by="Gene")
+RPFexp <- merge(RPFexp,G_list,by="Gene")
+head(RNAexp)
+head(RPFexp)
+
+```
+
+
+
+save master DFs
+
+```{r}
+write.csv(RNAexp, "RNA_masterframe.csv")
+write.csv(RPFexp, "RPF_masterframe.csv")
+
+```
 
 # Session info
 ```{r}

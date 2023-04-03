@@ -1,0 +1,113 @@
+---
+title: "deltaTE_figures_m23"
+author: "Nikita Verheyden"
+date: '2023-01-20'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+## Directory
+
+```{r message=FALSE}
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/deltaTE")
+```
+
+## Packages
+
+```{r packages}
+library(DESeq2)
+library(dplyr)
+```
+
+## Load data
+
+```{r Load_data}
+ribo_counts = read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPFadjusted_countmatrix_15112022.csv")
+rna_counts = read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RNAadjusted_countmatrix_15112022.csv")
+
+colnames(ribo_counts) <- c("Gene ID", "RPF_WT_1411", "RPF_WT_1601", "RPF_WT_1710", "RPF_KO_1411", "RPF_KO_1601", "RPF_KO_1710")
+colnames(rna_counts) <- c("Gene ID", "RNA_WT_1411", "RNA_WT_1601", "RNA_WT_1710", "RNA_KO_1411", "RNA_KO_1601", "RNA_KO_1710")
+
+head(ribo_counts)
+head(rna_counts)
+
+#Load results tables form Ribo profiling normal analysis to pick the same genes
+RNA <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
+RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
+
+```
+
+# Sort out genes that are cut of in the normal analysis
+```{r filtering_genes}
+ribo_countsCUT = ribo_counts[ribo_counts$`Gene ID` %in% RNA$Gene & ribo_counts$`Gene ID` %in% RPF$Gene,]
+rna_countsCUT = rna_counts[rna_counts$`Gene ID` %in% RNA$Gene & rna_counts$`Gene ID` %in% RPF$Gene,]
+```
+
+
+# deltaTE analysis
+
+make metadata table
+```{r metadata}
+sample_info = data.frame(as.factor(c(colnames(ribo_countsCUT[,-1]), colnames(rna_countsCUT[,-1]))), as.factor(c("WT", "WT", "WT", "KO", "KO", "KO", "WT", "WT", "WT", "KO", "KO", "KO")), as.factor(c("RIBO", "RIBO", "RIBO", "RIBO", "RIBO", "RIBO", "RNA", "RNA", "RNA", "RNA", "RNA", "RNA")), as.factor(c("1411", "1601", "1710", "1411", "1601", "1710", "1411", "1601", "1710", "1411", "1601", "1710")))
+colnames(sample_info) <- c("Sample ID", "Condition", "SeqType", "Batch")
+sample_info
+```
+
+Count tables
+```{r count_tables}
+rownames(ribo_countsCUT) <- ribo_countsCUT[,1]
+ribo_countsCUT <- ribo_countsCUT[,-1]
+rownames(rna_countsCUT) <- rna_countsCUT[,1]
+rna_countsCUT <- rna_countsCUT[,-1]
+
+
+head(ribo_countsCUT)
+head(rna_countsCUT)
+str(sample_info)
+```
+
+### Reset reference samples and run DEseq
+```{r deltaTE}
+ddsMat = DESeqDataSetFromMatrix(countData=cbind(ribo_countsCUT,rna_countsCUT), colData=sample_info, design=~ Condition+SeqType+Condition:SeqType)
+
+ddsMat$SeqType <- relevel(ddsMat$SeqType, ref = "RNA")
+ddsMat$Condition <- relevel(ddsMat$Condition, ref = "WT")
+#Run DESeq2:
+  
+ddsMat = DESeq(ddsMat)
+
+#Obtain fold changes for TE:
+
+resultsNames(ddsMat)
+
+
+#this is the correct one
+res = results(ddsMat, name="ConditionKO.SeqTypeRIBO")
+
+head(res)
+```
+
+## add gene names
+```{r}
+res$Gene = rownames(res)
+TEframe = left_join(as.data.frame(res), RNA[, c("Gene", "gene_symbol")], by = "Gene")
+head(TEframe)
+```
+
+
+
+write results
+```{r}
+write.csv(TEframe, "TE_m23_genesInRNAandRPF.csv", quote=F)
+
+```
+
+
+```{r}
+sessionInfo()
+```
