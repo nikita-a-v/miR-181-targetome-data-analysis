@@ -1,0 +1,61 @@
+---
+title: "Fig3_ECDF_plots"
+author: "Nikita Verheyden"
+date: "2023-04-03"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+```{r directory}
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3")
+```
+
+```{r packages}
+source("D:/Krueger_Lab/Publications/miR181_paper_v21022023/Figure_theme/theme_paper.R")
+library(ggplot2)
+library(dplyr)
+library(readxl)
+```
+
+
+```{r data}
+#Ribo data
+RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPFadjusted_countmatrix_15112022.csv")
+#RNA data
+RNA <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RNAadjusted_countmatrix_15112022.csv")
+
+#MS data
+ms <- as.data.frame(read_xlsx("D:/Krueger_Lab/R/ECDF plots/Kreuger_analysis_ms.xlsx", 
+                              sheet = "Analysis"))
+#adjust upper case lower case of gene names of MS data:
+#function
+capFirst <- function(s) {
+  paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")
+}
+ms$`Gene Symbol` <- tolower(ms$`Gene Symbol`)
+ms$`Gene Symbol` <- capFirst(ms$`Gene Symbol`)
+names(ms)[names(ms) == 'Gene Symbol'] <- 'GeneName'
+head(ms$GeneName)
+#TE data
+TEframe <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+head(TEframe)
+
+
+#Targetdata
+```
+
+
+# Session info
+```{r session_info}
+sessionInfo()
+
+```
+
+
+
+
