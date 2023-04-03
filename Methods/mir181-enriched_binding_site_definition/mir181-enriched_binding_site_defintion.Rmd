@@ -22,6 +22,7 @@ require("knitr")
 knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=F, cache.lazy = FALSE)
 tidy.opts=list(width.cutoff=80,tidy=TRUE, echo=FALSE)
 ```
+
 # Libraries and settings
 
 ```{r libraries}
@@ -88,7 +89,7 @@ basicVectorToNiceDf <- function(x){
 - Here I define mir181 binding sites on basis of the enriched mir181 miR-eCLIP data.
 - I merge the bam files and bw files from the non-chimeric and chimeric (after trimming off the mir part) read from the enriched mir181 data.
 - Peaks are called with pureclip on the .bam merge of all three replicates.
-- Then binding sites are defined with BindingSiteFinder. The used binding site size is 7nt to match with the AGO binding site definition. The xxx plots show that 7nt fits the binding site patterns well.
+- Then binding sites are defined with BindingSiteFinder. The used binding site size is 7nt to match with the AGO binding site definition. The bindingSiteCoverage plots show that 7nt fits the binding site patterns well.
 - Binding sites are filtered for their reproducibility in at least 2 of 3 samples.
 - Then bindingsites are matched to the bound gene and the bound gene region.
 
@@ -411,8 +412,8 @@ bdsFinal = reproducibilityFilter(bds_sites, cutoff = 0.05, n.reps = 2)
 bdsFinal = annotateWithScore(bdsFinal, getRanges(bds))
 bdsFinal_gr = getRanges(bdsFinal)
 
-# kable(head(bdsFinal_gr))  %>%
-#   kable_material(c("striped", "hover"))  
+kable(head(bdsFinal_gr))  %>%
+  kable_material(c("striped", "hover"))
 
 
 ```
