@@ -90,7 +90,7 @@ We obtain chimeric reads from 4 different conditions:
 # ----------------------------------------
 # AGO binding sites
 # ----------------------------------------
-ago_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/02_AGO_binding_site_definition/2023-04-04-BS_mir181_enriched.rds")
+ago_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/02_AGO_binding_site_definition/2023-04-04-AGO_BS.rds")
 
 
 # ----------------------------------------
@@ -152,7 +152,7 @@ p <- ggplot(gg_df, aes(x = factor(sample, levels = sample), y = number_of_crossl
 p + ggtitle("Chimeric reads per sample")
 ```
 
-```{r n_chimeric_reads_barchart_paper, eval=FALSE, include=FALSE}
+```{r n_chimeric_reads_barchart_paper}
 p <- p + theme_paper()
 
 ggsave(p, filename = paste0(out, "FigureS1C_Barchart_chimeric_reads_", Sys.Date(), ".pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
@@ -204,7 +204,7 @@ detected_mirs_per_cond_top_10 <- map(detected_mirs_per_cond, ~.x[1:10,] %>%
 
 ## Supplementary Table XX
 
-```{r xlsx_detected_mir, eval=FALSE, include=FALSE}
+```{r xlsx_detected_mir}
 
 xlsx::write.xlsx(x = as.data.frame(detected_mirs_per_cond$IP_WT), file = paste0(out,"detected_miR_IP_WT_", Sys.Date(), ".xlsx")) 
 xlsx::write.xlsx(x = as.data.frame(detected_mirs_per_cond$IP_KO), file = paste0(out,"detected_miR_IP_KO_", Sys.Date(), ".xlsx")) 
@@ -297,7 +297,7 @@ p3 + ggtitle("181 enriched chimeric reads (non-normalised)")
 
 ```
 
-```{r barchart_for_paper, eval=FALSE, include=FALSE}
+```{r barchart_for_paper}
 # save for paper
 p1 <- p1 + theme_paper()
 p3 <- p3 + theme_paper()
@@ -400,7 +400,7 @@ h
 
 ```
 
-```{r cooccurence_heatmap, eval=FALSE, include=FALSE}
+```{r cooccurence_heatmap}
 pdf(file = paste0(out, "Figure1F_co-occurence_heatmap", Sys.Date(), ".pdf"), width = 11, height = 10)
 h
 dev.off()

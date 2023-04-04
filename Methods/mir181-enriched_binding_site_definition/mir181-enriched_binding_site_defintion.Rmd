@@ -319,8 +319,8 @@ Details about the binding site computation can be seen when counting the number 
 
 df = countOverlaps(bds_sites_gr, pureclip_sites) %>%
     table() %>%
-    as.data.frame() %>%
-    rename("n" = ".")
+    as.data.frame() 
+colnames(df) <- c("n", "Freq")
 
 ggplot(df, aes(x = n, y = Freq, fill = n)) +
     geom_col(color = "black") +

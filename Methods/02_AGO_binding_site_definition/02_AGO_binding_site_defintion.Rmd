@@ -3,18 +3,18 @@ title: "AGO binding sites definition"
 author: "Mirko Brüggemann, Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
-  pdf_document:
-    fig_caption: true
-    fig_crop: true
-    toc: true
-    toc_depth: 1
-    number_sections: true
-  # BiocStyle::html_document:
-  #   toc_float: TRUE
-  #   code_folding: hide
-  #   toc: TRUE
-  #   number_sections: yes
-  #   fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
+  BiocStyle::html_document:
+    toc_float: TRUE
+    code_folding: hide
+    toc: TRUE
+    number_sections: yes
+    fig_caption: yes
 params:
   config: "config"
 ---
@@ -811,7 +811,7 @@ kable(table(region))  %>%
 ```{r}
 bs_annotated <- c(bsProt, bsNonCodeing)
 
-saveRDS(bs_annotated, paste0(out, Sys.Date(), "-BS_mir181_enriched.rds"))
+saveRDS(bs_annotated, paste0(out, Sys.Date(), "-AGO_BS.rds"))
 
 ```
 
