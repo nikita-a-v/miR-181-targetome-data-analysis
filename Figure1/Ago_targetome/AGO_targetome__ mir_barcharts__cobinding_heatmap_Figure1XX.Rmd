@@ -407,6 +407,12 @@ dev.off()
 
 ```
 
+# Save files
+```{r}
+saveRDS(mir_crosslinks_per_cond, file = paste0(out, "mir_chimeric_crosslinks.rds"))
+
+```
+
 # Session Info
 
 ```{r}
