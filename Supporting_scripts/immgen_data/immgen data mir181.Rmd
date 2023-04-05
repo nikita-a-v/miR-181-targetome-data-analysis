@@ -1,0 +1,94 @@
+---
+title: "immgen data mir181"
+author: "Nikita Verheyden"
+date: "2023-04-05"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+path 
+```{r path}
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/immgen_data")
+```
+
+## packages
+```{r packages}
+library(reshape2)
+library(ggplot2)
+library(dplyr)
+```
+
+## data
+```{r data}
+immdat <- read.table("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/immgen_data/GSE144081_normalized_data.txt",
+                     header = T)
+head(immdat[,1:5])
+```
+
+# mir181
+```{r mir181}
+mirs <- c("miR-181a-5p", "miR-181b-5p")
+
+mir181 <- immdat[immdat$ID_REF %in% mirs,]
+```
+
+## melt data
+```{r melt}
+mirmelt181 <- melt(mir181[,c(1, 9:149)])
+colnames(mirmelt181) <- c("miRNA", "Cell_type", "Expression")
+mirmelt181$Expression <- as.numeric(mirmelt181$Expression)
+head(mirmelt181)
+```
+## plot
+```{r plot}
+
+cellselect <- c("T.DP.Th_1", "T.DP.Th_2")
+
+mp181 <- ggplot(mirmelt181[mirmelt181$Cell_type %in% cellselect,], aes(y=Expression, x=Cell_type, fill=miRNA)) + geom_bar(stat = "identity", position = "dodge")
+
+mp181
+```
+
+# all mirnas in DPs
+
+## data
+```{r DPs}
+dpset <- immdat[,c("ID_REF", "T.DP.Th_1", "T.DP.Th_2")]
+head(dpset)
+
+dpset$mean <- apply(dpset[,2:3], 1, mean)
+dpset$stdiv <- apply(dpset[,2:3], 1, sd)
+
+dpset <- dpset[order(dpset$mean, decreasing = T),]
+
+dpmelt <- melt(dpset[1:10, 1:3])
+colnames(dpmelt) <- c("miRNA", "Cell_type", "Expression")
+head(dpmelt)
+```
+## plot
+
+```{r plotdps}
+dpplot <- ggplot(dpmelt, aes(y=Expression, x=miRNA, fill=Cell_type)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+dpplot
+```
+
+## export data
+```{r exportdp}
+write.csv(dpset, "DPsets_immgen.csv")
+```
+
+
+# session info
+```{r session_info}
+sessionInfo()
+```
+
+
+
