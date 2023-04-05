@@ -1,0 +1,189 @@
+---
+title: "mir181 binding sites - union of mir181 enriched binding sites and Ago binding sites targeted by mir181"
+author: "Melina Klostermann"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  BiocStyle::html_document:
+    # toc_float: TRUE
+    # code_folding: hide
+    # toc: TRUE
+    # number_sections: yes
+    # fig_caption: yes
+  pdf_document:
+    fig_caption: true
+    fig_crop: true
+    toc: true
+    toc_depth: 1
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+require("knitr")
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=F, cache.lazy = FALSE)
+tidy.opts=list(width.cutoff=80,tidy=TRUE, echo=FALSE)
+```
+
+# Libraries and settings
+
+```{r libraries}
+# ----------------------------------------
+# libraries
+# ----------------------------------------
+library(tidyverse)
+library(GenomicRanges)
+
+# ----------------------------------------
+# settings
+# ----------------------------------------
+out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/mir181_binding_sites__venn_types/"
+```
+
+# What was done?
+
+mir181 binding sites are defined as the union of
+- AGO binding sites that contain at least 2 chimirc mir181 crosslinks (from the IP_WT chimeric reads or the IP_mir181_WT chimeric reads) in a window from 10nt before till 10nt after a the AGO binding site
+- binding sites defined on enriched mir181 data (IP_mir181_WT)
+\newline
+\newline
+
+
+- the two subgroups are plotted as a venn diagram (figure 1 XX)
+- this is compared to the differntially regulated AGO binding sites from the mir181 KO condition (TODO)
+- the genetype and gene region of the mir 181 binding sites (union) are ploted (Figure2XX)
+
+# Files
+```{r}
+# ----------------------------------------
+# mir181 enriched binding sites
+# ----------------------------------------
+mir181_enriched <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/mir181-enriched_binding_site_definition/2023-04-03-BS_mir181_enriched.rds")
+
+# ----------------------------------------
+# chimeric reads
+# ----------------------------------------
+
+chimeric_reads <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Ago_targetome/mir_chimeric_crosslinks.rds")
+
+# ----------------------------------------
+# AGO binding sites
+# ----------------------------------------
+ago_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/02_AGO_binding_site_definition/2023-04-04-AGO_BS.rds")
+
+```
+
+# mir181 binding sites
+
+## Get AGO binding sites with chimeric mir181 
+
+```{r}
+# use region of bs +-10nt for overlaps
+ago_bs_10 <- ago_bs + 10
+
+# use chimeric reads from both mir181 enriched and non-enriched data
+chimeric_reads <- c(makeGRangesFromDataFrame(chimeric_reads$IP_WT, keep.extra.columns = T), makeGRangesFromDataFrame(chimeric_reads$IP_WT_miR181, keep.extra.columns = T) )
+
+# find overlaps of mirt and AGO bs
+idx <- findOverlaps(ago_bs_10, chimeric_reads )
+
+# make a data frame from the ago bs
+names(ago_bs)<- 1:NROW(ago_bs)
+ago_bs <- as.data.frame(ago_bs)
+ago_bs$BS_ID <- rownames(ago_bs)
+
+# add mir info to ago bs
+ago_bs_mir181_chi <- cbind(ago_bs[queryHits(idx),], mir_IP = chimeric_reads [subjectHits(idx),]$Name)
+
+ago_bs_mir181_chi <- ago_bs_mir181_chi[grepl(ago_bs_mir181_chi$mir_IP, 
+                                       pattern = "miR-181"),]
+
+# count chimerics
+mir181_chi <- ago_bs_mir181_chi %>% group_by(BS_ID) %>%
+  summarize(n_mir181 = sum(grepl(mir_IP,pattern = "miR-181")),
+            n_mir181a = sum(grepl(mir_IP,pattern = "miR-181a")),
+            n_mir181b = sum(grepl(mir_IP,pattern = "miR-181b")),
+            n_mir181c = sum(grepl(mir_IP,pattern = "miR-181c")),
+            n_mir181d = sum(grepl(mir_IP,pattern = "miR-181d")), 
+            .groups = "keep") %>% subset (n_mir181 >0)
+
+ago_bs_mir181_chi <- ago_bs_mir181_chi %>% 
+  subset(!duplicated(ago_bs_mir181_chi$BS_ID)) %>% 
+  left_join(., mir181_chi, by ="BS_ID") %>% makeGRangesFromDataFrame(keep.extra.columns = T)
+
+```
+
+## Combine AGO binding sites with chimeric mir181 with mir181 enriched binding sites
+
+```{r}
+only_ago_bs_mir181_chi <- subsetByOverlaps(ago_bs_mir181_chi, mir181_enriched, type = "any", invert = T)
+only_ago_bs_mir181_chi$set <- "ago_bs_mir181_chi"
+
+only_mir181_enriched <- subsetByOverlaps(mir181_enriched, ago_bs_mir181_chi,  type = "any", invert = T)
+only_mir181_enriched$set <- "mir181_enriched"
+
+both_mir181_enriched_chi <- subsetByOverlaps(ago_bs_mir181_chi, mir181_enriched, type = "any")
+both_mir181_enriched_chi$set <- "ago_bs_mir181_chi&mir181_enriched"
+
+
+mir181_bs <- c(only_ago_bs_mir181_chi, only_mir181_enriched, both_mir181_enriched_chi)
+```
+
+
+### Venn binding sites from both sets
+```{r}
+venn_df <- data.frame(ago_bs_mir181_chi = 
+                        ((mir181_bs$set == "ago_bs_mir181_chi") | (mir181_bs$set == "ago_bs_mir181_chi&mir181_enriched")),
+                      mir181_enriched = 
+                        ((mir181_bs$set == "mir181_enriched") | (mir181_bs$set == "ago_bs_mir181_chi&mir181_enriched")))
+
+venn <- eulerr::euler(venn_df)
+plot(venn, quantities = T)
+
+```
+
+### Venn bound genes from both sets
+
+```{r}
+bound_genes <- unique(mir181_bs$geneID)
+venn_df <- data.frame(ago_bs_mir181_chi = 
+                        (bound_genes %in% c(mir181_bs[mir181_bs$set == "ago_bs_mir181_chi"]$geneID,
+                                            mir181_bs[mir181_bs$set == "ago_bs_mir181_chi&mir181_enriched"]$geneID %in% bound_genes)),
+                      mir181_enriched = 
+                        (bound_genes %in% c(mir181_bs[mir181_bs$set == "mir181_enriched"]$geneID,
+                                            mir181_bs[mir181_bs$set == "ago_bs_mir181_chi&mir181_enriched"]$geneID %in% bound_genes)))
+
+venn <- eulerr::euler(venn_df)
+plot(venn, quantities = T)
+
+```
+
+### Ribofootprint both sets
+
+```{r}
+# TODO need to be other script later
+rpf <- read.csv("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/files_RNAseq_RiboP/RPF_masterframe.csv")
+rpf <- mutate(rpf, Gene = substr(Gene,1,18))
+
+rpf <- rpf %>% mutate(., set =
+                        case_when(Gene %in% both_mir181_enriched_chi$geneID ~ "both",
+                                  (Gene %in% ago_bs_mir181_chi$geneID) & !(Gene %in% both_mir181_enriched_chi$geneID)  ~ "ago_bs_mir181_chi",
+                                  (Gene %in% mir181_enriched$geneID) & !(Gene %in% both_mir181_enriched_chi$geneID)  ~ "mir181_enriched"
+                                  ))
+
+ggplot(rpf, aes(x = log2FoldChange, color = set))+
+  stat_ecdf()+
+  xlim(-0.25, 0.25)
+
+```
+
+# Save output
+```{r}
+saveRDS(mir181_bs, paste0(out, "mir181_bs.rds"))
+
+```
+
+# Session Info
+
+```{r}
+
+sessionInfo()
+```
