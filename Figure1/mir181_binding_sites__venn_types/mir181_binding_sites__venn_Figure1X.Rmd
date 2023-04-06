@@ -3,18 +3,18 @@ title: "mir181 binding sites - union of mir181 enriched binding sites and Ago bi
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  BiocStyle::html_document:
-  toc_float: TRUE
-  code_folding: hide
-  toc: TRUE
-  number_sections: yes
-  fig_caption: yes
-  # pdf_document:
-  #   fig_caption: true
-  #   fig_crop: true
-  #   toc: true
-  #   toc_depth: 1
-  #   number_sections: true
+  # BiocStyle::html_document:
+  # toc_float: TRUE
+  # code_folding: hide
+  # toc: TRUE
+  # number_sections: yes
+  # fig_caption: yes
+  pdf_document:
+    fig_caption: true
+    fig_crop: true
+    toc: true
+    toc_depth: 1
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -217,7 +217,7 @@ ggplot(diff, aes(x = res.log2FoldChange, color = set))+
 ```
 # Characterise mir181 binding sites
 
-## Figure 2A? - mir181 bound genes
+## mir181 bound genes - Figure 2A?
 
 ```{r}
 names(mir181_bs) <- 1:NROW(mir181_bs)
@@ -243,9 +243,28 @@ p <- ggplot(gene_type_df, aes(y=Freq, x="", fill=Var1)) +
        x = NULL)
 p
 
-ggsave(p, filename = paste0(out, "Figure2B_bound_gene_types_miR181_BS", Sys.Date(), ".pdf"), width = unit(8, "cm"), height = unit(6,"cm"))
+ggsave(p, filename = paste0(out, "Figure2A_bound_gene_types_miR181_BS", Sys.Date(), ".pdf"), width = unit(8, "cm"), height = unit(6,"cm"))
 
 ```
+
+## mir181 bound regions - Figure 2B?
+
+```{r}
+gene_region_df <- table(mir181_bs$region) %>% 
+  as.data.frame(.) %>%
+  arrange(desc(Freq))
+
+gene_region_df$Var1 <- factor(gene_region_df$Var1, levels = gene_region_df$Var1) 
+
+p <- ggplot(gene_region_df %>% subset(Var1 != "outside"), aes(y=Freq, x=Var1)) +
+     geom_col()+
+  theme_paper() 
+p
+
+ggsave(p, filename = paste0(out, "Figure2B_bound_gene_regions_miR181_BS", Sys.Date(), ".pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
+
+```
+
 
 
 
