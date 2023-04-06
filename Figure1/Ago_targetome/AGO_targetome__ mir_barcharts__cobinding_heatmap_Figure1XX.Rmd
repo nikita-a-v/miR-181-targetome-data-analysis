@@ -3,18 +3,18 @@ title: "AGO targetome"
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  BiocStyle::html_document:
-    toc_float: TRUE
-    code_folding: hide
-    toc: TRUE
-    number_sections: yes
-    fig_caption: yes
-  # pdf_document:
-  #   fig_caption: true
-  #   fig_crop: true
-  #   toc: true
-  #   toc_depth: 1
-  #   number_sections: true
+  # BiocStyle::html_document:
+  #   toc_float: TRUE
+  #   code_folding: hide
+  #   toc: TRUE
+  #   number_sections: yes
+  #   fig_caption: yes
+  pdf_document:
+    fig_caption: true
+    fig_crop: true
+    toc: true
+    toc_depth: 1
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -44,6 +44,7 @@ library(ComplexHeatmap)
 library(Biostrings)
 library(BSgenome.Mmusculus.UCSC.mm10)
 library(circlize)
+library(ggpubr)
 
 
 # ----------------------------------------
@@ -100,6 +101,11 @@ mir_crosslinks <- list.files("/Users/melinaklostermann/Documents/projects/AgoCLI
                              pattern = "*.bed", recursive = TRUE, full.names = T) %>% map(~import.bed(.x, extraCols = c(Name = "character", Score="numeric", Strand="factor")))
 names(mir_crosslinks) <- list.files("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/pipe_output_22_02_14/chimeric/crosslinks/", 
                              pattern = "*.bed")
+
+# ----------------------------------------
+# mir181 expression imgen
+# ----------------------------------------
+mir_imgen <- read.csv("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/files_public_mir_data/DPsets_immgen.csv")
 
 ```
 
@@ -404,6 +410,32 @@ h
 pdf(file = paste0(out, "Figure1F_co-occurence_heatmap", Sys.Date(), ".pdf"), width = 11, height = 10)
 h
 dev.off()
+
+```
+
+# Commarison to mir181 quantification from imgen
+
+Here we compare detected miR amounts to the publicity available quantification from Immgen.
+
+```{r}
+comp_df <- table(mir_crosslinks_per_cond$IP_WT$Name) %>% as.data.frame(.) %>%
+  rowwise(.)%>%
+  mutate(Var1 = substr(Var1, 5, nchar(as.character(Var1)))) 
+
+mir_imgen <- mir_imgen %>% full_join(comp_df, by = c(ID_REF = "Var1"))
+
+p4 <- ggplot(mir_imgen, aes(x = log(mean), y = log(Freq)))+
+  geom_point()+
+  geom_smooth(method =lm,se=F)+
+  stat_cor()+
+  xlab("Mean Abundance Imgen")+
+  ylab("Abundance chimeric miRs in miR-eCLIP")
+
+p4
+
+p4 <- p4 + theme_paper()
+
+ggsave(p4, filename = paste0(out, "Figure1D_Comparison_miR_expression_Imgen", Sys.Date(), ".pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
 
 ```
 

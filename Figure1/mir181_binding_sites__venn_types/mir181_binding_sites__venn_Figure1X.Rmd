@@ -3,12 +3,12 @@ title: "mir181 binding sites - union of mir181 enriched binding sites and Ago bi
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  BiocStyle::html_document:
-    # toc_float: TRUE
-    # code_folding: hide
-    # toc: TRUE
-    # number_sections: yes
-    # fig_caption: yes
+  # BiocStyle::html_document:
+  # toc_float: TRUE
+  # code_folding: hide
+  # toc: TRUE
+  # number_sections: yes
+  # fig_caption: yes
   pdf_document:
     fig_caption: true
     fig_crop: true
@@ -36,6 +36,28 @@ library(GenomicRanges)
 # settings
 # ----------------------------------------
 out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/mir181_binding_sites__venn_types/"
+source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
+source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
+
+
+# farben
+farbeneg <- "#B4B4B4"
+farbe1 <- "#0073C2FF" #WT farbe
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF" #miR181KO farbe
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
 ```
 
 # What was done?
@@ -174,6 +196,77 @@ ggplot(rpf, aes(x = log2FoldChange, color = set))+
   xlim(-0.25, 0.25)
 
 ```
+
+## Differential binding both sets
+
+```{r}
+diff <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/BsDifferentialResult.rds")
+
+diff <- as.data.frame(diff) %>% mutate(., set =
+                        case_when(geneID %in% both_mir181_enriched_chi$geneID ~ "both",
+                                  (geneID %in% ago_bs_mir181_chi$geneID) & !(geneID %in% both_mir181_enriched_chi$geneID)  ~ "ago_bs_mir181_chi",
+                                  (geneID %in% mir181_enriched$geneID) & !(geneID %in% both_mir181_enriched_chi$geneID)  ~ "mir181_enriched"
+                                  ))
+
+ggplot(diff, aes(x = res.log2FoldChange, color = set))+
+  stat_ecdf()+
+  xlim(-3,3)
+  
+
+
+```
+# Characterise mir181 binding sites
+
+## mir181 bound genes - Figure 2A?
+
+```{r}
+names(mir181_bs) <- 1:NROW(mir181_bs)
+mir181_bs <- as.data.frame(mir181_bs)
+
+gene_type_df <- mutate(mir181_bs, geneType = case_when(geneType != "protein_coding" ~ "other", T ~ "protein_coding"))
+gene_type_df <-   table(gene_type_df$geneType) %>% 
+  as.data.frame(.) 
+
+p <- ggplot(gene_type_df, aes(y=Freq, x="", fill=Var1)) +
+     geom_col()+
+     coord_polar(theta="y") +
+  #    xlim(c(2, 4)) +
+  geom_label(data = gene_type_df %>% subset(gene_type_df == "protein_coding"), aes(y=Freq, x="", fill=Var1, label = Freq),
+             position = position_stack(vjust = 0.5),
+             show.legend = FALSE) +
+  scale_fill_manual(values = c (farbe6, farbe4)) +
+  theme_paper() +
+  theme_nice_pie() +
+  #theme(legend.position = "none") +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  labs(y = NULL,
+       x = NULL)
+p
+
+ggsave(p, filename = paste0(out, "Figure2A_bound_gene_types_miR181_BS", Sys.Date(), ".pdf"), width = unit(8, "cm"), height = unit(6,"cm"))
+
+```
+
+## mir181 bound regions - Figure 2B?
+
+```{r}
+gene_region_df <- table(mir181_bs$region) %>% 
+  as.data.frame(.) %>%
+  arrange(desc(Freq))
+
+gene_region_df$Var1 <- factor(gene_region_df$Var1, levels = gene_region_df$Var1) 
+
+p <- ggplot(gene_region_df %>% subset(Var1 != "outside"), aes(y=Freq, x=Var1)) +
+     geom_col()+
+  theme_paper() 
+p
+
+ggsave(p, filename = paste0(out, "Figure2B_bound_gene_regions_miR181_BS", Sys.Date(), ".pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
+
+```
+
+
+
 
 # Save output
 ```{r}
