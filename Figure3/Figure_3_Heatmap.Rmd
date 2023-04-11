@@ -63,6 +63,11 @@ eclip <- as.data.frame(eclipGR)
 tframe <- eclip[eclip$res.log2FoldChange < 0 & eclip$res.padj <= 0.05,] 
 head(tframe)
 
+#newdiffclip
+mir181bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
+names(mir181bs) <- 1:length(mir181bs)
+mir181df <- as.data.frame(mir181bs)
+
 #Translational efficiency
 TEframe <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Supporting scipts/deltaTE/TE_m23_genesInRNAandRPF.csv")
 head(TEframe)
@@ -207,7 +212,7 @@ Targets
 targethmt <- data.frame(row.names = rownames(heatframe), rownames(heatframe))
 colnames(targethmt) <- "GeneName"
 targethmt$Target <- "Non-target"
-targethmt[targethmt$GeneName %in% tframe$geneName, "Target"] <- "Target"
+targethmt[targethmt$GeneName %in% mir181df$geneName, "Target"] <- "Target"
 
 targethm <- as.data.frame(targethmt[,"Target"])
 rownames(targethm) <- targethmt$GeneName
