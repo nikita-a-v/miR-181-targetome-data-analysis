@@ -1,0 +1,96 @@
+---
+title: "RNAhybrid fig 2"
+author: "Nikita Verheyden"
+date: "2023-04-11"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+directory
+```{r dir}
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure2/RNAhybrid")
+```
+
+```{r packages}
+source("D:/Krueger_Lab/Publications/miR181_paper_v21022023/Figure_theme/theme_paper.R")
+library(BSgenome.Mmusculus.UCSC.mm10)
+library(dplyr)
+library(ggplot2)
+library(circlize)
+library(ComplexHeatmap)
+library(seqinr)
+```
+
+```{r data}
+mir181bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
+names(mir181bs) <- 1:length(mir181bs)
+```
+
+```{r colours}
+#colours
+farbeneg <- "#b4b4b4"
+farbe1 <- "#0073C2FF"
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF"
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+  
+RNApcol <- "#b56504"
+RNAncol <- "#027d73"
+RPFpcol <- "#c4c404"
+RPFncol <- "#8d0391"
+```
+
+
+
+```{r loadDNA}
+#resize ranges
+
+mir181bs <- resize(mir181bs, width = width(mir181bs + 50), fix = "start")
+
+# bsGene <- resize(bsGene, width = width(bsGene + 5), fix = "end")
+
+df181 <- mutate(as.data.frame(mir181bs), Sequence = as.character(getSeq(BSgenome.Mmusculus.UCSC.mm10, seqnames, start, end)))
+
+#and turn T into Us
+df181$Sequence <- gsub('T', 'U', df181$Sequence)
+
+head(df181)
+```
+
+```{r writefasta}
+candgeneName <- as.list(df181$geneName)
+candrname <- as.list(rownames(df181))
+condgeneSeq <- as.list(df181$Sequence) 
+
+
+#181a
+#change to output directory
+setwd("D:/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/fastafiles")
+
+for (i in 1:length(candgeneName)) {
+  write.fasta(condgeneSeq[i],candrname[i],paste(candrname[i], candgeneName[i], "miR_181", 'fasta', sep = '.'))
+}
+
+```
+
+
+
+```{r sessioninfo}
+sessionInfo()
+```
