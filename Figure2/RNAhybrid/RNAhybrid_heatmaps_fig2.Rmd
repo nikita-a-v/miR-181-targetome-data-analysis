@@ -14,6 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 directory
 ```{r}
 setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure2/RNAhybrid")
+
+set.seed(123)
 ```
 
 
@@ -263,6 +265,72 @@ HMF <- Heatmap(sframesum, cluster_columns = F, cluster_rows = F, col = hmcols2)
 
 HMF
 ```
+
+
+# cluster seperately
+
+## clustering 
+try to cluster seperately 
+```{r sepclust}
+#cluster by seed area
+heat_ksA <- kmeans(heatframeA, centers = 5)
+heat_k_namesA <- as.data.frame(heat_ksA$cluster)
+#merge back with full data and adjust frame again
+cframeA <- merge(heatframeA, heat_k_namesA, by=0)
+rownames(cframeA) <- cframeA$Row.names
+cframeA <- cframeA[,-1]
+
+#order by clusters (will be needed for heatmap without clustering)
+cframeA <- cframeA[order(cframeA$`heat_ksA$cluster`, decreasing = F),]
+#remove cluster col
+cframeA <- cframeA[,-24]
+head(cframeA)
+
+```
+
+## plot clustered 
+```{r plotsepclust}
+HMAsep <- Heatmap(cframeA, cluster_columns = F, cluster_rows = F, col = hmcols1, show_row_names = F, show_row_dend = F, border = TRUE)
+
+HMAsep
+
+
+```
+
+## clustering by seed region
+try to cluster seperately only by the binding bases
+```{r sepclustseed}
+#cluster by seed area
+heat_ksAseed <- kmeans(heatframeA[,1:8], centers = 5)
+heat_k_namesAseed <- as.data.frame(heat_ksAseed$cluster)
+#merge back with full data and adjust frame again
+cframeAseed <- merge(heatframeA, heat_k_namesAseed, by=0)
+rownames(cframeAseed) <- cframeAseed$Row.names
+cframeAseed <- cframeAseed[,-1]
+
+#order by clusters (will be needed for heatmap without clustering)
+cframeAseed <- cframeAseed[order(cframeAseed$`heat_ksAseed$cluster`, decreasing = F),]
+#remove cluster col
+cframeAseed <- cframeAseed[,-24]
+head(cframeAseed)
+
+```
+
+## plot clustered by sed region
+```{r plotsepclustseed}
+HMAseed <- Heatmap(cframeAseed, cluster_columns = F, cluster_rows = F, col = hmcols1, show_row_names = F, show_row_dend = F, border = TRUE)
+
+HMAseed
+
+
+```
+
+### testcode
+distframe <- dist(heatframeA)
+head(distframe)
+clustobj <- hclust(distframe)
+
+plot(clustobj)
 
 # session info
 ```{r session_info}
