@@ -1,0 +1,42 @@
+#!/bin/bash
+
+
+workdir="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/fastafiles"
+mirnaA="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper/Figure2/RNAhybrid/mature_mirnas/Mature_sequence_mmu-miR-181a-5p.fasta"
+mirnaB="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper/Figure2/RNAhybrid/mature_mirnas/Mature_sequence_mmu-miR-181b-5p.fasta"
+resdira="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_u3"
+resdirb="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181b_u3"
+
+cd $workdir
+
+echo "miR-181a"
+mkdir $resdira
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -u 3 -c -q $mirnaA -t $fasta -n 500 -b 1 > "$resdira/$fasta-RNAhybrid_resutls.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "miR-181b"
+mkdir $resdirb
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -u 3 -c -q $mirnaB -t $fasta -n 500 -b 1 > "$resdirb/$fasta-RNAhybrid_resutls.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+
+
+
+
+

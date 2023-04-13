@@ -23,10 +23,12 @@ library(ggplot2)
 library(circlize)
 library(ComplexHeatmap)
 library(seqinr)
+library(GenomicRanges)
+library(rGADEM)
 ```
 
 ```{r data}
-mir181bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
+mir181bs <- makeGRangesFromDataFrame(readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds"), keep.extra.columns = T)
 names(mir181bs) <- 1:length(mir181bs)
 ```
 
@@ -58,6 +60,8 @@ RPFncol <- "#8d0391"
 
 
 
+# Get DNA sequences
+
 ```{r loadDNA}
 #resize ranges
 
@@ -73,13 +77,17 @@ df181$Sequence <- gsub('T', 'U', df181$Sequence)
 head(df181)
 ```
 
-```{r writefasta}
+# Write to .fasta
+
+this is deactivated for now because we only need it once right now
+just remove the eval if needed
+
+```{r writefasta, eval=F}
 candgeneName <- as.list(df181$geneName)
 candrname <- as.list(rownames(df181))
 condgeneSeq <- as.list(df181$Sequence) 
 
 
-#181a
 #change to output directory
 setwd("D:/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/fastafiles")
 
@@ -88,8 +96,103 @@ for (i in 1:length(candgeneName)) {
 }
 
 ```
+# Import RNAhybrid results
+
+files that are imported here were run with maximum loop of 3 in both sequences
+
+```{r import}
+Personalized_Reader <- function(lambda){
+ read.table(lambda, sep = ":") %>% select(V1, V5, V6, V7, V9)}
 
 
+reslistA <- list.files(path = "D:/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_u3", full.names=TRUE)
+reslistB <- list.files(path = "D:/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_u3", full.names=TRUE)
+
+myfilelistA <- lapply(reslistA, Personalized_Reader)
+myfilelistB <- lapply(reslistB, Personalized_Reader)
+
+resframeA <- bind_rows(myfilelistA)
+resframeB <- bind_rows(myfilelistB)
+
+
+colnames(resframeA) <- c("rownumber", "mfs", "pvalue", "start_position", "binding_bases")
+colnames(resframeB) <- c("rownumber", "mfs", "pvalue", "start_position", "binding_bases")
+
+head(resframeA)
+head(resframeB)
+```
+
+## merge with original df
+
+```{r merge}
+# make seperate objects for each mature mirna just to see if they are much different
+
+df181$rownumber <- as.character(rownames(df181))
+resframeA$rownumber <- as.character(resframeA$rownumber)
+resframeB$rownumber <- as.character(resframeB$rownumber)
+
+
+
+bsseqHA <- left_join(df181, resframeA, by="rownumber")
+bsseqHB <- left_join(df181, resframeB, by="rownumber")
+
+head(bsseqHA)
+head(bsseqHB)
+
+```
+
+
+## adjust binding site info
+```{r adjustBS}
+bsseqHA$binding_bases <- chartr(" ", "N", bsseqHA$binding_bases)
+bsseqHB$binding_bases <- chartr(" ", "N", bsseqHB$binding_bases)
+
+head(bsseqHA)
+head(bsseqHB)
+```
+
+# Plot pValues and mfs
+```{r pval}
+pmfsplotA <- ggplot(bsseqHA, aes(y=-log10(pvalue), x=mfs)) + geom_point() +
+  geom_hline(yintercept=-log10(0.05))
+
+
+pmfsplotA
+
+pmfsplotB <- ggplot(bsseqHA, aes(y=-log10(pvalue), x=mfs)) + geom_point() +
+  geom_hline(yintercept=-log10(0.05))
+
+pmfsplotB
+```
+
+# find motivs
+
+## make DNAStringSet
+```{r stringset}
+#make a DNA sting set as well because the motif finder requires it
+b_baseSetDNAA <- DNAStringSet(chartr("U", "T", bsseqHA[bsseqHA$pvalue <= 0.05, "binding_bases"]))
+b_baseSetDNAB <- DNAStringSet(chartr("U", "T", bsseqHB[bsseqHB$pvalue <= 0.05, "binding_bases"]))
+
+head(b_baseSetDNAA)
+head(b_baseSetDNAB)
+
+```
+# Run rGadem
+
+```{r rGadem}
+enrichmotA <- GADEM(b_baseSetDNAA, seed = 123)
+enrichmotB <- GADEM(b_baseSetDNAB, seed = 123)
+```
+## miR181a
+```{r mir181a}
+rGADEM::plot(enrichmotA)
+```
+## miR181b
+```{r mir181b}
+rGADEM::plot(enrichmotB)
+```
+
+# Session info
 
 ```{r sessioninfo}
 sessionInfo()
