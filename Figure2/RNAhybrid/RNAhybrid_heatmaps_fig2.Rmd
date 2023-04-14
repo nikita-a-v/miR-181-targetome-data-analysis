@@ -69,7 +69,14 @@ head(resframeB)
 
 
 
+# Ribo profiling data
+RNA <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
+RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
 
+
+# original bs data
+mir181bs <- as.data.frame(readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds"), keep.extra.columns = T)
+mir181bs$rownumber <- 1:length(mir181bs$seqnames)
 
 ```
 ## colours
@@ -283,14 +290,14 @@ cframeA <- cframeA[,-1]
 #order by clusters (will be needed for heatmap without clustering)
 cframeA <- cframeA[order(cframeA$`heat_ksA$cluster`, decreasing = F),]
 #remove cluster col
-cframeA <- cframeA[,-24]
-head(cframeA)
+cframeAp <- cframeA[,-24]
+head(cframeAp)
 
 ```
 
 ## plot clustered 
 ```{r plotsepclust}
-HMAsep <- Heatmap(cframeA, cluster_columns = F, cluster_rows = F, col = hmcols1, show_row_names = F, show_row_dend = F, border = TRUE)
+HMAsep <- Heatmap(cframeAp, cluster_columns = F, cluster_rows = F, col = hmcols1, show_row_names = F, show_row_dend = F, border = TRUE)
 
 HMAsep
 
@@ -311,14 +318,14 @@ cframeAseed <- cframeAseed[,-1]
 #order by clusters (will be needed for heatmap without clustering)
 cframeAseed <- cframeAseed[order(cframeAseed$`heat_ksAseed$cluster`, decreasing = F),]
 #remove cluster col
-cframeAseed <- cframeAseed[,-24]
-head(cframeAseed)
+cframeAseedp <- cframeAseed[,-24]
+head(cframeAseedp)
 
 ```
 
 ## plot clustered by sed region
 ```{r plotsepclustseed}
-HMAseed <- Heatmap(cframeAseed, cluster_columns = F, cluster_rows = F, col = hmcols1, show_row_names = F, show_row_dend = F, border = TRUE)
+HMAseed <- Heatmap(cframeAseedp, cluster_columns = F, cluster_rows = F, col = hmcols1, show_row_names = F, show_row_dend = F, border = TRUE)
 
 HMAseed
 
@@ -331,6 +338,62 @@ head(distframe)
 clustobj <- hclust(distframe)
 
 plot(clustobj)
+
+
+# ECDF plots
+
+merge back with original data for gene names
+```{r mergeback}
+cframeA$rownumber <- as.numeric(rownames(cframeA))
+
+
+
+bsseqHA <- left_join(mir181bs, cframeA, by="rownumber")
+
+head(bsseqHA)
+```
+
+sort RNA and RPF by cluster
+```{r ecdfdataanalysis}
+#RNA
+colnames(RNA)[16] <- "geneName"
+RNA <- left_join(RNA, bsseqHA[!duplicated(bsseqHA$geneName),], by="geneName")
+RNA[is.na(RNA$`heat_ksA$cluster`), "heat_ksA$cluster"] <- "Non-target"
+head(RNA)
+table(RNA$`heat_ksA$cluster`)
+
+#RPF
+colnames(RPF)[16] <- "geneName"
+RPF <- left_join(RPF, bsseqHA[!duplicated(bsseqHA$geneName),], by="geneName")
+RPF[is.na(RPF$`heat_ksA$cluster`), "heat_ksA$cluster"] <- "Non-target"
+head(RPF)
+table(RPF$`heat_ksA$cluster`)
+```
+## plot ecdf
+
+```{r ecdfplot}
+#RNA
+RNAnumplot = ggplot(RNA, aes(log2FoldChange, colour=factor(`heat_ksA$cluster`, 
+                                                                 levels = c("Non-target", "1", "2", "3", "4", "5")))) + 
+  stat_ecdf(geom = "step", linewidth=1) +
+  coord_cartesian(xlim = c(-0.8, 0.8)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5)) +
+  theme_bw() +
+  theme(legend.title = element_blank())
+
+RNAnumplot
+
+#RPF
+RPFnumplot = ggplot(RPF, aes(log2FoldChange, colour=factor(`heat_ksA$cluster`, 
+                                                                 levels = c("Non-target", "1", "2", "3", "4", "5")))) + 
+  stat_ecdf(geom = "step", linewidth=1) +
+  coord_cartesian(xlim = c(-0.8, 0.8)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5)) +
+  theme_bw() +
+  theme(legend.title = element_blank())
+
+RPFnumplot
+```
 
 # session info
 ```{r session_info}
