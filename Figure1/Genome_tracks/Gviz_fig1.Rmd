@@ -1,0 +1,59 @@
+---
+title: "Gviz_fig1"
+author: "Nikita Verheyden"
+date: "2023-04-17"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r dir}
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Genome_tracks")
+```
+
+
+```{r packages}
+library(Gviz)
+library(GenomicRanges)
+library(rtracklayer)
+```
+
+D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks_merged
+```{r data}
+diffres <- import(con = "D:/Krueger_Lab/miReCLIP/Mirco/DifferentialBinding/BsDifferentialResult.bed", format = "BED")
+
+```
+
+# basic plot
+
+testplots
+```{r testplots}
+data(cpgIslands)
+class(cpgIslands)
+## [1] "GRanges"
+## attr(,"package")
+## [1] "GenomicRanges"
+chr <- as.character(unique(seqnames(cpgIslands)))
+gen <- genome(cpgIslands)
+atrack <- AnnotationTrack(cpgIslands, name = "CpG")
+```
+
+
+```{r plottracks}
+difftrack <- AnnotationTrack(diffres[diffres$], name="diff_targets", genome = "m23")
+plotTracks(difftrack)
+
+```
+
+
+
+
+
+# session info
+```{r sessioninfo}
+sessionInfo()
+
+```
