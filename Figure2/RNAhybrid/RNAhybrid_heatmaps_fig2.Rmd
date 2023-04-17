@@ -295,7 +295,7 @@ head(cframeAp)
 
 ```
 
-## plot clustered 
+## plot clustered seperately
 ```{r plotsepclust}
 HMAsep <- Heatmap(cframeAp, cluster_columns = F, cluster_rows = F, col = hmcols1, show_row_names = F, show_row_dend = F, border = TRUE)
 
@@ -323,7 +323,7 @@ head(cframeAseedp)
 
 ```
 
-## plot clustered by sed region
+## plot clustered by seed region
 ```{r plotsepclustseed}
 HMAseed <- Heatmap(cframeAseedp, cluster_columns = F, cluster_rows = F, col = hmcols1, show_row_names = F, show_row_dend = F, border = TRUE)
 
