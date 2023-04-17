@@ -19,6 +19,7 @@ setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Genome_tracks")
 library(Gviz)
 library(GenomicRanges)
 library(rtracklayer)
+library(dplyr)
 ```
 
 D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks_merged
@@ -43,8 +44,9 @@ atrack <- AnnotationTrack(cpgIslands, name = "CpG")
 
 
 ```{r plottracks}
-difftrack <- AnnotationTrack(diffres[diffres$], name="diff_targets", genome = "m23")
-plotTracks(difftrack)
+data_GR %>% filter(seqnames == 'chr21')
+difftrack <- AnnotationTrack(diffres, name="diff_targets", genome = "m23")
+plotTracks(difftrack, from = "chr12:80,107,755" ,to= "chr12:80,108,103")
 
 ```
 
