@@ -1,0 +1,403 @@
+---
+title: "RNAhybrid_heatmaps_fig2-25 elite set"
+author: "Nikita Verheyden"
+date: "2023-04-19"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+directory
+```{r}
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure2/RNAhybrid")
+
+set.seed(123)
+```
+
+
+## packages
+```{r packages}
+source("D:/Krueger_Lab/Publications/miR181_paper_v21022023/Figure_theme/theme_paper.R")
+library(BSgenome.Mmusculus.UCSC.mm10)
+library(dplyr)
+library(ggplot2)
+library(seqinr)
+library(circlize)
+library(ComplexHeatmap)
+```
+
+## Data
+
+the files imported here are created with RNAhybid with the "RNAhybrid fig 2" script
+
+```{r data}
+Personalized_Reader <- function(lambda){
+ read.table(lambda, sep = ":") %>% select(V1, V5, V6, V7, V10, V11)}
+
+#File lists
+reslistA <- list.files(path = "D:/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_u3-25_elite", full.names=TRUE)
+reslistB <- list.files(path = "D:/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_u3-25_elite", full.names=TRUE)
+
+
+#import
+myfilelistA <- lapply(reslistA, Personalized_Reader)
+myfilelistB <- lapply(reslistB, Personalized_Reader) 
+
+
+
+
+resframeA <- bind_rows(myfilelistA)
+resframeB <- bind_rows(myfilelistB)
+
+
+
+#colnames
+colnames(resframeA) <- c("rownumber", "mfs", "pvalue", "start_position", "binding_bases", "non_binding_bases")
+colnames(resframeB) <- c("rownumber", "mfs", "pvalue", "start_position", "binding_bases", "non_binding_bases")
+
+resframeA[is.na(resframeA$non_binding_bases),"non_binding_bases"] <- "                       "
+resframeB[is.na(resframeB$non_binding_bases),"non_binding_bases"] <- "                       "
+
+
+
+head(resframeA)
+head(resframeB)
+
+
+
+# Ribo profiling data
+RNA <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
+RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
+
+
+# original bs data
+mir181bs <- as.data.frame(readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds"), keep.extra.columns = T)
+mir181bs$rownumber <- 1:length(mir181bs$seqnames)
+
+```
+## colours
+```{r colours}
+#colours
+farbeneg <- "#b4b4b4"
+farbe1 <- "#0073C2FF"
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF"
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+  
+RNApcol <- "#b56504"
+RNAncol <- "#027d73"
+RPFpcol <- "#c4c404"
+RPFncol <- "#8d0391"
+```
+
+
+
+
+
+## Process data (remove gaps)
+
+Due to the loops in the mRNA there are additional spaces in the mirna. We only want the binding and non binding bases of hte mirna in te correct order.
+For that we will remove all gaps that origin in the mRNA loops.
+```{r remove_loop}
+#binding and non binding bases as characters in a list
+Alistbb <- strsplit(resframeA$binding_bases,"")
+Alistnb <- strsplit(resframeA$non_binding_bases,"")
+
+Blistbb <- strsplit(resframeB$binding_bases,"")
+Blistnb <- strsplit(resframeB$non_binding_bases,"")
+
+
+
+#combine the two lists
+Alist <- Map(cbind, Alistbb, Alistnb)
+Alist <- lapply(Alist, as.data.frame)
+
+Blist <- Map(cbind, Blistbb, Blistnb)
+Blist <- lapply(Blist, as.data.frame)
+
+
+
+
+#remove all empty rows (mRNA loops)
+Alist0 <- lapply(Alist, function(x){
+  x[!(x[,1]== " " & x[,2] == " "),]
+})
+
+Blist0 <- lapply(Blist, function(x){
+  x[!(x[,1]== " " & x[,2] == " "),]
+})
+
+
+
+
+#rewrite as characters
+AlistF <- lapply(Alist0, function(x){
+  paste(x[,1],  collapse = '')
+})
+
+BlistF <- lapply(Blist0, function(x){
+  paste(x[,1],  collapse = '')
+})
+
+
+
+
+
+
+
+
+#Attach lists back onto original data.frame as new column
+resframeA$binding_nospace <-unlist(AlistF)
+head(resframeA$binding_nospace)
+
+resframeB$binding_nospace <-unlist(BlistF)
+head(resframeB$binding_nospace)
+
+
+```
+
+# Transform into Numbers
+
+## add 0s
+
+replace all gaps with 0 and all letters with 1
+```{r nummerify}
+#0
+resframeA$binding_nospace <- chartr(" ", "0", resframeA$binding_nospace)
+resframeB$binding_nospace <- chartr(" ", "0", resframeB$binding_nospace)
+
+
+
+#1
+resframeA$binding_nospace <- mgsub::mgsub(resframeA$binding_nospace, c("A", "U", "C", "G"), c(rep("1", 4)))
+resframeB$binding_nospace <- mgsub::mgsub(resframeB$binding_nospace, c("A", "U", "C", "G"), c(rep("1", 4)))
+
+
+head(resframeA)
+head(resframeB)
+
+
+```
+
+## seperate into columns
+
+for each base make 1 column so it can be added and also put into a heatmap
+```{r heatframes}
+#for the heatmap with every binding site
+heatframeA <- do.call(rbind.data.frame, strsplit(resframeA$binding_nospace,""))
+heatframeA <- sapply( heatframeA, as.numeric )
+colnames(heatframeA) <- c(23:1)
+rownames(heatframeA) <- resframeA[,1]
+head(heatframeA)
+
+heatframeB <- do.call(rbind.data.frame, strsplit(resframeB$binding_nospace,""))
+heatframeB <- sapply( heatframeB, as.numeric )
+colnames(heatframeB) <- c(23:1)
+rownames(heatframeB) <- resframeB[,1]
+head(heatframeB)
+
+
+
+#reverse column order
+heatframeA <-heatframeA[,23:1]
+heatframeB <- heatframeB[,23:1]
+```
+
+## sum of columns
+
+```{r sumframes}
+#sum for the small heatmap with the overall binding ratio for each base
+framesumA <- colSums(heatframeA)
+framesumB <- colSums(heatframeB)
+
+
+
+framesum <- as.data.frame(rbind(framesumA,framesumB))
+rownames(framesum) <- c("miR181a", "miR181b")
+framesum
+
+#scale for better comperativity
+sframesum <- as.data.frame(t(scale(t(framesum))))
+```
+
+# Heatmap
+
+Colours
+```{r hm_colours}
+hmcols1 <- c("white", "black")
+hmcols2 <- colorRamp2(c(-2, 2), c("white", "red"))
+
+```
+
+## Heatmap of all the single reads
+
+make heatmap without column clustering but with row clustering
+```{r allmap,  fig.dim = c(7, 5)}
+HMA <- Heatmap(heatframeA, cluster_columns = F, col = hmcols1, row_km = 5, show_row_names = F, show_row_dend = F, border = TRUE)
+HMB <- Heatmap(heatframeB, cluster_columns = F, col = hmcols1, row_km = 5, show_row_names = F, show_row_dend = F, border = TRUE)
+
+```
+No B
+```{r A}
+HMA
+```
+B
+```{r B}
+HMB
+```
+
+
+
+## "Heatmap" of combined reads for mir_181a and b
+
+No clustering, only sums
+```{r fusemap,  fig.dim = c(5, 2)}
+HMF <- Heatmap(sframesum, cluster_columns = F, cluster_rows = F, col = hmcols2)
+
+HMF
+```
+
+
+# cluster seperately
+
+## clustering 
+try to cluster seperately 
+```{r sepclust}
+#cluster by seed area
+heat_ksA <- kmeans(heatframeA, centers = 5)
+heat_k_namesA <- as.data.frame(heat_ksA$cluster)
+#merge back with full data and adjust frame again
+cframeA <- merge(heatframeA, heat_k_namesA, by=0)
+rownames(cframeA) <- cframeA$Row.names
+cframeA <- cframeA[,-1]
+
+#order by clusters (will be needed for heatmap without clustering)
+cframeA <- cframeA[order(cframeA$`heat_ksA$cluster`, decreasing = F),]
+#remove cluster col
+cframeAp <- cframeA[,-24]
+head(cframeAp)
+
+```
+
+## plot clustered seperately
+```{r plotsepclust}
+HMAsep <- Heatmap(cframeAp, cluster_columns = F, cluster_rows = F, col = hmcols1, show_row_names = F, show_row_dend = F, border = TRUE)
+
+HMAsep
+
+
+```
+
+## clustering by seed region
+try to cluster seperately only by the binding bases
+```{r sepclustseed}
+#cluster by seed area
+heat_ksAseed <- kmeans(heatframeA[,1:8], centers = 5)
+heat_k_namesAseed <- as.data.frame(heat_ksAseed$cluster)
+#merge back with full data and adjust frame again
+cframeAseed <- merge(heatframeA, heat_k_namesAseed, by=0)
+rownames(cframeAseed) <- cframeAseed$Row.names
+cframeAseed <- cframeAseed[,-1]
+
+#order by clusters (will be needed for heatmap without clustering)
+cframeAseed <- cframeAseed[order(cframeAseed$`heat_ksAseed$cluster`, decreasing = F),]
+#remove cluster col
+cframeAseedp <- cframeAseed[,-24]
+head(cframeAseedp)
+
+```
+
+## plot clustered by seed region
+```{r plotsepclustseed}
+HMAseed <- Heatmap(cframeAseedp, cluster_columns = F, cluster_rows = F, col = hmcols1, show_row_names = F, show_row_dend = F, border = TRUE)
+
+HMAseed
+
+
+```
+
+### testcode
+distframe <- dist(heatframeA)
+head(distframe)
+clustobj <- hclust(distframe)
+
+plot(clustobj)
+
+
+# ECDF plots
+
+merge back with original data for gene names
+```{r mergeback}
+cframeA$rownumber <- as.numeric(rownames(cframeA))
+
+
+
+bsseqHA <- left_join(mir181bs, cframeA, by="rownumber")
+
+head(bsseqHA)
+```
+
+sort RNA and RPF by cluster
+```{r ecdfdataanalysis}
+#RNA
+colnames(RNA)[16] <- "geneName"
+RNA <- left_join(RNA, bsseqHA[!duplicated(bsseqHA$geneName),], by="geneName")
+RNA[is.na(RNA$`heat_ksA$cluster`), "heat_ksA$cluster"] <- "Non-target"
+head(RNA)
+table(RNA$`heat_ksA$cluster`)
+
+#RPF
+colnames(RPF)[16] <- "geneName"
+RPF <- left_join(RPF, bsseqHA[!duplicated(bsseqHA$geneName),], by="geneName")
+RPF[is.na(RPF$`heat_ksA$cluster`), "heat_ksA$cluster"] <- "Non-target"
+head(RPF)
+table(RPF$`heat_ksA$cluster`)
+```
+## plot ecdf
+
+```{r ecdfplot}
+#RNA
+RNAnumplot = ggplot(RNA, aes(log2FoldChange, colour=factor(`heat_ksA$cluster`, 
+                                                                 levels = c("Non-target", "1", "2", "3", "4", "5")))) + 
+  stat_ecdf(geom = "step", linewidth=1) +
+  coord_cartesian(xlim = c(-0.8, 0.8)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5)) +
+  theme_bw() +
+  theme(legend.title = element_blank())
+
+RNAnumplot
+
+#RPF
+RPFnumplot = ggplot(RPF, aes(log2FoldChange, colour=factor(`heat_ksA$cluster`, 
+                                                                 levels = c("Non-target", "1", "2", "3", "4", "5")))) + 
+  stat_ecdf(geom = "step", linewidth=1) +
+  coord_cartesian(xlim = c(-0.8, 0.8)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5)) +
+  theme_bw() +
+  theme(legend.title = element_blank())
+
+RPFnumplot
+```
+
+# session info
+```{r session_info}
+sessionInfo()
+```
+
