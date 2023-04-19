@@ -4,17 +4,17 @@ author: "Nikita Verheyden"
 date: "2023-04-17"
 output: pdf_document
 ---
-
+# setup
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
+directory
 ```{r dir}
 setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Genome_tracks")
 ```
 
-
+## packages
 ```{r packages}
 library(Gviz)
 library(GenomicRanges)
@@ -23,7 +23,9 @@ library(dplyr)
 library(plyranges)
 ```
 
-D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks_merged
+
+## Import data
+
 ```{r data}
 diffres <- rtracklayer::import(con = "D:/Krueger_Lab/miReCLIP/Mirco/DifferentialBinding/BsDifferentialResult.bed", format = "BED")
 
@@ -33,6 +35,90 @@ IPWTminus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe
 IPWTplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT.plus.bw")
 
 ```
+
+
+# setting regions 
+
+Use this panel to change the coordinates in all following plots
+```{r region}
+scoord = 84184290 
+ecoord = 84184345
+tchr = "chr17"
+```
+
+
+# Tracks
+
+## Annotation track
+
+```{r annotation}
+gatrack <- GenomeAxisTrack()
+
+```
+
+
+## pureclip (merged)
+
+Always just activate or inactivate the strand that actually contains data
+```{r pureclipmerge}
+# -
+
+#KO minus
+KOm <- as.data.frame(IPKOminus)
+KOm <- KOm[KOm$seqnames == tchr & KOm$start >= scoord & KOm$end <= ecoord,] 
+KOm <- makeGRangesFromDataFrame(KOm, keep.extra.columns = T)
+
+KOmT <- DataTrack(KOm, name="KO-")
+
+
+#WT minus
+WTm <- as.data.frame(IPWTminus)
+WTm <- WTm[WTm$seqnames == tchr & WTm$start >= scoord & WTm$end <= ecoord,] 
+WTm <- makeGRangesFromDataFrame(WTm, keep.extra.columns = T)
+
+WTmT <- DataTrack(WTm, name="WT-")
+
+# +
+
+# #KO plus
+# KOp <- as.data.frame(IPKOplus)
+# KOp <- KOp[KOp$seqnames == tchr & KOp$start >= scoord & KOp$end <= ecoord,] 
+# KOp <- makeGRangesFromDataFrame(KOp, keep.extra.columns = T)
+# 
+# KOpT <- DataTrack(KOp, name="KO+")
+# 
+# #WT plus
+# WTp <- as.data.frame(IPWTplus)
+# WTp <- WTp[WTp$seqnames == tchr & WTp$start >= scoord & WTp$end <= ecoord,] 
+# WTp <- makeGRangesFromDataFrame(WTp, keep.extra.columns = T)
+# 
+# WTpT <- DataTrack(WTp, name="WT+")
+
+```
+
+
+## differential binding
+
+```{r diffbinding}
+diffresf <- diffres %>% filter(seqnames == tchr)
+
+diffresT <- AnnotationTrack(diffresf, name = "Differential binding sites")
+
+```
+
+
+
+# plot
+
+```{r plottracks}
+plotTracks(list(WTmT, KOmT, diffresT, gatrack), from = scoord, to= ecoord, type="histogram")
+
+``` 
+
+
+
+
+
 
 # basic plot
 
