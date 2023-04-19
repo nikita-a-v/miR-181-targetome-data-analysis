@@ -20,39 +20,75 @@ library(Gviz)
 library(GenomicRanges)
 library(rtracklayer)
 library(dplyr)
+library(plyranges)
 ```
 
 D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks_merged
 ```{r data}
-diffres <- import(con = "D:/Krueger_Lab/miReCLIP/Mirco/DifferentialBinding/BsDifferentialResult.bed", format = "BED")
+diffres <- rtracklayer::import(con = "D:/Krueger_Lab/miReCLIP/Mirco/DifferentialBinding/BsDifferentialResult.bed", format = "BED")
+
+IPKOminus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_KO.minus.bw")
+IPKOplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_KO.plus.bw")
+IPWTminus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT.minus.bw")
+IPWTplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT.plus.bw")
 
 ```
 
 # basic plot
 
-testplots
-```{r testplots}
-data(cpgIslands)
-class(cpgIslands)
-## [1] "GRanges"
-## attr(,"package")
-## [1] "GenomicRanges"
-chr <- as.character(unique(seqnames(cpgIslands)))
-gen <- genome(cpgIslands)
-atrack <- AnnotationTrack(cpgIslands, name = "CpG")
-```
-
 
 ```{r plottracks}
-data_GR %>% filter(seqnames == 'chr21')
-difftrack <- AnnotationTrack(diffres, name="diff_targets", genome = "m23")
-plotTracks(difftrack, from = "chr12:80,107,755" ,to= "chr12:80,108,103")
+
+table(as.data.frame(diffres)$seqnames)
+diffres17 <- diffres %>% filter(seqnames == 'chr17')
+
+gtrack <- AnnotationTrack(diffres17, name = "Differential binding sites")
+
+
+plotTracks(gtrack, from = 84184290 ,to= 84184333)
+
+```
+
+## pureclip merged tracks
+84184290-84184345
+```{r puremergetracks}
+# go through data.frame to correctly choose just the chromosome and position I want to see
+test1 <- as.data.frame(IPKOminus)
+test2 <- test1[test1$seqnames == "chr17" & test1$start >= 84184290 & test1$end <= 84184345,] 
+Gtest <- makeGRangesFromDataFrame(test2, keep.extra.columns = T)
+
+testtrack <- DataTrack(Gtest, name="testtrack")
+
+plotTracks(list(testtrack, gtrack, gatrack),  from = 84184290 ,to= 84184345, type = "histogram") # this is the correct one that works!!!
+
+
+IPKOplus17 <- IPKOplus %>% filter(seqnames == 'chr17',start >= 84184290, end <= 84184333)
+table(as.data.frame(IPKOplus17)$seqnames)
+
+
+KOpT17 <- GeneRegionTrack(IPKOplus17, options(ucscChromosomeNames=FALSE), name = "pureclip KO+")
+
+
+plotTracks(KOpT17,  from = 84184290 ,to= 84184333)
+
 
 ```
 
 
+## annotations
+
+```{r annotations}
+gen <- genome(diffres)
+
+grtrack <- GeneRegionTrack(geneModels, genome = gen,
+                           chromosome = chr17, name = "Gene Model")
+
+gatrack <- GenomeAxisTrack()
+
+plotTracks(gtrack, gatrack, from = 84184290 ,to= 84184333)
 
 
+```
 
 # session info
 ```{r sessioninfo}
