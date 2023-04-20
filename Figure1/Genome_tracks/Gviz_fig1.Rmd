@@ -27,12 +27,18 @@ library(plyranges)
 ## Import data
 
 ```{r data}
+# diferential results
 diffres <- rtracklayer::import(con = "D:/Krueger_Lab/miReCLIP/Mirco/DifferentialBinding/BsDifferentialResult.bed", format = "BED")
 
+# non enriched non chimeric
 IPKOminus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_KO.minus.bw")
 IPKOplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_KO.plus.bw")
 IPWTminus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT.minus.bw")
 IPWTplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT.plus.bw")
+
+# enriched chimeric
+IP181chimWTminus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks_merged/chimeric_IP_WT_miR181.minus.bw")
+IP181chimWTplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks_merged/chimeric_IP_WT_miR181.plus.bw")
 
 ```
 
@@ -41,11 +47,13 @@ IPWTplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_
 
 Use this panel to change the coordinates in all following plots
 ```{r region}
-scoord = 84184290 
-ecoord = 84184345
-tchr = "chr17"
+scoord = 80107716 
+ecoord = 80108070
+tchr = "chr12"
 ```
 
+Zfp36l1: chr12 80107716-80108070
+Zfp36l2: chr17 84184290-84184345
 
 # Tracks
 
@@ -65,34 +73,60 @@ Always just activate or inactivate the strand that actually contains data
 
 #KO minus
 KOm <- as.data.frame(IPKOminus)
-KOm <- KOm[KOm$seqnames == tchr & KOm$start >= scoord & KOm$end <= ecoord,] 
+KOm <- KOm[KOm$seqnames == tchr & KOm$start >= scoord & KOm$end <= ecoord,]
+KOm$seqnames <- as.character(KOm$seqnames)
 KOm <- makeGRangesFromDataFrame(KOm, keep.extra.columns = T)
 
-KOmT <- DataTrack(KOm, name="KO-")
+KOmT <- DataTrack(KOm, name="KO-", ylim = c(0,20))
 
 
 #WT minus
 WTm <- as.data.frame(IPWTminus)
 WTm <- WTm[WTm$seqnames == tchr & WTm$start >= scoord & WTm$end <= ecoord,] 
+WTm$seqnames <- as.character(WTm$seqnames)
 WTm <- makeGRangesFromDataFrame(WTm, keep.extra.columns = T)
 
-WTmT <- DataTrack(WTm, name="WT-")
+WTmT <- DataTrack(WTm, name="WT-", ylim = c(0,20))
 
 # +
 
 # #KO plus
 # KOp <- as.data.frame(IPKOplus)
 # KOp <- KOp[KOp$seqnames == tchr & KOp$start >= scoord & KOp$end <= ecoord,] 
+# KOp$seqnames <- as.character(KOp$seqnames)
 # KOp <- makeGRangesFromDataFrame(KOp, keep.extra.columns = T)
 # 
-# KOpT <- DataTrack(KOp, name="KO+")
+# KOpT <- DataTrack(KOp, name="KO+", ylim = c(0,20))
 # 
 # #WT plus
 # WTp <- as.data.frame(IPWTplus)
-# WTp <- WTp[WTp$seqnames == tchr & WTp$start >= scoord & WTp$end <= ecoord,] 
+# WTp <- WTp[WTp$seqnames == tchr & WTp$start >= scoord & WTp$end <= ecoord,]
+# WTp$seqnames <- as.character(WTp$seqnames)
 # WTp <- makeGRangesFromDataFrame(WTp, keep.extra.columns = T)
 # 
-# WTpT <- DataTrack(WTp, name="WT+")
+# WTpT <- DataTrack(WTp, name="WT+", ylim = c(0,20))
+
+```
+
+
+## chimeric reads
+
+```{r chimeric}
+#minus
+chim181m <- as.data.frame(IP181chimWTminus)
+chim181m <- chim181m[chim181m$seqnames == tchr & chim181m$start >= scoord & chim181m$end <= ecoord,]
+chim181m$seqnames <- as.character(chim181m$seqnames)
+chim181m <- makeGRangesFromDataFrame(chim181m, keep.extra.columns = T)
+
+chim181mT <- DataTrack(chim181m, name="WT181rich-", ylim = c(0,20))
+
+# #plus
+# chim181p <- as.data.frame(IP181chimWTplus)
+# chim181p <- chim181p[chim181p$seqnames == tchr & chim181p$start >= scoord & chim181p$end <= ecoord,]
+# chim181p$seqnames <- as.character(chim181p$seqnames)
+# chim181p <- makeGRangesFromDataFrame(chim181p, keep.extra.columns = T)
+# 
+# chim181pT <- DataTrack(chim181p, name="WT181rich-", ylim = c(0,20))
 
 ```
 
@@ -102,7 +136,7 @@ WTmT <- DataTrack(WTm, name="WT-")
 ```{r diffbinding}
 diffresf <- diffres %>% filter(seqnames == tchr)
 
-diffresT <- AnnotationTrack(diffresf, name = "Differential binding sites")
+diffresT <- AnnotationTrack(diffresf, name = "dBS", id=diffresf$name)
 
 ```
 
@@ -111,70 +145,14 @@ diffresT <- AnnotationTrack(diffresf, name = "Differential binding sites")
 # plot
 
 ```{r plottracks}
-plotTracks(list(WTmT, KOmT, diffresT, gatrack), from = scoord, to= ecoord, type="histogram")
+plotTracks(list(WTmT, KOmT, chim181mT, diffresT,  gatrack), from = scoord, to= ecoord, type="histogram", featureAnnotation = "id", 
+           fontsize.feature=10, fontcolor.feature = "black")
 
 ``` 
 
 
 
 
-
-
-# basic plot
-
-
-```{r plottracks}
-
-table(as.data.frame(diffres)$seqnames)
-diffres17 <- diffres %>% filter(seqnames == 'chr17')
-
-gtrack <- AnnotationTrack(diffres17, name = "Differential binding sites")
-
-
-plotTracks(gtrack, from = 84184290 ,to= 84184333)
-
-```
-
-## pureclip merged tracks
-84184290-84184345
-```{r puremergetracks}
-# go through data.frame to correctly choose just the chromosome and position I want to see
-test1 <- as.data.frame(IPKOminus)
-test2 <- test1[test1$seqnames == "chr17" & test1$start >= 84184290 & test1$end <= 84184345,] 
-Gtest <- makeGRangesFromDataFrame(test2, keep.extra.columns = T)
-
-testtrack <- DataTrack(Gtest, name="testtrack")
-
-plotTracks(list(testtrack, gtrack, gatrack),  from = 84184290 ,to= 84184345, type = "histogram") # this is the correct one that works!!!
-
-
-IPKOplus17 <- IPKOplus %>% filter(seqnames == 'chr17',start >= 84184290, end <= 84184333)
-table(as.data.frame(IPKOplus17)$seqnames)
-
-
-KOpT17 <- GeneRegionTrack(IPKOplus17, options(ucscChromosomeNames=FALSE), name = "pureclip KO+")
-
-
-plotTracks(KOpT17,  from = 84184290 ,to= 84184333)
-
-
-```
-
-
-## annotations
-
-```{r annotations}
-gen <- genome(diffres)
-
-grtrack <- GeneRegionTrack(geneModels, genome = gen,
-                           chromosome = chr17, name = "Gene Model")
-
-gatrack <- GenomeAxisTrack()
-
-plotTracks(gtrack, gatrack, from = 84184290 ,to= 84184333)
-
-
-```
 
 # session info
 ```{r sessioninfo}
