@@ -1,20 +1,20 @@
 ---
-title: "mir181 binding sites - union of mir181 enriched binding sites and Ago binding sites targeted by mir181"
+title: "Bound genes and gene regions of MREs"
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  BiocStyle::html_document:
-  toc_float: TRUE
-  code_folding: hide
-  toc: TRUE
-  number_sections: yes
-  fig_caption: yes
-  # pdf_document:
-  #   fig_caption: true
-  #   fig_crop: true
-  #   toc: true
-  #   toc_depth: 1
-  #   number_sections: true
+  # BiocStyle::html_document:
+  # toc_float: TRUE
+  # code_folding: hide
+  # toc: TRUE
+  # number_sections: yes
+  # fig_caption: yes
+  pdf_document:
+    fig_caption: true
+    fig_crop: true
+    toc: true
+    toc_depth: 1
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -38,7 +38,7 @@ library(gghalves)
 # ----------------------------------------
 # settings
 # ----------------------------------------
-out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/mir181_binding_sites__venn_types/"
+out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/MRE_bound_gene_and_bound_region/"
 source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
 source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
 
@@ -65,200 +65,22 @@ farbe16 <- "#FF6348FF"
 
 # What was done?
 
-mir181 binding sites are defined as the union of
-- AGO binding sites that contain at least 2 chimirc mir181 crosslinks (from the IP_WT chimeric reads or the IP_mir181_WT chimeric reads) in a window from 10nt before till 10nt after a the AGO binding site
-- binding sites defined on enriched mir181 data (IP_mir181_WT)
-\newline
-\newline
-
-
-- the two subgroups are plotted as a venn diagram (figure 1 XX)
-- this is compared to the differntially regulated AGO binding sites from the mir181 KO condition 
 - the genetype and gene region of the mir 181 binding sites (union) are ploted (Figure2XX)
 
 # Files
 ```{r}
 # ----------------------------------------
-# mir181 enriched binding sites
-# ----------------------------------------
-mir181_enriched <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/mir181-enriched_binding_site_definition/2023-04-03-BS_mir181_enriched.rds")
-
-# ----------------------------------------
-# chimeric reads
+# MREs
 # ----------------------------------------
 
-chimeric_reads <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Ago_targetome/mir_chimeric_crosslinks.rds")
-
-# ----------------------------------------
-# AGO binding sites
-# ----------------------------------------
-ago_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/02_AGO_binding_site_definition/2023-04-04-AGO_BS.rds")
-
-# ----------------------------------------
-# BS downregulated in mir181 KO
-# ----------------------------------------
-diff <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Differential_Binding/BsDifferentialResult.rds")
-diff$down <- (diff$resBs.padj < 0.05) & (diff$resBs.log2FoldChange < -log2(2))
-
-
-```
-
-# mir181 binding sites
-
-## Get AGO binding sites with chimeric mir181 
-
-Here we define mir181 AGO binding sites by overlapping the AGO binding sites (see script Methods/02_AGO_binding_site_definition) with the chimeric mir181 reads (see script Figure1/Ago_targetome). AGO binding sites that contained at least 2 chimeric mir181 crosslinks in the binding site or within 10nt proximity to the binding site are selected as mir181 Ago binding sites.
-
-```{r}
-# use region of bs +-10nt for overlaps
-ago_bs_10 <- ago_bs + 10
-
-# use chimeric reads from both mir181 enriched and non-enriched data
-chimeric_reads <- c(makeGRangesFromDataFrame(chimeric_reads$IP_WT, keep.extra.columns = T), makeGRangesFromDataFrame(chimeric_reads$IP_WT_miR181, keep.extra.columns = T) )
-
-# find overlaps of mirt and AGO bs
-idx <- findOverlaps(ago_bs_10, chimeric_reads )
-
-# make a data frame from the ago bs
-names(ago_bs)<- 1:NROW(ago_bs)
-ago_bs <- as.data.frame(ago_bs)
-ago_bs$BS_ID <- rownames(ago_bs)
-
-# add mir info to ago bs
-ago_bs_mir181_chi <- cbind(ago_bs[queryHits(idx),], mir_IP = chimeric_reads [subjectHits(idx),]$Name)
-
-ago_bs_mir181_chi <- ago_bs_mir181_chi[grepl(ago_bs_mir181_chi$mir_IP, 
-                                       pattern = "miR-181"),]
-
-# count chimerics
-mir181_chi <- ago_bs_mir181_chi %>% group_by(BS_ID) %>%
-  summarize(n_mir181 = sum(grepl(mir_IP,pattern = "miR-181")),
-            n_mir181a = sum(grepl(mir_IP,pattern = "miR-181a")),
-            n_mir181b = sum(grepl(mir_IP,pattern = "miR-181b")),
-            n_mir181c = sum(grepl(mir_IP,pattern = "miR-181c")),
-            n_mir181d = sum(grepl(mir_IP,pattern = "miR-181d")), 
-            .groups = "keep") %>% subset (n_mir181 >0)
-
-ago_bs_mir181_chi <- ago_bs_mir181_chi %>% 
-  subset(!duplicated(ago_bs_mir181_chi$BS_ID)) %>% 
-  left_join(., mir181_chi, by ="BS_ID") %>% makeGRangesFromDataFrame(keep.extra.columns = T)
-
-```
-
-## Combine AGO binding sites with chimeric mir181 with mir181 enriched binding sites
-
-I combine the mir181 Ago binding sites that we obtained above with the binding sites from the mir181 enriched Ago-eCLIP (see Methods/mir181-enriched_binding_site_definition). In order to do that, I first select binding sites from both conditions that do not overlap with any binding site from the other set. For the binding sites that overlap between the two conditions, I select the AGO mir181 binding sites and tag them as occuring in both sets. Then I combine the three subsets sets. The obtained union of mir181 binding sites from both conditions are our final mir181 binding sites.
-
-```{r}
-# ---------------------------
-# combine mir181 Ago BS and mir181 enriched Bs
-# --------------------------
-# get only Ago mir181 Bs with now overlaps to enriched mir181 BS
-only_ago_bs_mir181_chi <- subsetByOverlaps(ago_bs_mir181_chi, mir181_enriched, type = "any", invert = T)
-only_ago_bs_mir181_chi$set <- "ago_bs_mir181_chi"
-
-# get only enriched mir181 BS with now overlaps to Ago mir181 Bs 
-only_mir181_enriched <- subsetByOverlaps(mir181_enriched, ago_bs_mir181_chi,  type = "any", invert = T)
-only_mir181_enriched$set <- "mir181_enriched"
-
-# get only Ago mir181 BS overlapping with mir181 enriched BS
-both_mir181_enriched_chi <- subsetByOverlaps(ago_bs_mir181_chi, mir181_enriched, type = "any")
-both_mir181_enriched_chi$set <- "ago_bs_mir181_chi&mir181_enriched"
-
-# combine all three sets
-mir181_bs <- c(only_ago_bs_mir181_chi, only_mir181_enriched, both_mir181_enriched_chi)
-```
-
-
-# Combine mir181 binding sites with differntial binding sites
-
-Next, I combine the obtained mir181 binding sites with the results we obtained from the differntial binding between AGO binding sites and AGO binding sites with mir181 KO (see script Figure1/Differntial_Binding_AGO_BS_mir181_KO).
-
-```{r}
-# ---------------------------
-# combine with differential BS
-# --------------------------
-# get overlaps with diff binding
-diff_overlap <- findOverlaps( mir181_bs, makeGRangesFromDataFrame(diff, keep.extra.columns = T) , type = "any", select = "first")
-# add differential information to mir181 binding sites
-d <- diff[,9:49]
-mcols(mir181_bs) <- cbind(mcols(mir181_bs), d[diff_overlap,])
-
-# add only diff bs (these are Ago binding sites but not mir181 Binding sites)
-diff_only <- subsetByOverlaps( makeGRangesFromDataFrame(diff, keep.extra.columns = T), mir181_bs , type = "any", invert = T)
-mir181_bs_diff <- c(mir181_bs, diff_only)
-
-
-# ---------------------------
-# make venn diagram
-# --------------------------
-
-# select downregulated BS from differential BS
-mir181_bs_diff_anygroup <- mir181_bs_diff %>% subset((down == T) | !is.na(set))
-
-# make venn
-venn_df <- data.frame(ago_bs_mir181_chi = 
-                        ((mir181_bs_diff_anygroup$set == "ago_bs_mir181_chi") | (mir181_bs_diff_anygroup$set == "ago_bs_mir181_chi&mir181_enriched")),
-                      mir181_enriched = 
-                        ((mir181_bs_diff_anygroup$set == "mir181_enriched") | (mir181_bs_diff_anygroup$set == "ago_bs_mir181_chi&mir181_enriched")),
-                      mir181_ko_downregulated = (mir181_bs_diff_anygroup$down == T )
-                      ) %>%
-  mutate(ago_bs_mir181_chi = case_when(is.na(ago_bs_mir181_chi) ~ F, T~ago_bs_mir181_chi),
-         mir181_enriched = case_when(is.na(mir181_enriched) ~ F, T ~ mir181_enriched),
-         mir181_ko_downregulated = case_when(is.na(mir181_ko_downregulated) ~ F, T ~ mir181_ko_downregulated))
-
-
-
-venn <- eulerr::euler(venn_df)
-p <- plot(venn, quantities = T, fills = c( lighten(farbe1, amount = 0.4), lighten(farbe2, amount = 0.4), lighten(farbe3, amount = 0.4)))
-p
-
-pdf(paste0(out, "Venn_overlaps_mirBs.pdf"), height = 3, width = 4 )
-p
-dev.off()
+mir181_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
 
 ```
 
 
-## Differential binding both sets
+# Characterise MRE
 
-Here I look at the overall binding changes between mir181 KO and WT for the three subsets of the mir181 binding sites.
-
-```{r}
-# ---------------------------
-# Compare regulation of BS during mir181 KO of the different subgroups of mir181 binding sites
-# --------------------------
-names(mir181_bs_diff) <- 1:NROW(mir181_bs_diff)
-
-mir181_bs_diff <- as.data.frame(mir181_bs_diff)
-
-
-p1 <- ggplot(mir181_bs_diff, aes(x = resBs.log2FoldChange, color = set))+
-  geom_vline(xintercept = 0, color = "grey")+
-  stat_ecdf()+
-  scale_color_manual(values = c(farbe1, farbe14, farbe2, farbeneg))+
-  theme_paper()+
-  theme(legend.position = "top")
-
-p2 <- ggplot(mir181_bs_diff, aes(y = resBs.log2FoldChange, x = set, fill = set))+
-  geom_half_violin()+
-  geom_half_boxplot(side = "r")+
-  theme_paper()+
-  scale_fill_manual(values = c(farbe1, farbe14, farbe2, farbeneg))+
-  theme(legend.position = "top")+
-  scale_x_discrete(guide = guide_axis(angle = 25)) 
-
-p1
-
-p2
-
-ggsave(p1, filename =  paste0(out, "ecdf_differntial_binding_vs_mir181BS.pdf"), width = 6, height = 7, units = "cm")
-ggsave(p2, filename = paste0(out, "violin_differntial_binding_vs_mir181BS.pdf"), width = 10, height = 10, units = "cm")
-
-```
-# Characterise mir181 binding sites
-
-## mir181 bound genes - Figure 2A?
+## mir181 bound genes - Figure 2A
 
 ```{r}
 names(mir181_bs) <- 1:NROW(mir181_bs)
@@ -288,7 +110,7 @@ ggsave(p, filename = paste0(out, "Figure2A_bound_gene_types_miR181_BS", Sys.Date
 
 ```
 
-## mir181 bound regions - Figure 2B?
+## mir181 bound regions - Figure 2B
 
 ```{r}
 gene_region_df <- table(mir181_bs$region) %>% 
@@ -305,45 +127,19 @@ p
 ggsave(p, filename = paste0(out, "Figure2B_bound_gene_regions_miR181_BS", Sys.Date(), ".pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
 
 ```
+## Relative maps of MRE position along gene - Figure 2 D
 
-### Venn bound genes from both sets
+```{r}
 
-```{r eval=FALSE, include=FALSE}
-bound_genes <- c(mir181_bs$geneID, diff$geneID) %>% unique()
-venn_df <- data.frame(ago_bs_mir181_chi = 
-                        (bound_genes %in% c(mir181_bs[mir181_bs$set == "ago_bs_mir181_chi"]$geneID,
-                                            mir181_bs[mir181_bs$set == "ago_bs_mir181_chi&mir181_enriched"]$geneID %in% bound_genes)),
-                      mir181_enriched = 
-                        (bound_genes %in% c(mir181_bs[mir181_bs$set == "mir181_enriched"]$geneID,
-                                            mir181_bs[mir181_bs$set == "ago_bs_mir181_chi&mir181_enriched"]$geneID %in% bound_genes)))
 
-venn <- eulerr::euler(venn_df)
-plot(venn, quantities = T)
 
 ```
 
-### Ribofootprint both sets
+## Seed distance to MRE - Figure 2 C
 
 ```{r}
-# TODO need to be other script later
-rpf <- read.csv("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/files_RNAseq_RiboP/RPF_masterframe.csv")
-rpf <- mutate(rpf, Gene = substr(Gene,1,18))
 
-rpf <- rpf %>% mutate(., set =
-                        case_when(Gene %in% both_mir181_enriched_chi$geneID ~ "both",
-                                  (Gene %in% ago_bs_mir181_chi$geneID) & !(Gene %in% both_mir181_enriched_chi$geneID)  ~ "ago_bs_mir181_chi",
-                                  (Gene %in% mir181_enriched$geneID) & !(Gene %in% both_mir181_enriched_chi$geneID)  ~ "mir181_enriched"
-                                  ))
 
-ggplot(rpf, aes(x = log2FoldChange, color = set))+
-  stat_ecdf()+
-  xlim(-0.25, 0.25)
-
-```
-
-# Save output
-```{r}
-saveRDS(mir181_bs, paste0(out, "mir181_bs.rds"))
 
 ```
 
