@@ -25,7 +25,7 @@ library(GenomicRanges)
 ## data
 ```{r data}
 #gff file
-gff <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
+gff <- file.path( "D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
 head(gff)
 #binding site data
 bsdat <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
@@ -39,11 +39,7 @@ bsrange <- makeGRangesFromDataFrame(bsdat, keep.extra.columns = T)
 ```{r metaGeneProfile}
 meta <- metaGeneProfile(object = bsrange, annotation = gff)
 
-testpath <- system.file("extdata", package = "cliProfiler")
-## loading the test GRanges object
-test <- readRDS(file.path(testpath, "test.rds"))
-## Show an example of GRanges object
-test
+meta
 ```
 
 testpath <- system.file("extdata", package = "cliProfiler")
