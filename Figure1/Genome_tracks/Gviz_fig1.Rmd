@@ -79,7 +79,14 @@ gen <- genome(cpgIslands)
 atrack <- AnnotationTrack(cpgIslands, name = "CpG")
 
 data(geneModels)
-grtrack <- GeneRegionTrack(geneModels, genome = "mm10", chromosome = tchr, 
+
+gff <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
+
+gffloc <- as.data.frame(gff)
+
+gffloc <- gffloc[gffloc$seqnames==tchr,]
+
+grtrack <- GeneRegionTrack(gffloc, genome = "mm10", chromosome = tchr, 
                            name = "Gene")
 
 grtrack <- GeneRegionTrack(geneModels, genome = BSgenome.Mmusculus.UCSC.mm10, chromosome = tchr, 
