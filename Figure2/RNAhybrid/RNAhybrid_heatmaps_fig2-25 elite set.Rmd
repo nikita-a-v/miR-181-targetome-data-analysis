@@ -250,7 +250,12 @@ hmcols2 <- colorRamp2(c(-2, 2), c("white", "red"))
 
 make heatmap without column clustering but with row clustering
 ```{r allmap,  fig.dim = c(7, 5)}
+set.seed(123)
+
 HMA <- Heatmap(heatframeA, cluster_columns = F, col = hmcols1, row_km = 5, show_row_names = F, show_row_dend = F, border = TRUE)
+
+set.seed(123)
+
 HMB <- Heatmap(heatframeB, cluster_columns = F, col = hmcols1, row_km = 5, show_row_names = F, show_row_dend = F, border = TRUE)
 
 ```
