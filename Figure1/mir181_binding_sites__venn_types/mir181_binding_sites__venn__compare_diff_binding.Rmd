@@ -3,18 +3,18 @@ title: "mir181 binding sites - union of mir181 enriched binding sites and Ago bi
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  BiocStyle::html_document:
-  toc_float: TRUE
-  code_folding: hide
-  toc: TRUE
-  number_sections: yes
-  fig_caption: yes
-  # pdf_document:
-  #   fig_caption: true
-  #   fig_crop: true
-  #   toc: true
-  #   toc_depth: 1
-  #   number_sections: true
+  # BiocStyle::html_document:
+  # toc_float: TRUE
+  # code_folding: hide
+  # toc: TRUE
+  # number_sections: yes
+  # fig_caption: yes
+  pdf_document:
+    fig_caption: true
+    fig_crop: true
+    toc: true
+    toc_depth: 1
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -34,6 +34,7 @@ library(GenomicRanges)
 library(colorspace)
 library(eulerr)
 library(gghalves)
+library(ggpubr)
 
 # ----------------------------------------
 # settings
@@ -74,7 +75,7 @@ mir181 binding sites are defined as the union of
 
 - the two subgroups are plotted as a venn diagram (figure 1 XX)
 - this is compared to the differntially regulated AGO binding sites from the mir181 KO condition 
-- the genetype and gene region of the mir 181 binding sites (union) are ploted (Figure2XX)
+
 
 # Files
 ```{r}
@@ -92,7 +93,7 @@ chimeric_reads <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_m
 # ----------------------------------------
 # AGO binding sites
 # ----------------------------------------
-ago_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/02_AGO_binding_site_definition/2023-04-04-AGO_BS.rds")
+ago_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
 
 # ----------------------------------------
 # BS downregulated in mir181 KO
@@ -213,7 +214,7 @@ venn <- eulerr::euler(venn_df)
 p <- plot(venn, quantities = T, fills = c( lighten(farbe1, amount = 0.4), lighten(farbe2, amount = 0.4), lighten(farbe3, amount = 0.4)))
 p
 
-pdf(paste0(out, "Venn_overlaps_mirBs.pdf"), height = 3, width = 4 )
+pdf(paste0(out, "Figure1I_Venn_overlaps_mirBs.pdf"), height = 3, width = 4 )
 p
 dev.off()
 
@@ -240,6 +241,7 @@ p1 <- ggplot(mir181_bs_diff, aes(x = resBs.log2FoldChange, color = set))+
   theme_paper()+
   theme(legend.position = "top")
 
+
 p2 <- ggplot(mir181_bs_diff, aes(y = resBs.log2FoldChange, x = set, fill = set))+
   geom_half_violin()+
   geom_half_boxplot(side = "r")+
@@ -252,61 +254,52 @@ p1
 
 p2
 
-ggsave(p1, filename =  paste0(out, "ecdf_differntial_binding_vs_mir181BS.pdf"), width = 6, height = 7, units = "cm")
+ggsave(p1, filename =  paste0(out, "Figure_1J_ecdf_differntial_binding_vs_mir181BS.pdf"), width = 6, height = 7, units = "cm")
 ggsave(p2, filename = paste0(out, "violin_differntial_binding_vs_mir181BS.pdf"), width = 10, height = 10, units = "cm")
-
 ```
-# Characterise mir181 binding sites
 
-## mir181 bound genes - Figure 2A?
+### Statistical tests for differential binding changes
 
+#### T-tests
 ```{r}
-names(mir181_bs) <- 1:NROW(mir181_bs)
-mir181_bs <- as.data.frame(mir181_bs)
 
-gene_type_df <- mutate(mir181_bs, geneType = case_when(geneType != "protein_coding" ~ "other", T ~ "protein_coding"))
-gene_type_df <-   table(gene_type_df$geneType) %>% 
-  as.data.frame(.) 
+# t.tests of 3 sets against not bound
+# ------------------------------------
+t1 <- t.test(x = mir181_bs_diff %>% subset(set == "mir181_enriched") %>% pull(resBs.lfcSE), 
+       y = mir181_bs_diff %>% subset(is.na(set)) %>% pull(resBs.lfcSE))
+t1
 
-p <- ggplot(gene_type_df, aes(y=Freq, x="", fill=Var1)) +
-     geom_col()+
-     coord_polar(theta="y") +
-  #    xlim(c(2, 4)) +
-  geom_label(data = gene_type_df %>% subset(gene_type_df == "protein_coding"), aes(y=Freq, x="", fill=Var1, label = Freq),
-             position = position_stack(vjust = 0.5),
-             show.legend = FALSE) +
-  scale_fill_manual(values = c (farbe6, farbe4)) +
-  theme_paper() +
-  theme_nice_pie() +
-  #theme(legend.position = "none") +
-  guides(fill = guide_legend(reverse = TRUE)) +
-  labs(y = NULL,
-       x = NULL)
-p
+t.test(x = mir181_bs_diff %>% subset(set == "ago_bs_mir181_chi") %>% pull(resBs.lfcSE), 
+       y = mir181_bs_diff %>% subset(is.na(set)) %>% pull(resBs.lfcSE))
 
-ggsave(p, filename = paste0(out, "Figure2A_bound_gene_types_miR181_BS", Sys.Date(), ".pdf"), width = unit(8, "cm"), height = unit(6,"cm"))
+t.test(x = mir181_bs_diff %>% subset(set == "ago_bs_mir181_chi&mir181_enriched") %>% pull(resBs.lfcSE), 
+       y = mir181_bs_diff %>% subset(is.na(set)) %>% pull(resBs.lfcSE))
 
+# --> the p-values are driven strongly by the number of binding sites per set, for this reason the highest difference has the lowest p-value (although it is still very high)
+
+# check power of test
+# ------------------------------------
+pwr::pwr.t2n.test(n1 = mir181_bs_diff %>% subset(set == "mir181_enriched") %>% nrow(.),
+                n2 = mir181_bs_diff %>% subset(is.na(set)) %>% nrow(.),
+                d = abs(t1$estimate[1] -t1$estimate[2])/t1$stderr)
 ```
 
-## mir181 bound regions - Figure 2B?
-
+#### Kolmogorov-Smirnov Tests
 ```{r}
-gene_region_df <- table(mir181_bs$region) %>% 
-  as.data.frame(.) %>%
-  arrange(desc(Freq))
+# Kolmogorov-Smirnov Tests
+# -------------------------
+ks.test(x = mir181_bs_diff %>% subset(set == "mir181_enriched") %>% arrange(resBs.lfcSE) %>%pull(resBs.lfcSE),
+        y = mir181_bs_diff %>% subset(is.na(set) ) %>% arrange(resBs.lfcSE) %>%pull(resBs.lfcSE))
 
-gene_region_df$Var1 <- factor(gene_region_df$Var1, levels = gene_region_df$Var1) 
+ks.test(x = mir181_bs_diff %>% subset(set == "ago_bs_mir181_chi") %>% arrange(resBs.lfcSE) %>%pull(resBs.lfcSE),
+        y = mir181_bs_diff %>% subset(is.na(set) ) %>% arrange(resBs.lfcSE) %>%pull(resBs.lfcSE))
 
-p <- ggplot(gene_region_df %>% subset(Var1 != "outside"), aes(y=Freq, x=Var1)) +
-     geom_col()+
-  theme_paper() 
-p
-
-ggsave(p, filename = paste0(out, "Figure2B_bound_gene_regions_miR181_BS", Sys.Date(), ".pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
+ks.test(x = mir181_bs_diff %>% subset(set == "ago_bs_mir181_chi&mir181_enriched") %>% arrange(resBs.lfcSE) %>%pull(resBs.lfcSE),
+        y = mir181_bs_diff %>% subset(is.na(set) ) %>% arrange(resBs.lfcSE) %>%pull(resBs.lfcSE))
 
 ```
 
-### Venn bound genes from both sets
+## Venn bound genes from  all sets
 
 ```{r eval=FALSE, include=FALSE}
 bound_genes <- c(mir181_bs$geneID, diff$geneID) %>% unique()
@@ -322,7 +315,7 @@ plot(venn, quantities = T)
 
 ```
 
-### Ribofootprint both sets
+## Ribofootprint both sets
 
 ```{r}
 # TODO need to be other script later
