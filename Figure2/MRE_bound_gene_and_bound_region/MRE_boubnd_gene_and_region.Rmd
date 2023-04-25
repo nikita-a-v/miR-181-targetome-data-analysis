@@ -3,18 +3,18 @@ title: "Bound genes and gene regions of MREs"
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  # BiocStyle::html_document:
-  # toc_float: TRUE
-  # code_folding: hide
-  # toc: TRUE
-  # number_sections: yes
-  # fig_caption: yes
-  pdf_document:
-    fig_caption: true
-    fig_crop: true
-    toc: true
-    toc_depth: 1
-    number_sections: true
+  BiocStyle::html_document:
+  toc_float: TRUE
+  code_folding: hide
+  toc: TRUE
+  number_sections: yes
+  fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -110,6 +110,15 @@ ggsave(p, filename = paste0(out, "Figure2A_bound_gene_types_miR181_BS", Sys.Date
 
 ```
 
+### Remove non protein-coding binding sites
+
+For all further analyses we removed binding sites on non protein-coding RNAs.
+
+```{r}
+mir181_bs <- subset(mir181_bs, geneType == "protein_coding")
+
+```
+
 ## mir181 bound regions - Figure 2B
 
 ```{r}
@@ -127,19 +136,20 @@ p
 ggsave(p, filename = paste0(out, "Figure2B_bound_gene_regions_miR181_BS", Sys.Date(), ".pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
 
 ```
-## Relative maps of MRE position along gene - Figure 2 D
+### Remove binding sites in introns or outside of any gene region
+
+For all further analyses we removed binding sites in introns or in a gene regions with no region annotation.
 
 ```{r}
-
-
+mir181_bs <- subset(mir181_bs, !(region %in% c("outside", "intron") ))
 
 ```
 
-## Seed distance to MRE - Figure 2 C
+# Save filtered BS 
 
 ```{r}
 
-
+saveRDS(mir181_bs, paste0(out, "mir181_bs_afterFigure2B.rds"))
 
 ```
 
