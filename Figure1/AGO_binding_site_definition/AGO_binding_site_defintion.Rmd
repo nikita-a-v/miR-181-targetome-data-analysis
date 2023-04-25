@@ -3,18 +3,18 @@ title: "AGO binding sites definition"
 author: "Mirko Brüggemann, Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
-  # pdf_document:
-  #   fig_caption: true
-  #   fig_crop: true
-  #   toc: true
-  #   toc_depth: 1
-  #   number_sections: true
-  BiocStyle::html_document:
-    toc_float: TRUE
-    code_folding: hide
-    toc: TRUE
-    number_sections: yes
-    fig_caption: yes
+  pdf_document:
+    fig_caption: true
+    fig_crop: true
+    toc: true
+    toc_depth: 1
+    number_sections: true
+  # BiocStyle::html_document:
+  #   toc_float: TRUE
+  #   code_folding: hide
+  #   toc: TRUE
+  #   number_sections: yes
+  #   fig_caption: yes
 params:
   config: "config"
 ---
@@ -66,7 +66,7 @@ source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_pa
 # settings
 # ----------------------------------------
 
-out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/02_AGO_binding_site_definition/"
+out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/AGO_binding_site_definition/"
 
 # farben
 farbeneg <- "#B4B4B4"
@@ -673,7 +673,7 @@ target_genesGene = target_genes[target_genes$gene_id %in% bsGene$geneID]
 ```
 
 
-```{r eval=FALSE, include=FALSE}
+```{r}
 
 #TODO: keep chunk?
 
@@ -687,47 +687,6 @@ df1 = data.frame(GeneType = (bsGene$geneType), type = "Peak") %>%
                                      big.mark = ",", decimal.mark = "."),")")) %>%
   mutate(GeneType = factor(GeneType, levels = c(GeneType[order(Freq)])))
 
-df2 = data.frame(GeneType = (target_genesGene$gene_type), type = "target_genes") %>%
-  mutate(GeneType = ifelse(grepl("pseudogene", GeneType), "pseudogene", GeneType)) %>%
-  # mutate(GeneType = fct_lump_n(GeneType, n = 3)) %>%
-  table() %>%
-  as.data.frame() %>%
-  mutate(label = paste0(format(Freq, big.mark = ",", decimal.mark = "."),
-                        " (", format(round((Freq / sum(Freq))*100, digits = 2),
-                                     big.mark = ",", decimal.mark = "."),")")) %>%
-  mutate(GeneType = factor(GeneType, levels = c(GeneType[order(Freq)])))
-
-p1 = ggplot(df1, aes(x = GeneType, y = Freq, fill = GeneType, label = label)) +
-  geom_col(color = "black") +
-  geom_text(aes(y = 0 ), size = 3, color = "black", hjust = -.3) +
-  scale_y_log10() +
-  coord_flip(clip = "on", expand = TRUE) +
-  scale_fill_grey() +
-  theme_pub() +
-  theme(legend.position = "none") +
-  labs(title = "Binding spectrum - peaks",
-       y = "Count",
-       x = "Gene type") 
-
-p2 = ggplot(df2, aes(x = GeneType, y = Freq, fill = GeneType, label = label)) +
-  geom_col(color = "black") +
-  geom_text(aes(y = 0 ), size = 3, color = "black", hjust = -.3) +
-  scale_y_log10() +
-  coord_flip(clip = "on", expand = TRUE) +
-  scale_fill_grey() +
-  theme_pub() +
-  theme(legend.position = "none") +
-  labs(title = "Binding spectrum - target_genes",
-       y = "Count",
-       x = "Gene type") 
-
-p1 / p2 
-```
-
-
-```{r eval=FALSE, include=FALSE}
-# TODO: keep chunk?
-# pie for paper
 df3 <- mutate(df1, GeneType = case_when(GeneType != "protein_coding" ~ "other", T ~ "protein_coding")) %>% 
   group_by(GeneType)%>%
   summarize(Freq = sum(Freq))
@@ -746,10 +705,12 @@ p <- ggplot(df3, aes(y=Freq, x="", fill=GeneType)) +
   guides(fill = guide_legend(reverse = TRUE)) +
   labs(y = NULL,
        x = NULL)
-
-ggsave(p, filename = paste0(out, "Figure1C_bound_gene_types_c2", Sys.Date(), ".pdf"), width = unit(8, "cm"), height = unit(6,"cm"))
+p
+ggsave(p, filename = paste0(out, "Figure1C_bound_gene_types_AGO", Sys.Date(), ".pdf"), width = unit(8, "cm"), height = unit(6,"cm"))
 
 ```
+
+
 
 ## Assignment of binding sites to transcripts
 
