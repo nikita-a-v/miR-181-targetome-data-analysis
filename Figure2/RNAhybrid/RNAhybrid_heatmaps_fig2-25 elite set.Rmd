@@ -76,9 +76,9 @@ RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterfram
 
 
 # original bs data
-mir181bs <- as.data.frame(readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds"), keep.extra.columns = T)
+mir181bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
 mir181bs$rownumber <- 1:length(mir181bs$seqnames)
-
+mir181bs<- as.data.frame(mir181bs)
 ```
 ## colours
 ```{r colours}
@@ -281,6 +281,16 @@ HMF
 
 
 # cluster seperately
+
+
+## hclust
+```{r hclust}
+heat_hcA <- hclust(heatframeA)
+
+```
+
+
+
 
 ## clustering 
 try to cluster seperately 
