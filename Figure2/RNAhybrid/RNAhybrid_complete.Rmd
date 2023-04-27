@@ -13,12 +13,20 @@ knitr::opts_chunk$set(echo = TRUE)
 
 dir
 ```{r dir}
-setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure2/RNAhybrid")
+# home
+#setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure2/RNAhybrid")
+
+# work
+setwd("Z:/Personen/Nikita/Publications/miR181_paper/Figure2/RNAhybrid")
 ```
 
 ## packages
 ```{r packages}
-source("D:/Krueger_Lab/Publications/miR181_paper_v21022023/Figure_theme/theme_paper.R")
+#home
+#source("D:/Krueger_Lab/Publications/miR181_paper_v21022023/Figure_theme/theme_paper.R")
+#work
+source("Z:/Personen/Nikita/Publications/miR181_paper_v21022023/Figure_theme/theme_paper.R")
+
 library(BSgenome.Mmusculus.UCSC.mm10)
 library(dplyr)
 library(ggplot2)
@@ -26,12 +34,17 @@ library(circlize)
 library(ComplexHeatmap)
 library(seqinr)
 library(GenomicRanges)
+library(stringr)
 ```
 
 ## data
 
 ```{r data}
-f2bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure2/MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+#home
+#f2bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure2/MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+#work
+f2bs <- readRDS("Z:/Personen/Nikita/Publications/miR181_paper/Figure2/MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+
 head(f2bs)
 
 ```
@@ -72,19 +85,36 @@ RPFncol <- "#8d0391"
 f2bsLA <- f2bs
 f2bsLA$start <- f2bsLA$start -25
 f2bsLA$end <- f2bsLA$end + 50
+f2bsLA$n_mir181a <- as.numeric(f2bsLA$n_mir181a)
 
-
-# bsGene <- resize(bsGene, width = width(bsGene + 5), fix = "end")
 
 df181A <- mutate(f2bsLA, Sequence = as.character(getSeq(BSgenome.Mmusculus.UCSC.mm10, seqnames, start, end)))
-
-df181A <- df181A[df181A$n_mir181a > 0,]
+df181A$rownum <- rownames(df181A)
+df181A <- df181A[as.numeric(df181A$n_mir181a) > 0,]
 
 #and turn T into Us
 df181A$Sequence <- gsub('T', 'U', df181A$Sequence)
 
 head(df181A)
+
 ```
+
+# find seed
+```{r seed}
+#find both seeds
+seed1 <- df181A %>% filter(str_detect(Sequence, "GAAUGU"))
+seed2 <- df181A %>% filter(str_detect(Sequence, "GAUUGU"))
+
+#combine
+seedm <- rbind(seed1, seed2)
+#remove duplicates
+seedm <- seedm[!duplicated(seedm$rownum),]
+#remove NAs in gene name
+seedm <- seedm[!is.na(seedm$geneName),]
+
+head(seedm)
+```
+
 
 # Write to .fasta
 
@@ -92,12 +122,13 @@ this is deactivated for now because we only need it once right now
 just remove the eval if needed
 
 ```{r writefasta, eval=F}
-candgeneNameA <- as.list(df181A$geneName)
-candrnameA <- as.list(rownames(df181A))
-condgeneSeqA <- as.list(df181A$Sequence) 
+candgeneNameA <- as.list(seedm$geneName)
+candrnameA <- as.list(seedm$rownum)
+condgeneSeqA <- as.list(seedm$Sequence) 
 
 
 #change to output directory
+
 setwd("D:/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/fastafiles_complete/A")
 
 for (i in 1:length(candgeneNameA)) {
@@ -110,14 +141,16 @@ for (i in 1:length(candgeneNameA)) {
 Personalized_Reader <- function(lambda){
  read.table(lambda, sep = ":") %>% select(V1, V5, V6, V7, V10, V11)}
 
+#remove NA file...I just dont get it....where is it coming from?
+
 #File lists
 reslistA <- list.files(path = "D:/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete", full.names=TRUE)
+
 
 
 #import
 myfilelistA <- lapply(reslistA, Personalized_Reader)
 
-#remove the NAs...where do they come from?
 
 resframeA <- bind_rows(myfilelistA)
 
@@ -139,12 +172,12 @@ head(resframeA)
 ```{r merge}
 # make seperate objects for each mature mirna just to see if they are much different
 
-df181A$rownumber <- as.character(rownames(df181A))
+seedm$rownumber <- as.character(seedm$rownum)
 resframeA$rownumber <- as.character(resframeA$rownumber)
 
 
 
-bsseqHA <- left_join(df181A, resframeA, by="rownumber")
+bsseqHA <- left_join(seedm, resframeA, by="rownumber")
 
 head(bsseqHA)
 
@@ -161,55 +194,25 @@ For that we will remove all gaps that origin in the mRNA loops.
 Alistbb <- strsplit(resframeA$binding_bases,"")
 Alistnb <- strsplit(resframeA$non_binding_bases,"")
 
-Blistbb <- strsplit(resframeB$binding_bases,"")
-Blistnb <- strsplit(resframeB$non_binding_bases,"")
-
-
-
 #combine the two lists
 Alist <- Map(cbind, Alistbb, Alistnb)
 Alist <- lapply(Alist, as.data.frame)
-
-Blist <- Map(cbind, Blistbb, Blistnb)
-Blist <- lapply(Blist, as.data.frame)
-
-
-
 
 #remove all empty rows (mRNA loops)
 Alist0 <- lapply(Alist, function(x){
   x[!(x[,1]== " " & x[,2] == " "),]
 })
 
-Blist0 <- lapply(Blist, function(x){
-  x[!(x[,1]== " " & x[,2] == " "),]
-})
-
-
-
-
 #rewrite as characters
 AlistF <- lapply(Alist0, function(x){
   paste(x[,1],  collapse = '')
 })
-
-BlistF <- lapply(Blist0, function(x){
-  paste(x[,1],  collapse = '')
-})
-
-
-
-
-
-
 
 
 #Attach lists back onto original data.frame as new column
 resframeA$binding_nospace <-unlist(AlistF)
 head(resframeA$binding_nospace)
 
-resframeB$binding_nospace <-unlist(BlistF)
-head(resframeB$binding_nospace)
 
 
 ```
@@ -222,22 +225,14 @@ replace all gaps with 0 and all letters with 1
 ```{r nummerify}
 #0
 resframeA$binding_nospace <- chartr(" ", "0", resframeA$binding_nospace)
-resframeB$binding_nospace <- chartr(" ", "0", resframeB$binding_nospace)
-
-
 
 #1
 resframeA$binding_nospace <- mgsub::mgsub(resframeA$binding_nospace, c("A", "U", "C", "G"), c(rep("1", 4)))
-resframeB$binding_nospace <- mgsub::mgsub(resframeB$binding_nospace, c("A", "U", "C", "G"), c(rep("1", 4)))
-
 
 head(resframeA)
-head(resframeB)
 
 
 ```
-
-
 
 
 
@@ -253,12 +248,20 @@ rownames(heatframeA) <- resframeA[,1]
 head(heatframeA)
 
 
-
-
-
 #reverse column order
 heatframeA <-heatframeA[,23:1]
 ```
+
+
+
+# heatmap
+
+```{r heatmap}
+
+
+```
+
+
 
 
 
