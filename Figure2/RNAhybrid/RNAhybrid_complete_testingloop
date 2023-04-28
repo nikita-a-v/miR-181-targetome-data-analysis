@@ -1,0 +1,220 @@
+#!/bin/bash
+
+echo "canonicals"
+
+workdirc="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/fastafiles_complete/Ac"
+mirnaAc="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper/Figure2/RNAhybrid/mature_mirnas/Mature_sequence_mmu-miR-181a-5p.fasta"
+resdirac0="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete_c0"
+resdirac1="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete_c1"
+resdirac2="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete_c2"
+resdirac3="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete_c3"
+resdirac4="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete_c4"
+resdirac5="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete_c5"
+
+
+cd $workdirc
+
+echo "c0"
+mkdir $resdirac0
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAc -t $fasta -n 500 -b 1 > "$resdirac0/$fasta-RNAhybrid_resutls_c0.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "c1"
+mkdir $resdirac1
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAc -t $fasta -n 500 -b 1 > "$resdirac1/$fasta-RNAhybrid_resutls_c1.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "c2"
+mkdir $resdirac2
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAc -t $fasta -n 500 -b 1 > "$resdirac2/$fasta-RNAhybrid_resutls_c2.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "c2"
+mkdir $resdirac2
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAc -t $fasta -n 500 -b 1 > "$resdirac2/$fasta-RNAhybrid_resutls_c2.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "c3"
+mkdir $resdirac3
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAc -t $fasta -n 500 -b 1 > "$resdirac3/$fasta-RNAhybrid_resutls_c3.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "c4"
+mkdir $resdirac4
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAc -t $fasta -n 500 -b 1 > "$resdirac4/$fasta-RNAhybrid_resutls_c4.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "c5"
+mkdir $resdirac5
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAc -t $fasta -n 500 -b 1 > "$resdirac5/$fasta-RNAhybrid_resutls_c5.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+
+
+
+echo "non canonicals"
+
+
+
+
+
+workdirnc="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/fastafiles_complete/Anc"
+mirnaAnc="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper/Figure2/RNAhybrid/mature_mirnas/Mature_sequence_mmu-miR-181a-5p_wobble.fasta"
+resdiranc0="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete_nc0"
+resdiranc1="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete_nc1"
+resdiranc2="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete_nc2"
+resdiranc3="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete_nc3"
+resdiranc4="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete_nc4"
+resdiranc5="/media/nikita/7CC2D4E5C2D4A524/Krueger_Lab/Publications/miR181_paper_nongithub/Figure2/RNAhybrid/results_mir181a_complete_nc5"
+
+
+cd $workdirnc
+
+echo "nc0"
+mkdir $resdiranc0
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAnc -t $fasta -n 500 -b 1 > "$resdiranc0/$fasta-RNAhybrid_resutls_nc0.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "nc1"
+mkdir $resdiranc1
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAnc -t $fasta -n 500 -b 1 > "$resdiranc1/$fasta-RNAhybrid_resutls_nc1.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "nc2"
+mkdir $resdiranc2
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAnc -t $fasta -n 500 -b 1 > "$resdiranc2/$fasta-RNAhybrid_resutls_nc2.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "nc2"
+mkdir $resdiranc2
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAnc -t $fasta -n 500 -b 1 > "$resdiranc2/$fasta-RNAhybrid_resutls_nc2.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "nc3"
+mkdir $resdiranc3
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAnc -t $fasta -n 500 -b 1 > "$resdiranc3/$fasta-RNAhybrid_resutls_nc3.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "nc4"
+mkdir $resdiranc4
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAnc -t $fasta -n 500 -b 1 > "$resdiranc4/$fasta-RNAhybrid_resutls_c4.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+echo "nc5"
+mkdir $resdiranc5
+
+
+for fasta in $(ls) 
+do
+
+RNAhybrid -s 3utr_human -f 2,7 -u 3 -c -q $mirnaAnc -t $fasta -n 500 -b 1 > "$resdiranc5/$fasta-RNAhybrid_resutls_nc5.txt"
+
+echo "created RNAhybrid result for $fasta"
+
+done
+
+

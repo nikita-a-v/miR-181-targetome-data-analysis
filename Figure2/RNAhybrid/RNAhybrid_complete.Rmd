@@ -14,18 +14,18 @@ knitr::opts_chunk$set(echo = TRUE)
 dir
 ```{r dir}
 # home
-#setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure2/RNAhybrid")
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure2/RNAhybrid")
 
 # work
-setwd("Z:/Personen/Nikita/Publications/miR181_paper/Figure2/RNAhybrid")
+#setwd("Z:/Personen/Nikita/Publications/miR181_paper/Figure2/RNAhybrid")
 ```
 
 ## packages
 ```{r packages}
 #home
-#source("D:/Krueger_Lab/Publications/miR181_paper_v21022023/Figure_theme/theme_paper.R")
+source("D:/Krueger_Lab/Publications/miR181_paper_v21022023/Figure_theme/theme_paper.R")
 #work
-source("Z:/Personen/Nikita/Publications/miR181_paper_v21022023/Figure_theme/theme_paper.R")
+#source("Z:/Personen/Nikita/Publications/miR181_paper_v21022023/Figure_theme/theme_paper.R")
 
 library(BSgenome.Mmusculus.UCSC.mm10)
 library(dplyr)
@@ -41,9 +41,9 @@ library(stringr)
 
 ```{r data}
 #home
-#f2bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure2/MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+f2bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure2/MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
 #work
-f2bs <- readRDS("Z:/Personen/Nikita/Publications/miR181_paper/Figure2/MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+#f2bs <- readRDS("Z:/Personen/Nikita/Publications/miR181_paper/Figure2/MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
 
 head(f2bs)
 
@@ -183,7 +183,6 @@ head(bsseqHA)
 
 ```
 
-# -------------------------------------------------------------------continue here
 
 ## Process data (remove gaps)
 
