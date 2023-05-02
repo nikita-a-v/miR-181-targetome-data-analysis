@@ -48,9 +48,9 @@ IP181chimWTplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_1
 
 Use this panel to change the coordinates in all following plots
 ```{r region}
-scoord = 20405350 
-ecoord = 20406237
-tchr = "chr13"
+scoord = 140652591 
+ecoord = 140652785
+tchr = "chr6"
 clim = 30
 ```
 
@@ -58,8 +58,8 @@ Zfp36l1: chr12 80107716-80108070
 Zfp36l2: chr17 84184290-84184345
 Cblb: chr16:52171980-52172133
 elmo1: chr13:20405350-20406237
-
-
+srsf11: chr3:158,010,824-158,012,135
+Aebp2: chr6:140652591-140652785
 # Tracks
 
 ## Annotation track
@@ -69,28 +69,28 @@ elmo1: chr13:20405350-20406237
 gatrack <- GenomeAxisTrack()
 
 # gene track---------------------------this is not working yet
-data(cpgIslands)
-class(cpgIslands)
-## [1] "GRanges"
-## attr(,"package")
-## [1] "GenomicRanges"
-chr <- as.character(unique(seqnames(cpgIslands)))
-gen <- genome(cpgIslands)
-atrack <- AnnotationTrack(cpgIslands, name = "CpG")
-
-data(geneModels)
-
-gff <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
-
-gffloc <- as.data.frame(gff)
-
-gffloc <- gffloc[gffloc$seqnames==tchr,]
-
-grtrack <- GeneRegionTrack(gffloc, genome = "mm10", chromosome = tchr, 
-                           name = "Gene")
-
-grtrack <- GeneRegionTrack(geneModels, genome = BSgenome.Mmusculus.UCSC.mm10, chromosome = tchr, 
-                           name = "foo")
+# data(cpgIslands)
+# class(cpgIslands)
+# ## [1] "GRanges"
+# ## attr(,"package")
+# ## [1] "GenomicRanges"
+# chr <- as.character(unique(seqnames(cpgIslands)))
+# gen <- genome(cpgIslands)
+# atrack <- AnnotationTrack(cpgIslands, name = "CpG")
+# 
+# data(geneModels)
+# 
+# gff <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
+# 
+# gffloc <- as.data.frame(gff)
+# 
+# gffloc <- gffloc[gffloc$seqnames==tchr,]
+# 
+# grtrack <- GeneRegionTrack(gffloc, genome = "mm10", chromosome = tchr, 
+#                            name = "Gene")
+# 
+# grtrack <- GeneRegionTrack(geneModels, genome = BSgenome.Mmusculus.UCSC.mm10, chromosome = tchr, 
+#                            name = "foo")
 ```
 
 
