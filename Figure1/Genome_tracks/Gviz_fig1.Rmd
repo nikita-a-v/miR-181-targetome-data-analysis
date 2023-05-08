@@ -204,7 +204,7 @@ diffresT <- AnnotationTrack(diffresf, name = "dBS", id=diffresf$name)
 #            fontsize.feature=10, fontcolor.feature = "black")
 
 # -
-plotTracks(list(WTmT, KOmT,WT181mT, chim181mT, diffresT,  gatrack), from = scoord, to= ecoord, type="histogram", featureAnnotation = "id", 
+plotTracks(list(WTmT, KOmT,WT181mT, diffresT,  gatrack), from = scoord, to= ecoord, type="histogram", featureAnnotation = "id", 
            fontsize.feature=10, fontcolor.feature = "black")
 ``` 
 
