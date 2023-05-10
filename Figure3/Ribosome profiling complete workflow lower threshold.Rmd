@@ -242,7 +242,7 @@ RNA
 ```{r MAmodifyRNA}
 ylim <- 2
 xlim <- 10^6
-xmin <- 5
+xmin <- 1
 
 #make columns with identifiers
 RNAdat <- resdataadj[resdataadj$baseMean >= xmin,]
@@ -281,7 +281,7 @@ RPFdat$baseMean[RPFdat$baseMean > xlim] <- xlim
 ## Plots
 
 RNA MA plot
-```{r RNAMA, fig.dim=C(4,6)}
+```{r RNAMA, fig.height = 5, fig.width = 5}
 RNAma <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 1, 
      aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
   scale_fill_manual(values = c(negcol, RNAncol, RNApcol)) + scale_colour_manual(values = c(negcol, "black", "black")) +
@@ -314,7 +314,7 @@ RNAma
 dev.off()
 ```
 RPF MA plot
-```{r RPFMA, fig.dim=C(4,6)}
+```{r RPFMA, fig.height = 5, fig.width = 5}
 RPFma <- ggplot(RPFdat[!(RPFdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 1, 
      aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
   scale_fill_manual(values = c(negcol, RPFncol, RPFpcol)) + scale_colour_manual(values = c(negcol, "black", "black")) +
@@ -387,7 +387,9 @@ write.csv(RPFexp, "RPF_masterframe_lowerThresh.csv")
 this is just a testing frame (well it is an actual one that works but not the final one. change this when you have the large frame from melina)
 
 ```{r importTargets}
-tframe <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
+tject <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
+names(tject) <- 1:length(tject$geneName)
+tframe <- as.data.frame(tject)
 head(tframe)
 ```
 
@@ -395,14 +397,76 @@ head(tframe)
 ## apply target data to RPF and RNA
 
 ```{r splitby}
+#RNA
+RNAexp$Targetregion <- "Non-target"
+RNAexp$Targetregion[RNAexp$gene_symbol %in% tframe[tframe$region == "utr5","geneName"]] <- "utr5"
+RNAexp$Targetregion[RNAexp$gene_symbol %in% tframe[tframe$region == "cds","geneName"]] <- "cds"
+RNAexp$Targetregion[RNAexp$gene_symbol %in% tframe[tframe$region == "utr3","geneName"]] <- "utr3"
+RNAexp$Targetregion[RNAexp$gene_symbol %in% tframe[tframe$region == "utr5","geneName"] & 
+                      RNAexp$gene_symbol %in% tframe[tframe$region == "cds","geneName"]] <- "utr5 and cds"
+RNAexp$Targetregion[RNAexp$gene_symbol %in% tframe[tframe$region == "utr3","geneName"] & 
+                      RNAexp$gene_symbol %in% tframe[tframe$region == "utr5","geneName"]] <- "utr3 and utr5"
+RNAexp$Targetregion[RNAexp$gene_symbol %in% tframe[tframe$region == "utr3","geneName"] & 
+                      RNAexp$gene_symbol %in% tframe[tframe$region == "cds","geneName"]] <- "utr3 and cds"
+RNAexp$Targetregion[RNAexp$gene_symbol %in% tframe[tframe$region == "utr3","geneName"] & 
+                      RNAexp$gene_symbol %in% tframe[tframe$region == "utr5","geneName"] & 
+                      RNAexp$gene_symbol %in% tframe[tframe$region == "cds","geneName"]] <- "utr3, utr5 and cds"
 
+head(RNAexp)
+
+#RPF
+RPFexp$Targetregion <- "Non-target"
+RPFexp$Targetregion[RPFexp$gene_symbol %in% tframe[tframe$region == "utr5","geneName"]] <- "utr5"
+RPFexp$Targetregion[RPFexp$gene_symbol %in% tframe[tframe$region == "cds","geneName"]] <- "cds"
+RPFexp$Targetregion[RPFexp$gene_symbol %in% tframe[tframe$region == "utr3","geneName"]] <- "utr3"
+RPFexp$Targetregion[RPFexp$gene_symbol %in% tframe[tframe$region == "utr5","geneName"] & 
+                      RPFexp$gene_symbol %in% tframe[tframe$region == "cds","geneName"]] <- "utr5 and cds"
+RPFexp$Targetregion[RPFexp$gene_symbol %in% tframe[tframe$region == "utr3","geneName"] & 
+                      RPFexp$gene_symbol %in% tframe[tframe$region == "utr5","geneName"]] <- "utr3 and utr5"
+RPFexp$Targetregion[RPFexp$gene_symbol %in% tframe[tframe$region == "utr3","geneName"] & 
+                      RPFexp$gene_symbol %in% tframe[tframe$region == "cds","geneName"]] <- "utr3 and cds"
+RPFexp$Targetregion[RPFexp$gene_symbol %in% tframe[tframe$region == "utr3","geneName"] & 
+                      RPFexp$gene_symbol %in% tframe[tframe$region == "utr5","geneName"] & 
+                      RPFexp$gene_symbol %in% tframe[tframe$region == "cds","geneName"]] <- "utr3, utr5 and cds"
+
+head(RPFexp)
 ```
 
 
 ## make ecdf plot
 As an example use the bs region plot to see how it behaves
 ```{r ecdf}
-regecdf <- ggplot()
+regecdfRNA <- ggplot(RNAexp,  #[RNAexp$Targetregion %in% c("Non-target", "utr5", "cds", "utr3"),]
+                  aes(as.numeric(log2FoldChange), 
+                      colour=factor(Targetregion, levels = c("Non-target", "utr5", "cds", "utr3", "utr5 and cds", "utr3 and utr5", "utr3 and cds", "utr3, utr5 and cds")))) + stat_ecdf(geom="step", size=1) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + theme_bw() +
+  theme(legend.position = c(0.8, 0.35), legend.title = element_blank(), 
+        legend.background = element_rect(colour = "transparent", fill="transparent"), 
+        axis.title=element_text(size=16),plot.title = element_text(size=16, face = "bold"))
+
+regecdfRNA
+
+regecdfRPF <- ggplot(RPFexp,#[RPFexp$Targetregion %in% c("Non-target", "utr5", "cds", "utr3"),], 
+                  aes(as.numeric(log2FoldChange), 
+                      colour=factor(Targetregion, levels = c("Non-target", "utr5", "cds", "utr3", "utr5 and cds", "utr3 and utr5", "utr3 and cds", "utr3, utr5 and cds")))) + stat_ecdf(geom="step", size=1) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + theme_bw() +
+  theme(legend.position = c(0.8, 0.35), legend.title = element_blank(), 
+        legend.background = element_rect(colour = "transparent", fill="transparent"), 
+        axis.title=element_text(size=16),plot.title = element_text(size=16, face = "bold"))
+
+regecdfRPF
+
+
+
+```
+
+
+# ma plot targets
+
+```{r matargets}
+marnat <- ggplot(RNAexp, aes(x=log10(baseMean), y=log2FoldChange, colour=Targetregion)) + geom_point()+
+  geom_point(data=RNAexp[!(RNAexp$Targetregion == "Non-target"),], aes(x=log10(baseMean), y=log2FoldChange, colour=Targetregion))
+marnat
 ```
 
 
