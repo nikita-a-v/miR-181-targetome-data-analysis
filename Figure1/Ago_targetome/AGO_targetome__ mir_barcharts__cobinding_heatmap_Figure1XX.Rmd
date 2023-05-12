@@ -23,6 +23,7 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=F, cache.lazy = FALSE,
 tidy.opts=list(width.cutoff=80,tidy=TRUE, echo=FALSE)
 
 source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
+# nikita source
 
 library(ggplot2)
 theme_set(theme_paper())
