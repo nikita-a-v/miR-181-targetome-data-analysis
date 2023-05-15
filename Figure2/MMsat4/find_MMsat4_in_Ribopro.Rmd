@@ -36,7 +36,11 @@ RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterfram
 #load the gtf file to compare genes
 gff23 <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
 
-
+#target data
+tject <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
+names(tject) <- 1:length(tject$geneName)
+tframe <- as.data.frame(tject)
+head(tframe)
 ```
 
 
@@ -141,7 +145,7 @@ RPFMA
 ```
 
 
-```{r boxplot, fig.width=1, fig.height=2}
+```{r boxplot, fig.width=2, fig.height=4}
 my_comparisons <- list( c("No_MMsat4", "MMsat4"), c("No_MMsat4", "anti-MMsat4"), c("MMsat4", "anti-MMsat4") )
 
 RNAbox <- ggplot(RNA, aes(x=MMsat4, y=log2FoldChange)) + 
@@ -163,6 +167,48 @@ RNAbox
 RPFbox
 ```
 
+# ecdf plot with targets vs MMsat4
+
+```{r targets}
+#RNA
+RNA$tvsmmsat4 <- "Non-target"
+RNA$tvsmmsat4[RNA$gene_symbol %in% OLgenes$gene_name] <- "MMsat4"
+RNA$tvsmmsat4[RNA$gene_symbol %in% tframe$geneName] <- "miR-181 target"
+RNA$tvsmmsat4[RNA$gene_symbol %in% tframe$geneName & RNA$gene_symbol %in% OLgenes$gene_name] <- "both"
+table(RNA$tvsmmsat4)
+
+#RPF
+RPF$tvsmmsat4 <- "Non-target"
+RPF$tvsmmsat4[RPF$gene_symbol %in% OLgenes$gene_name] <- "MMsat4"
+RPF$tvsmmsat4[RPF$gene_symbol %in% tframe$geneName] <- "miR-181 target"
+RPF$tvsmmsat4[RPF$gene_symbol %in% tframe$geneName & RPF$gene_symbol %in% OLgenes$gene_name] <- "both"
+table(RPF$tvsmmsat4)
+
+#RNA
+tolECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat4, levels = c("Non-target", "MMsat4", "miR-181 target", "both")))) + 
+  stat_ecdf(geom="step", size=1) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + theme_bw() +
+  theme(legend.position = c(0.8, 0.35), legend.title = element_blank(), 
+        legend.background = element_rect(colour = "transparent", fill="transparent"), 
+        axis.title=element_text(size=16),plot.title = element_text(size=16, face = "bold")) +
+  ggtitle("RNA")
+
+tolECDFRNA
+
+
+#RPF
+tolECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat4, levels = c("Non-target", "MMsat4", "miR-181 target", "both")))) + 
+  stat_ecdf(geom="step", size=1) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + theme_bw() +
+  theme(legend.position = c(0.8, 0.35), legend.title = element_blank(), 
+        legend.background = element_rect(colour = "transparent", fill="transparent"), 
+        axis.title=element_text(size=16),plot.title = element_text(size=16, face = "bold")) + 
+  ggtitle("RPF")
+
+tolECDFRPF
+```
 
 # session info
 
