@@ -64,17 +64,27 @@ library(ggrastr)
 library(matrixStats)
 library(DESeq2)
 library(IHW)
+library(ggrepel) # nikita
 
 
-source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
-source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
-source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/colorPalette.R")
+# source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
+# source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
+# source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/colorPalette.R")
+
+#nikita
+source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/CustomThemes.R")
+source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/colorPalette.R")
 
 # ----------------------------------------
 # settings
 # ----------------------------------------
 
-out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Differential_Binding/"
+# out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Differential_Binding/"
+#nikita out
+out <- "D:/Krueger_Lab/Publications/miR181_paper/Figure1/Differential_Binding/"
+
+
 tpm_cut <- 50
 ```
 
@@ -89,22 +99,38 @@ tpm_cut <- 50
 # annotation
 # ----------------------------------------
 
-annoDb <- loadDb("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/annotation.db")
-gns <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/gene_annotation.rds")
+# annoDb <- loadDb("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/annotation.db")
+# gns <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/gene_annotation.rds")
+#Nikita 
+annoDb <- loadDb("D:/Krueger_Lab/Publications/miR181_paper_nongithub/Figure1/annotation.db")
+gns <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/01_Annotation_preprocessing/gene_annotation.rds")
+
+
+
+# nikita source
 
 # ----------------------------------------
 # AGO binding sites
 # ----------------------------------------
 
-bs_wt <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/02_AGO_binding_site_definition/2023-04-04-AGO_BS.rds")
+# bs_wt <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/02_AGO_binding_site_definition/2023-04-04-AGO_BS.rds")
+# 
+# bs_ko <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/03_KOmir181_AGO_binding_site_definition/2023-04-12-KOmir181_AGO_BS.rds")
 
-bs_ko <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/03_KOmir181_AGO_binding_site_definition/2023-04-12-KOmir181_AGO_BS.rds")
+#nikita source
+bs_wt <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
+
+bs_ko <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/03_KOmir181_AGO_binding_site_definition/2023-04-12-KOmir181_AGO_BS.rds")
 
 # ---------------------------------------- 
 # Load clip data
 # ----------------------------------------
 
-clipFiles = "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/pipe_output_22_02_14/non-chimeric/bw"
+# clipFiles = "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/pipe_output_22_02_14/non-chimeric/bw"
+
+#nikita source
+clipFiles = "D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw"
+
 clipFiles = list.files(clipFiles, pattern = ".bw$", full.names = TRUE)
 clipFiles = clipFiles[!grepl("Inp", clipFiles)]
 clipFiles = clipFiles[!grepl("miR181_", clipFiles)]
@@ -113,6 +139,29 @@ clipFilesM = clipFiles[grep(clipFiles, pattern = "minus")]
 
 
 ```
+
+# farben
+```{r farben}
+farbeneg <- "#B4B4B4"
+farbe1 <- "#0073C2FF" #WT farbe
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF" #miR181KO farbe
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+```
+
+
 
 # What was done?
 
@@ -952,6 +1001,25 @@ p2 = ggplot(df, aes(x = resBs.log2FoldChange, y = -log10(resBs.padj), color = si
 
 p2 <- p2+theme_paper()
 ggsave(p2, file= paste0(out, "Figure1X_Differntial_binding_vulcano.pdf"), height = 6, width = 6, units = "cm")
+
+# nikita plot changed
+pnv = ggplot(df, aes(x = resBs.log2FoldChange, y = -log10(resBs.padj), fill = factor(sigDir, levels = c("Not", "Up", "Down")))) +
+    geom_point(shape = 21, stroke = 0.5, size = 3, color = "black") +
+  scale_fill_manual(values = c(farbeneg, "#e3a09cff",  farbe3))+
+  geom_point(data=df[df$geneName == "Zfp36l1" & df$sig == TRUE,], aes(x = resBs.log2FoldChange, y = -log10(resBs.padj)), color = "black", fill = farbe1, shape=21, size=4, stroke=0.5) + 
+  geom_text_repel(data=df[df$geneName == "Zfp36l1" & df$sig == TRUE,], aes(x = resBs.log2FoldChange, y = -log10(resBs.padj), label=geneName))+
+    geom_vline(xintercept = 0, color = "black", alpha = .5) +
+    theme_paper()+
+    theme(legend.key.size = unit(1, 'cm'), legend.position = "top") +
+    labs(
+        x = "Fold-change (log2)", 
+        y = "Adjusted P value (-log10)", 
+        color = "Regulation",
+        fill = "Regulation")
+pnv
+
+ggsave(pnv, file= paste0(out, "Figure1X_Differntial_binding_vulcano_nv.pdf"), height = 7, width = 6, units = "cm")
+
 ```
 
 ```{r, fig.width=8, fig.height=4, fig.wide=TRUE, fig.cap="MA and Volcano plots. With adjusted P value and fold-change cutoffs. Additional annotaitons."}
