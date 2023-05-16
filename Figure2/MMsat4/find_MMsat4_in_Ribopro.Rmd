@@ -100,6 +100,9 @@ antiOLgenes <- as.data.frame(subsetByOverlaps(gff23, antiMMSAT4))
 
 dim(OLgenes)
 dim(antiOLgenes)
+
+
+table(OLgenes$gene_name)
 ```
 ```{r splitbyoverlaps}
 RNA$MMsat4 <- "No_MMsat4"
@@ -209,6 +212,62 @@ tolECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat
 
 tolECDFRPF
 ```
+
+# split by region
+
+## 3UTR and CDS
+Here we took all targets (genes) that also contain a MMsat4 element and split them by 3'UTR or UTR.
+The location of the MMsat4 within the gene is not considered in this analysis.
+```{r region}
+rframe <- tframe[tframe$geneName %in% OLgenes$gene_name,]
+
+#RNA
+RNA$regMMsat4 <- "Non-target"
+RNA$regMMsat4[RNA$gene_symbol %in% rframe[rframe$region == "cds","geneName"]] <- "cds"
+RNA$regMMsat4[RNA$gene_symbol %in% rframe[rframe$region == "utr3","geneName"]] <- "utr3"
+RNA$regMMsat4[RNA$gene_symbol %in% rframe[rframe$region == "utr3","geneName"] & 
+                RNA$gene_symbol %in% rframe[rframe$region == "cds","geneName"]] <- "both"
+
+table(RNA$regMMsat4)
+
+#RPF
+RPF$regMMsat4 <- "Non-target"
+RPF$regMMsat4[RPF$gene_symbol %in% rframe[rframe$region == "cds","geneName"]] <- "cds"
+RPF$regMMsat4[RPF$gene_symbol %in% rframe[rframe$region == "utr3","geneName"]] <- "utr3"
+RPF$regMMsat4[RPF$gene_symbol %in% rframe[rframe$region == "utr3","geneName"] & 
+                RPF$gene_symbol %in% rframe[rframe$region == "cds","geneName"]] <- "both"
+
+table(RPF$regMMsat4)
+```
+## make ecdf plots with the position data
+
+```{r posecdf}
+#RNA
+posECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(regMMsat4, levels = c("Non-target", "utr3", "cds", "both")))) + 
+  stat_ecdf(geom="step", size=1) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + theme_bw() +
+  theme(legend.position = c(0.8, 0.35), legend.title = element_blank(), 
+        legend.background = element_rect(colour = "transparent", fill="transparent"), 
+        axis.title=element_text(size=16),plot.title = element_text(size=16, face = "bold")) +
+  ggtitle("RNA MMsat4 containing target genes")
+
+posECDFRNA
+
+#RPF
+posECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(regMMsat4, levels = c("Non-target", "utr3", "cds", "both")))) + 
+  stat_ecdf(geom="step", size=1) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + theme_bw() +
+  theme(legend.position = c(0.8, 0.35), legend.title = element_blank(), 
+        legend.background = element_rect(colour = "transparent", fill="transparent"), 
+        axis.title=element_text(size=16),plot.title = element_text(size=16, face = "bold")) +
+  ggtitle("RPF MMsat4 containing target genes")
+
+posECDFRPF
+```
+
+
 
 # session info
 
