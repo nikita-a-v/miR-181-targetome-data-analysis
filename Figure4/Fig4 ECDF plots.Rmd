@@ -19,6 +19,7 @@ setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure4")
 
 ## packages
 ```{r packages}
+source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
 library(ggplot2)
 library(rtracklayer)
 library(dplyr)
@@ -38,6 +39,13 @@ gff23 <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/ge
 #targets
 larget <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_with_seeds.rds")
 largetframe <- as.data.frame(larget)
+
+#targets with introns and other
+tject <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
+names(tject) <- 1:length(tject$geneName)
+tframe <- as.data.frame(tject)
+head(tframe)
+
 #MMsat4
 repeat_masker <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure2/MMsat4/repeat_masker.rds")
 MMSAT4 <- repeat_masker[repeat_masker$repName == "MMSAT4"]
@@ -86,6 +94,75 @@ colnames(largetframe)
 each code chunk is a split of the main target table that is then used for a specific ecdf plot
 
 
+## targetfiles
+```{r targetsets, fig.show="hold", out.width="50%"}
+#old target with introns
+#RNA
+RNA$oldtarg <- "Non-target"
+RNA$oldtarg[RNA$gene_symbol %in% tframe$geneName] <- "Target"
+#RPF
+RPF$oldtarg <- "Non-target"
+RPF$oldtarg[RPF$gene_symbol %in% tframe$geneName] <- "Target"
+
+#giant frame
+#RNA
+RNA$target <- "Non-target"
+RNA$target[RNA$gene_symbol %in% largetframe$geneName] <- "Target"
+#RPF
+RPF$target <- "Non-target"
+RPF$target[RPF$gene_symbol %in% largetframe$geneName] <- "Target"
+
+
+#ECDF
+#old targets with introns
+#RNA
+targetoldECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(oldtarg, levels = c("Non-target", "Target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA targetset with introns")
+
+targetoldECDFRNA
+
+#RPF
+targetoldECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(oldtarg, levels = c("Non-target", "Target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF targetset with introns")
+
+targetoldECDFRPF
+
+#targets
+#RNA
+targetECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA target")
+
+targetECDFRNA
+
+#RPF
+targetECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF target")
+
+targetECDFRPF
+
+```
+
+
 ## datasets
 
 ```{r datasets, fig.show="hold", out.width="50%"}
@@ -109,27 +186,23 @@ table(RPF$targetset)
 # ecdf plots
 #RNA
 setECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(targetset, levels = c("Non-target", "ago_bs_mir181_chi", "mir181_enriched", "both")))) + 
-  stat_ecdf(geom="step", size=1) +
+  stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
-  coord_cartesian(xlim = c(-0.75, 0.75)) + theme_bw() +
-  theme(legend.position = c(0.8, 0.35), legend.title = element_blank(), 
-        legend.background = element_rect(colour = "transparent", fill="transparent"), 
-        axis.title=element_text(size=16),plot.title = element_text(size=16, face = "bold"), aspect.ratio = 0.8) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
-  ggtitle("RNA region only single BS")
+  ggtitle("RNA by targetset")
 
 setECDFRNA
 
 #RPF
 setECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(targetset, levels = c("Non-target", "ago_bs_mir181_chi", "mir181_enriched", "both")))) + 
-  stat_ecdf(geom="step", size=1) +
+  stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
-  coord_cartesian(xlim = c(-0.75, 0.75)) + theme_bw() +
-  theme(legend.position = c(0.8, 0.35), legend.title = element_blank(), 
-        legend.background = element_rect(colour = "transparent", fill="transparent"), 
-        axis.title=element_text(size=16),plot.title = element_text(size=16, face = "bold"), aspect.ratio = 0.8) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
-  ggtitle("RPF region only single BS")
+  ggtitle("RPF by targetset")
 
 setECDFRPF
 
@@ -164,12 +237,10 @@ table(RPF$region_single)
 # ECDF plots
 #RNA
 regsingECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "multiple")))) + 
-  stat_ecdf(geom="step", size=1) +
+  stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbeneg)) +
-  coord_cartesian(xlim = c(-0.75, 0.75)) + theme_bw() +
-  theme(legend.position = c(0.8, 0.35), legend.title = element_blank(), 
-        legend.background = element_rect(colour = "transparent", fill="transparent"), 
-        axis.title=element_text(size=16),plot.title = element_text(size=16, face = "bold"), aspect.ratio = 0.8) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("RNA region only single BS")
 
@@ -177,12 +248,10 @@ regsingECDFRNA
 
 #RPF
 regsingECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "multiple")))) + 
-  stat_ecdf(geom="step", size=1) +
+  stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbeneg)) +
-  coord_cartesian(xlim = c(-0.75, 0.75)) + theme_bw() +
-  theme(legend.position = c(0.8, 0.35), legend.title = element_blank(), 
-        legend.background = element_rect(colour = "transparent", fill="transparent"), 
-        axis.title=element_text(size=16),plot.title = element_text(size=16, face = "bold"), aspect.ratio = 0.8) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("RPF region only single BS")
 
@@ -213,12 +282,10 @@ RPFnum$BS_num_plot <- ifelse(RPFnum$BS_number == "Non-target", "Non-target",
 #ecdf plots
 #RNA
 numECDFRNA <- ggplot(RNAnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One bs", "Two bs", "More")))) + 
-  stat_ecdf(geom="step", size=1) +
+  stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
-  coord_cartesian(xlim = c(-0.75, 0.75)) + theme_bw() +
-  theme(legend.position = c(0.8, 0.35), legend.title = element_blank(), 
-        legend.background = element_rect(colour = "transparent", fill="transparent"), 
-        axis.title=element_text(size=16),plot.title = element_text(size=16, face = "bold"), aspect.ratio = 0.8) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("RNA number of BS")
 
@@ -226,12 +293,10 @@ numECDFRNA
 
 #RPF
 numECDFRPF <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One bs", "Two bs", "More")))) + 
-  stat_ecdf(geom="step", size=1) +
+  stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
-  coord_cartesian(xlim = c(-0.75, 0.75)) + theme_bw() +
-  theme(legend.position = c(0.8, 0.35), legend.title = element_blank(), 
-        legend.background = element_rect(colour = "transparent", fill="transparent"), 
-        axis.title=element_text(size=16),plot.title = element_text(size=16, face = "bold"), aspect.ratio = 0.8) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("RPF number of BS")
 
@@ -239,6 +304,169 @@ numECDFRPF
 
 ```
 
+## MMsat4
+```{r mmsat4, fig.show="hold", out.width="50%"}
+mmsat4frame <- as.data.frame(subsetByOverlaps(gff23, MMSAT4))
+
+#RNA
+RNA$tvsmmsat4 <- "Non-target"
+RNA$tvsmmsat4[RNA$gene_symbol %in% mmsat4frame$gene_name] <- "MMsat4"
+RNA$tvsmmsat4[RNA$gene_symbol %in% tframe$geneName] <- "miR-181 target"
+RNA$tvsmmsat4[RNA$gene_symbol %in% tframe$geneName & RNA$gene_symbol %in% mmsat4frame$gene_name] <- "both"
+table(RNA$tvsmmsat4)
+
+#RPF
+RPF$tvsmmsat4 <- "Non-target"
+RPF$tvsmmsat4[RPF$gene_symbol %in% mmsat4frame$gene_name] <- "MMsat4"
+RPF$tvsmmsat4[RPF$gene_symbol %in% tframe$geneName] <- "miR-181 target"
+RPF$tvsmmsat4[RPF$gene_symbol %in% tframe$geneName & RPF$gene_symbol %in% mmsat4frame$gene_name] <- "both"
+table(RPF$tvsmmsat4)
+
+#RNA
+tolECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat4, levels = c("Non-target", "MMsat4", "miR-181 target", "both")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA Mmsat4 vs target")
+
+tolECDFRNA
+
+
+#RPF
+tolECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat4, levels = c("Non-target", "MMsat4", "miR-181 target", "both")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF Mmsat4 vs target")
+
+tolECDFRPF
+
+```
+
+## Mmsat4 in 3UTR and CDS
+Here we took all targets (genes) that also contain a MMsat4 element and split them by 3'UTR or UTR.
+The location of the MMsat4 within the gene is not considered in this analysis.
+```{r mmsat4region, fig.show="hold", out.width="50%"}
+rframe <- tframe[tframe$geneName %in% mmsat4frame$gene_name,]
+
+#RNA
+RNA$regMMsat4 <- "Non-target"
+RNA$regMMsat4[RNA$gene_symbol %in% rframe[rframe$region == "cds","geneName"]] <- "cds"
+RNA$regMMsat4[RNA$gene_symbol %in% rframe[rframe$region == "utr3","geneName"]] <- "utr3"
+RNA$regMMsat4[RNA$gene_symbol %in% rframe[rframe$region == "utr3","geneName"] & 
+                RNA$gene_symbol %in% rframe[rframe$region == "cds","geneName"]] <- "both"
+
+table(RNA$regMMsat4)
+
+#RPF
+RPF$regMMsat4 <- "Non-target"
+RPF$regMMsat4[RPF$gene_symbol %in% rframe[rframe$region == "cds","geneName"]] <- "cds"
+RPF$regMMsat4[RPF$gene_symbol %in% rframe[rframe$region == "utr3","geneName"]] <- "utr3"
+RPF$regMMsat4[RPF$gene_symbol %in% rframe[rframe$region == "utr3","geneName"] & 
+                RPF$gene_symbol %in% rframe[rframe$region == "cds","geneName"]] <- "both"
+
+table(RPF$regMMsat4)
+
+#ecdf plots
+#RNA
+posECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(regMMsat4, levels = c("Non-target", "utr3", "cds", "both")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA MMsat4 by region")
+
+posECDFRNA
+
+#RPF
+posECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(regMMsat4, levels = c("Non-target", "utr3", "cds", "both")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) +
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF MMsat4 by region")
+
+posECDFRPF
+```
+
+
+# Export
+"D:/Krueger_Lab/Publications/miR181_paper/Figure4"
+```{r export}
+#target
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/targetoldintronECDFRNA.pdf", width=2, height = 2)
+targetoldECDFRNA
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/targetoldintronECDFRPF.pdf", width=2, height = 2)
+targetoldECDFRPF
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/targetECDF_RNA.pdf", width=2, height = 2)
+targetECDFRNA
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/targetECDF_RPF.pdf", width=2, height = 2)
+targetECDFRPF
+dev.off()
+
+#set
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/setECDF_RNA.pdf", width=2, height = 2)
+setECDFRNA
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/setECDF_RPF.pdf", width=2, height = 2)
+setECDFRPF
+dev.off()
+
+#region single targets
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/regsingECDF_RNA.pdf", width=2, height = 2)
+regsingECDFRNA
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/regsingECDF_RPF.pdf", width=2, height = 2)
+regsingECDFRPF
+dev.off()
+
+#number
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/numECDF_RNA.pdf", width=2, height = 2)
+numECDFRNA
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/numECDF_RPF.pdf", width=2, height = 2)
+numECDFRPF
+dev.off()
+
+# MMsat4 vs target
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMsat4vsTargetECDF_RNA.pdf", width=2, height = 2)
+tolECDFRNA
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMsat4vsTargetECDF_RPF.pdf", width=2, height = 2)
+tolECDFRPF
+dev.off()
+
+# region with MMsat4 cds and 3'utr
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMsat4byRegionECDF_RNA.pdf", width=2, height = 2)
+posECDFRNA
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMsat4byRegionECDF_RPF.pdf", width=2, height = 2)
+posECDFRPF
+dev.off()
+```
 
 
 
