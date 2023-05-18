@@ -86,6 +86,22 @@ We're keeping all of those targets for now but will analyze the in ecdf plots
 table(largetframe$set)
 
 colnames(largetframe)
+
+#remove duplicates but kep NAs (and ask melina where the NAs come from)
+largetframe <- largetframe[!(duplicated(largetframe$BS_ID) & !is.na(largetframe$BS_ID)), ]
+
+## adjust type column
+# Add "No seed" as a level to the factor column
+largetframe$first_seed_200down.type <- factor(largetframe$first_seed_200down.type, levels = c(levels(largetframe$first_seed_200down.type), "No seed"))
+
+# Replace NAs with "No seed"
+largetframe$first_seed_200down.type[is.na(largetframe$first_seed_200down.type)] <- "No seed"
+table(largetframe$first_seed_200down.type)
+
+## adjust wobble column
+largetframe$first_seed_200down.wobble[is.na(largetframe$first_seed_200down.wobble)] <- "No seed"
+
+
 ``` 
 
 
@@ -395,6 +411,99 @@ posECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(regMMsat
 posECDFRPF
 ```
 
+## by type of MRE (wobble and non wobble combined)
+```{r MREtype}
+#RNA
+RNA$MREtype <- "Non-target"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "No seed","geneName"]] <- "No seed"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_6mer","geneName"]] <- "seed_6mer"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+
+#RPF
+RPF$MREtype <- "Non-target"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "No seed","geneName"]] <- "No seed"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_6mer","geneName"]] <- "seed_6mer"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+
+# ecdf plots
+#RNA
+typeECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA type of MRE")
+
+typeECDFRNA
+
+#RPF
+typeECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPFtype of MRE")
+
+typeECDFRPF
+
+
+```
+
+## divide by wobble and non wobble in seed
+```{r wobble}
+#RNA
+RNA$wobble <- "Non-target"
+RNA$wobble[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == "No seed","geneName"]] <- "No seed"
+RNA$wobble[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == FALSE,"geneName"]] <- "Canonical"
+RNA$wobble[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == TRUE,"geneName"]] <- "Wobble"
+
+#RPF
+RPF$wobble <- "Non-target"
+RPF$wobble[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == "No seed","geneName"]] <- "No seed"
+RPF$wobble[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == FALSE,"geneName"]] <- "Canonical"
+RPF$wobble[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == TRUE,"geneName"]] <- "Wobble"
+
+
+#ECDF plots
+#RNA
+wobbleECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), 
+                              colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Wobble")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA Wobble")
+
+wobbleECDFRNA
+
+#RPF
+wobbleECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
+                              colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Wobble")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF Wobble")
+
+wobbleECDFRPF
+
+```
+
+```{r inspect}
+head(largetframe)
+
+```
+
 
 # Export
 "D:/Krueger_Lab/Publications/miR181_paper/Figure4"
@@ -466,6 +575,27 @@ dev.off()
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMsat4byRegionECDF_RPF.pdf", width=2, height = 2)
 posECDFRPF
 dev.off()
+
+# MRE type
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MRtypeECDF_RNA.pdf", width=2, height = 2)
+typeECDFRNA
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MRtypeECDF_RPF.pdf", width=2, height = 2)
+typeECDFRPF
+dev.off()
+
+# Wobble
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RNA.pdf", width=2, height = 2)
+wobbleECDFRNA
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RPF.pdf", width=2, height = 2)
+wobbleECDFRPF
+dev.off()
+
 ```
 
 
