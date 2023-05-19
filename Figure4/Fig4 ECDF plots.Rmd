@@ -499,6 +499,99 @@ wobbleECDFRPF
 
 ```
 
+## mRNA target expression levels (10% bins or quartiles)
+
+```{r}
+#RNA
+tRNA <- RNA[RNA$target == "Target",]
+tRNA <- tRNA[order(tRNA$baseMean, decreasing = T),]
+RNA$expressionlvl <- "Non-target"
+RNA$expressionlvl[RNA$gene_symbol %in% tRNA[1:(0.25*length(tRNA$gene_symbol)), "gene_symbol"]] <- "High"
+RNA$expressionlvl[RNA$gene_symbol %in% tRNA[(0.25*length(tRNA$gene_symbol)):(0.5*length(tRNA$gene_symbol)), "gene_symbol"]] <- "Mid-high"
+RNA$expressionlvl[RNA$gene_symbol %in% tRNA[(0.5*length(tRNA$gene_symbol)):(0.75*length(tRNA$gene_symbol)), "gene_symbol"]] <- "Mid-low"
+RNA$expressionlvl[RNA$gene_symbol %in% tRNA[(0.75*length(tRNA$gene_symbol)):length(tRNA$gene_symbol), "gene_symbol"]] <- "Low"
+
+#RPF
+tRPF <- RPF[RPF$target == "Target",]
+tRPF <- tRPF[order(tRPF$baseMean, decreasing = T),]
+RPF$expressionlvl <- "Non-target"
+RPF$expressionlvl[RPF$gene_symbol %in% tRPF[1:(0.25*length(tRPF$gene_symbol)), "gene_symbol"]] <- "High"
+RPF$expressionlvl[RPF$gene_symbol %in% tRPF[(0.25*length(tRPF$gene_symbol)):(0.5*length(tRPF$gene_symbol)), "gene_symbol"]] <- "Mid-high"
+RPF$expressionlvl[RPF$gene_symbol %in% tRPF[(0.5*length(tRPF$gene_symbol)):(0.75*length(tRPF$gene_symbol)), "gene_symbol"]] <- "Mid-low"
+RPF$expressionlvl[RPF$gene_symbol %in% tRPF[(0.75*length(tRPF$gene_symbol)):length(tRPF$gene_symbol), "gene_symbol"]] <- "Low"
+
+
+#ECDF plots
+#RNA
+expECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), 
+                              colour=factor(expressionlvl, levels = c("Non-target", "Low", "Mid-low", "Mid-high", "High")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA transcript expression")
+
+expECDFRNA
+
+#RPF
+expECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
+                              colour=factor(expressionlvl, levels = c("Non-target", "Low", "Mid-low", "Mid-high", "High")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF transcript expression")
+
+expECDFRPF
+
+
+
+```
+
+## Region with multiple sites ordered by "importance"
+they were sorted in the following order: 5utr cds 3UTR
+```{r}
+RNA$region_multiple <- "Non-target"
+RNA$region_multiple[RNA$gene_symbol %in% largetframe[largetframe$region == "utr5", "geneName"]] <- "utr5"
+RNA$region_multiple[RNA$gene_symbol %in% largetframe[largetframe$region == "cds", "geneName"]] <- "cds"
+RNA$region_multiple[RNA$gene_symbol %in% largetframe[largetframe$region == "utr3", "geneName"]] <- "utr3"
+
+RPF$region_multiple <- "Non-target"
+RPF$region_multiple[RPF$gene_symbol %in% largetframe[largetframe$region == "utr5", "geneName"]] <- "utr5"
+RPF$region_multiple[RPF$gene_symbol %in% largetframe[largetframe$region == "cds", "geneName"]] <- "cds"
+RPF$region_multiple[RPF$gene_symbol %in% largetframe[largetframe$region == "utr3", "geneName"]] <- "utr3"
+
+# ECDF plots
+
+#RNA
+regionmultiECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), 
+                              colour=factor(region_multiple, levels = c("Non-target", "utr5", "cds", "utr3")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA region including multiples priority:5utr,cds,3utr")
+
+regionmultiECDFRNA
+
+#RPF
+regionmultiECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
+                              colour=factor(region_multiple, levels = c("Non-target", "utr5", "cds", "utr3")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF region including multiples priority:5utr,cds,3utr")
+
+regionmultiECDFRPF
+
+```
+
+
 ```{r inspect}
 head(largetframe)
 
@@ -594,6 +687,26 @@ dev.off()
 
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RPF.pdf", width=2, height = 2)
 wobbleECDFRPF
+dev.off()
+
+# transcript expression
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/expresssionECDF_RNA.pdf", width=2, height = 2)
+expECDFRNA
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/expresssionECDF_RPF.pdf", width=2, height = 2)
+expECDFRPF
+dev.off()
+
+# transcript expression
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/regiomultiECDF_RNA.pdf", width=2, height = 2)
+regionmultiECDFRNA
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/regiomultiECDF_RPF.pdf", width=2, height = 2)
+regionmultiECDFRPF
 dev.off()
 
 ```
