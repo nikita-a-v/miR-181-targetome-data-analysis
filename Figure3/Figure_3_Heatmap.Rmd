@@ -29,6 +29,7 @@ setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3")
 
 Load packages
 ```{r load_packages}
+source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
 library(ComplexHeatmap)
 library(ggplot2)
 library(circlize)
@@ -386,6 +387,54 @@ HRNAk <- Heatmap(kheatframe, show_row_dend = F, show_column_dend = F, show_row_n
 HRNAk + hmms 
 
 ```
+
+# cluster seperately
+
+## cluster
+```{r sepclust}
+set.seed(666)
+heat_ks <- kmeans(kheatframe, centers = 5)
+heat_k_names <- as.data.frame(heat_ks$cluster)
+heat_k_names$gene_symbol <- rownames(heat_k_names)
+colnames(heat_k_names) <- c("cluster", "gene_symbol")
+
+#merge with TE frame to get those clustered
+cTEframe <- merge(TEframe, heat_k_names, by="gene_symbol")
+
+```
+
+
+## plot TE by cluster
+```{r teclustplot}
+tecplot <- ggplot(cTEframe, aes(x=as.factor(cluster), y=log2FoldChange)) + 
+  geom_boxplot() +
+  geom_hline(yintercept = 0, colour=farbeneg,linetype = "dashed") +
+  coord_cartesian(ylim = c(-1,1)) +
+  theme_paper()
+
+tecplot
+
+
+techist <- ggplot(cTEframe, aes(colour=as.factor(cluster), x=log2FoldChange)) + 
+  geom_density() +
+  scale_colour_manual(values = c(farbe1, farbe2, farbe3, farbe4, RPFncol)) +
+  geom_vline(xintercept = 0, colour=farbeneg,linetype = "dashed") +
+  theme_paper()
+
+
+techist
+
+
+#export
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/TEbox_clustered.pdf", height = 2, width = 2)
+tecplot
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/TEhist_clustered.pdf", height = 2, width = 2)
+techist
+dev.off()
+```
+
 
 
 

@@ -1,0 +1,109 @@
+---
+title: "fig3 TE and MS plots"
+author: "Nikita Verheyden"
+date: "2023-05-23"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# setup
+
+dir
+```{r dir}
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3")
+```
+
+## packages 
+```{r packages}
+source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+library(xlsx)
+library(ggplot2)
+library(ggrastr)
+```
+
+## data
+```{r data}
+#ms
+ms <- as.data.frame(read.xlsx("D:/Krueger_Lab/R/ECDF plots/Kreuger_analysis_ms.xlsx", 
+                              sheetName = "Analysis"))
+#adjust upper case lower case of gene names of MS data:
+#function
+capFirst <- function(s) {
+  paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")
+}
+ms$Gene.Symbol <- tolower(ms$Gene.Symbol)
+ms$Gene.Symbol <- capFirst(ms$Gene.Symbol)
+names(ms)[names(ms) == 'Gene.Symbol'] <- 'GeneName'
+head(ms$GeneName)
+
+#Translational efficiency
+TEframe <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Supporting scipts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+head(TEframe)
+```
+## colours
+```{r colours}
+#colours
+farbeneg <- "#b4b4b4"
+farbe1 <- "#0073C2FF"
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF"
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+  
+RNApcol <- "#b56504"
+RNAncol <- "#027d73"
+RPFpcol <- "#c4c404"
+RPFncol <- "#8d0391"
+```
+
+
+# ms volcano
+```{r msvol}
+pms <- 0.05
+
+#add significance identifier
+ms$significance <- "Not significant"
+ms$significance[ms$P.value <= pms & ms$Log2.FC. > 0] <- "Significant up"
+ms$significance[ms$P.value <= pms & ms$Log2.FC. < 0] <- "Significant down"
+
+
+msvolcano <- ggplot(ms, aes(y=-log10(P.value), x=Log2.FC.,  fill=factor(significance, levels = c("Not significant", "Significant up","Significant down")))) + geom_point_rast(shape=21, size=1, colour=farbeneg) +
+  scale_fill_manual(values=c(farbeneg, RPFpcol, RPFncol)) +
+  geom_point(data = ms[ms$significance == "Significant up",], shape=21, colour="black", fill=RPFpcol) +
+  geom_point(data = ms[ms$significance == "Significant down",], shape=21, colour="black", fill=RPFncol) +
+  geom_hline(yintercept = -log10(0.05), linetype="dashed") +
+  geom_vline(xintercept = 0, linetype="dashed") +
+  theme_paper()
+
+msvolcano
+```
+
+
+
+#Te volcano
+```{r tevol}
+
+```
+
+
+# Session info
+```{r sessioninfo}
+sessionInfo()
+```
+
+
+

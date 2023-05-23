@@ -29,6 +29,7 @@ setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3")
 
 load packages
 ```{r packages}
+source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
 library(DESeq2)
 library(ggplot2)
 library(ggrepel)
@@ -281,67 +282,48 @@ RPFdat$baseMean[RPFdat$baseMean > xlim] <- xlim
 ## Plots
 
 RNA MA plot
-```{r RNAMA, fig.width=3}
+```{r RNAMA, fig.width=2.5, fig.height=2.5}
 RNAma <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 1, 
      aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
   scale_fill_manual(values = c(negcol, RNAncol, RNApcol)) + scale_colour_manual(values = c(negcol, "black", "black")) +
-  geom_point_rast(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=RNAncol) +
-  geom_point_rast(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=RNApcol) +
-  geom_point_rast(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="high" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=24, size = 2, colour="black", fill=RNApcol) +
-  geom_point_rast(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="low" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=25, size = 2, colour="black", fill=RNAncol) +
-  theme_bw() +
-  geom_point_rast(data=RNAdat[RNAdat$xcutoff == "high",], aes(y=log2FoldChange, x=log10(baseMean)), shape="\u25BA", size = 3, colour=negcol) +
-  theme_bw() +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=RNAncol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=RNApcol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="high" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=24, size = 2, colour="black", fill=RNApcol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="low" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=25, size = 2, colour="black", fill=RNAncol) +
+  theme_paper() +
+  geom_point(data=RNAdat[RNAdat$xcutoff == "high",], aes(y=log2FoldChange, x=log10(baseMean)), shape="\u25BA", size = 3, colour=negcol) +
   geom_hline(yintercept = 0, linetype="solid", colour="black") + 
   geom_hline(yintercept = lfcsig, linetype="dashed", colour="black") + 
   geom_hline(yintercept = -lfcsig, linetype="dashed", colour="black") + 
   scale_y_continuous("Fold change miR-181a/b-1 KO/WT (log2)", limits = c(-ylim, ylim)) + scale_x_continuous("Base mean expression ratio (log10)", limits = c(log10(xmin), log10(xlim))) +
-  theme(legend.title = element_blank(), panel.background = element_rect(fill = "transparent",
-                                  colour = NA_character_), # necessary to avoid drawing panel outline
-  plot.background = element_rect(fill = "transparent",
-                                 colour = NA_character_), # necessary to avoid drawing plot outline
-  legend.background = element_rect(fill = "transparent"),
-  legend.box.background = element_rect(fill = "transparent"),
-  legend.key = element_rect(fill = "transparent"), legend.position = c(0.8, 0.2),
-  aspect.ratio = 0.8
-) +
   guides(color = guide_legend(override.aes = list(size = 3)))
 
 RNAma
 
-pdf("MAplot_RNA.pdf", width = 5, height = 4)
+pdf("MAplot_RNA.pdf", width = 2, height = 2)
 RNAma
 dev.off()
 ```
 RPF MA plot
-```{r RPFMA}
+```{r RPFMA, fig.width=2.5, fig.height=2.5}
 RPFma <- ggplot(RPFdat[!(RPFdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 1, 
      aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
-  scale_fill_manual(values = c(negcol, RPFncol, RPFpcol)) + scale_colour_manual(values = c(negcol, "black", "black")) +
-  geom_point_rast(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=RPFncol) +
-  geom_point_rast(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=RPFpcol) +
-  geom_point_rast(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="high" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=24, size = 2, colour="black", fill=RPFpcol) +
-  geom_point_rast(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="low" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=25, size = 2, colour="black", fill=RPFncol) +
-  theme_bw() +
-  geom_point_rast(data=RPFdat[RPFdat$xcutoff == "high",], aes(y=log2FoldChange, x=log10(baseMean)), shape="\u25BA", size = 3, colour=negcol) +
-  theme_bw() +
+  scale_fill_manual(values = c(negcol, RNAncol, RNApcol)) + scale_colour_manual(values = c(negcol, "black", "black")) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=RNAncol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=RNApcol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="high" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=24, size = 2, colour="black", fill=RNApcol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="low" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=25, size = 2, colour="black", fill=RNAncol) +
+  theme_paper() +
+  geom_point(data=RPFdat[RPFdat$xcutoff == "high",], aes(y=log2FoldChange, x=log10(baseMean)), shape="\u25BA", size = 3, colour=negcol) +
   geom_hline(yintercept = 0, linetype="solid", colour="black") + 
   geom_hline(yintercept = lfcsig, linetype="dashed", colour="black") + 
   geom_hline(yintercept = -lfcsig, linetype="dashed", colour="black") + 
   scale_y_continuous("Fold change miR-181a/b-1 KO/WT (log2)", limits = c(-ylim, ylim)) + scale_x_continuous("Base mean expression ratio (log10)", limits = c(log10(xmin), log10(xlim))) +
-  theme(legend.title = element_blank(), panel.background = element_rect(fill = "transparent",
-                                  colour = NA_character_), # necessary to avoid drawing panel outline
-  plot.background = element_rect(fill = "transparent",
-                                 colour = NA_character_), # necessary to avoid drawing plot outline
-  legend.background = element_rect(fill = "transparent"),
-  legend.box.background = element_rect(fill = "transparent"),
-  legend.key = element_rect(fill = "transparent"), legend.position = c(0.8, 0.2)
-) +
   guides(color = guide_legend(override.aes = list(size = 3)))
 
 RPFma
 
-pdf("MAplot_RPF.pdf", width = 5, height = 4)
+pdf("MAplot_RPF.pdf", width = 2, height = 2)
 RPFma
 dev.off()
 ```
