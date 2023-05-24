@@ -4,15 +4,16 @@ author:
 - name: Nikita Verheyden
   affiliation: JLU Giessen
   date: "`r Sys.Date()`"
-output:
-  BiocStyle::html_document:
-      toc: TRUE
-      toc_float: TRUE
-      code_folding: hide
-
-header-includes:
-- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
-- \usepackage{placeins}
+output: pdf_document
+  
+#   BiocStyle::html_document:
+#       toc: TRUE
+#       toc_float: TRUE
+#       code_folding: hide
+# 
+# header-includes:
+# - \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+# - \usepackage{placeins}
 ---
 
 ```{r setup, include=FALSE}
@@ -36,6 +37,7 @@ library(circlize)
 library(dplyr)
 library(eulerr)
 library(xlsx)
+library(ggpubr)
 
 
 ```
@@ -376,15 +378,18 @@ haTE3 = rowAnnotation(TE = anno_barplot(TEsel3, ylim = c(-TElim,TElim)))
 
 
 plot
-```{r plot_kheatmap, fig.dim = c(5, 7)}
-set.seed(666)
-HRNAk <- Heatmap(kheatframe, show_row_dend = F, show_column_dend = F, show_row_names = F, show_column_names = F, colorRamp2(c(-1, 0, 1), c("#05fae6", "black", "#fa8c05")), column_order=1:12 , bottom_annotation =c(ha3), column_split = c(rep("RNA",6), rep("RPF",6)), row_km = 5,
+```{r plot_kheatmap, fig.dim = c(4, 7)}
+
+kmcent <- 5
+
+set.seed(6)
+HRNAk <- Heatmap(kheatframe, show_row_dend = F, show_column_dend = F, show_row_names = F, show_column_names = F, colorRamp2(c(-1, 0, 1), c("#05fae6", "black", "#fa8c05")), column_order=1:12 , bottom_annotation =c(ha3), column_split = c(rep("RNA",6), rep("RPF",6)), row_km = kmcent,
                 name = "Ribo profiling", right_annotation = haTE3, 
                 border = TRUE
                 )
 
 
-HRNAk + hmms 
+HRNAk + hmms + hmtarget
 
 ```
 
@@ -392,8 +397,8 @@ HRNAk + hmms
 
 ## cluster
 ```{r sepclust}
-set.seed(666)
-heat_ks <- kmeans(kheatframe, centers = 5)
+set.seed(6)
+heat_ks <- kmeans(kheatframe, centers = kmcent)
 heat_k_names <- as.data.frame(heat_ks$cluster)
 heat_k_names$gene_symbol <- rownames(heat_k_names)
 colnames(heat_k_names) <- c("cluster", "gene_symbol")
@@ -408,11 +413,14 @@ cTEframe <- merge(TEframe, heat_k_names, by="gene_symbol")
 ```{r teclustplot}
 tecplot <- ggplot(cTEframe, aes(x=as.factor(cluster), y=log2FoldChange)) + 
   geom_boxplot() +
-  geom_hline(yintercept = 0, colour=farbeneg,linetype = "dashed") +
   coord_cartesian(ylim = c(-1,1)) +
+  geom_hline(yintercept = 0, colour=farbeneg,linetype = "dashed") +
+  stat_compare_means(label = "p.format", method = "t.test", ref.group = ".all.", label.y=1)   +                   # Pairwise comparison against all
   theme_paper()
 
 tecplot
+
+
 
 
 techist <- ggplot(cTEframe, aes(colour=as.factor(cluster), x=log2FoldChange)) + 
