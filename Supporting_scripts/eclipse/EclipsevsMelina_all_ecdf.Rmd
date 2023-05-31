@@ -1,0 +1,64 @@
+---
+title: "EclipsevsMelina_all_ecdf"
+author: "Nikita Verheyden"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# setup
+
+dir
+```{r dir}
+setwd("Z:/Personen/Nikita/Publications/miR181_paper/Supporting_scripts/eclipse")
+```
+
+## Packages
+
+```{r packages}
+source("Z:/Personen/Nikita/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+library(ggplot2)
+```
+
+
+## Data
+
+```{r data}
+RNA <- read.csv("Z:/Personen/Nikita/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
+RPF <- read.csv("Z:/Personen/Nikita/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
+
+melina <- readRDS("Z:/Personen/Nikita/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
+names(melina) <- 1:length(melina$geneID)
+melina<- as.data.frame(melina)
+# eclipse <- read.csv("D:/Krueger_Lab/miReCLIP/peak_info_enriched181_WT.csv") # home
+eclipse <- read.csv("D:/Nikita Krueger share FFM/Nikita/miR-eCLIP/data/peak_info_WTall_enriched181.csv")#lab
+
+```
+
+### inspect data
+```{r inspect}
+head(RNA)
+head(RPF)
+head(melina)
+head(eclipse)
+```
+
+
+
+# make ecdf plots for both targetsets
+
+
+
+
+
+
+
+
+# session info
+```{r sessioninfo}
+sessionInfo()
+```
