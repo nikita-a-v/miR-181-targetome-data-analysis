@@ -3,18 +3,18 @@ title: "mir181 binding sites - union of mir181 enriched binding sites and Ago bi
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  # BiocStyle::html_document:
-  # toc_float: TRUE
-  # code_folding: hide
-  # toc: TRUE
-  # number_sections: yes
-  # fig_caption: yes
-  pdf_document:
-    fig_caption: true
-    fig_crop: true
-    toc: true
-    toc_depth: 1
-    number_sections: true
+  BiocStyle::html_document:
+  toc_float: TRUE
+  code_folding: hide
+  toc: TRUE
+  number_sections: yes
+  fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -186,6 +186,8 @@ both_mir181_enriched_chi$set <- "ago_bs_mir181_chi&mir181_enriched"
 
 # combine all three sets
 mir181_bs <- c(only_ago_bs_mir181_chi, only_mir181_enriched, both_mir181_enriched_chi)
+mir181_bs$BS_ID <- NULL
+mir181_bs$mir181BS_ID <- 1:NROW(mir181_bs)
 ```
 
 
