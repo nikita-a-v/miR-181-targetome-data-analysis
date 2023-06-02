@@ -84,7 +84,7 @@ mir_crosslinks <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_m
 
 load("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/xx_down_stream_R/02_BS_definition_WT_rerun_Mirko/out/bsTranscript.rda")
 
-
+nrow(mir181_bs)
 ```
 
 
@@ -253,422 +253,163 @@ p5 <- ggplot(unnest(mir181_bs), aes(x = Seeds_200down.start))+
           subtitle = "in case of mutiple seeds all are used")
 p5
 
-
+nrow(mir181_bs)
 
 #ggsave(p, filename = paste0(out, "seed_versions_Figure2E.pdf"), width = 6, height = 6, units = "cm"  )
 ```
 
-### percent binding sites with a seed
-```{r}
-nrow(Seeds_1_per_BS)/ nrow(mir181_bs)
-```
-
-### number of 6mers per binding site
-```{r}
-vcountPattern(pattern = seed_list[[1]], mir181_bs_200down_seq) %>% table()
-
-hist(table(Seeds$mir181BS_ID))
-```
-
-### number of binding sites in 200nt window
-```{r}
-hist(countOverlaps(mir181_bs_200down, makeGRangesFromDataFrame(mir181_bs)))
-
-```
-### strange pericitity
-```{r}
-test <- Seeds_2 %>%
-   group_by(mir181BS_ID) %>%
-  summarize(n_seed = length(mir181BS_ID), .groups = "keep") %>%
-  arrange(desc(n_seed))
-
-test
-
-Seeds_1_per_BS %>% subset(mir181BS_ID==9414)
-mir181_bs %>% subset(mir181BS_ID %in% test[1:20,]$mir181BS_ID)
-
-
-
-```
-
-
-
-## 50nt after the binding site
-
-```{r}
-
-
-p <- ggplot(Seeds_1_per_BS, aes(x = seed, fill = wobble))+
-  geom_bar(color = "black")+
-  theme_paper()+
-  scale_fill_manual(values = c(farbe4, darken(farbe4)))+
-  theme(legend.position = "None") +
-  scale_x_discrete(labels=c(seed_8mer = "U*GAA/UUGU*U",
-                            seed_7mer_m8 = "U*GAA/UUGU",
-                            seed_7mer_a1 = "GAA/UUGU*U",
-                            seed_6mer = "GAA/UUGU"),
-                   guide = guide_axis(angle = 25))
-  
-  
-
-p
-
-# plot seed distributions
-
-p2 <- ggplot(Seeds_1_per_BS, aes(x = start))+
-  geom_bar(color = "black")+
-  theme_paper()
-
-p2+
-  ggtitle("mir181 seed positions", 
-          subtitle = "in case of mutiple seeds the seed nearest to the bindingsite in used")
-
-
-p3 <- ggplot(Seeds_1_per_BS, aes(x = start))+
-  geom_bar(color = "black")+
-  theme_paper()+
-  facet_wrap(~seed)+
-  ggtitle("mir181 seed positions", 
-          subtitle = "in case of mutiple seeds the seed nearest to the bindingsite in used")
-p3
-
-
-p4 <- ggplot(Seeds, aes(x = start))+
-  geom_bar(color = "black")+
-  theme_paper()+
-  ggtitle("mir181 seed positions", 
-          subtitle = "in case of mutiple seeds all are used")
-p4
-
-
-
-p5 <- ggplot(Seeds, aes(x = start))+
-  geom_bar(color = "black")+
-  theme_paper()+
-  facet_wrap(~seed, scales = "free_y")+
-  ggtitle("mir181 seed positions", 
-          subtitle = "in case of mutiple seeds all are used")
-p5
-
-ggsave(p, filename = paste0(out, "seed_versions_50nt.pdf"), width = 6, height = 6, units = "cm"  )
-ggsave(p2, filename = paste0(out, "seed_distribution.pdf"), width = 6, height = 6, units = "cm"  )
-
-
-```
-
-### percent binding sites with a seed
-```{r}
-nrow(Seeds_1_per_BS)/ nrow(mir181_bs)
-```
-
-### number of 6mers per binding site
-```{r}
-vcountPattern(pattern = seed_list[[1]], mir181_bs_50down_seq) %>% table()
-
-hist(table(Seeds$mir181BS_ID))
-```
-
-### number of binding sites in 200nt window
-```{r}
-hist(countOverlaps(mir181_bs_50down, makeGRangesFromDataFrame(mir181_bs)))
-
-```
-
-## test miR142 200nt after binding site
-
-```{r}
-####################
-# get mir142 binding sites
-####################
-
-mir_crosslinks_use <- c(mir_crosslinks$IP_WT, mir_crosslinks$IP_WT_miR181)
-mir_crosslinks_use <- as.data.frame(mir_crosslinks_use) %>%
-  group_by(seqnames, start, end, strand, Name) %>%
-  summarize(score = sum(score),  .groups = "keep") %>%
-  makeGRangesFromDataFrame(., keep.extra.columns = T)
-
-bsTranscript_10 <- bsTranscript + 10
-names(bsTranscript_10) <- 1 : NROW(bsTranscript_10)
-
-i <- findOverlaps(bsTranscript_10, mir_crosslinks_use )
-
-bs_enriched_mir <- as.data.frame(bsTranscript_10)[queryHits(i),]
-bs_enriched_mir <- cbind(bs_enriched_mir , mirs = mir_crosslinks_use [subjectHits(i),]$Name )
-
-bs_enriched_mir <- tidyr::nest(bs_enriched_mir, mirs, .key = "mirs")
-
-bs_enriched_mir <- bs_enriched_mir %>% 
-  # mutate(bs_enriched_mir, 
-  #        test = sum(grepl(pattern = "mmu-miR-181", mirs)),
-  #        mir181 = case_when(
-  # sum(grepl(pattern = "mmu-miR-181", mirs)) > 1 ~ T, 
-  # T~F),
-  # mir142 = case_when(
-  # sum(grepl(pattern = "mmu-miR-142", mirs)) >1 ~ T, 
-  # T~F)) %>%
-  rowwise() %>%
-  mutate(., n_chimeric_reads = NROW(mirs),
-         mir181 = sum(grepl(pattern = "mmu-miR-181", mirs$mirs)),
-         mir142 = sum(grepl(pattern = "mmu-miR-142", mirs$mirs)),
-         )
-
-bs_ago_mir142 <- subset(bs_enriched_mir, mir142 > 1)
-
-mir142_only <- bs_ago_mir142 %>% 
-  subset(., mir142 == n_chimeric_reads) %>%
-  arrange(desc(mir142)) %>%
-  makeGRangesFromDataFrame(., keep.extra.columns =T)
-
-
-mir142_only$BS_ID <- 1:NROW(mir142_only)
-
-```
-
+## 200nt before the binding site
 
 ```{r}
 #######################
-# get mir142 seed in 200er window
+# get seed in 200er window upstream
 #######################
-mir142_bs_200down <- mir142_only %>% resize(., width = 203, fix = "start")
-mir142_bs_200down_seq <- getSeq(mir142_bs_200down, x = BSgenome.Mmusculus.UCSC.mm10) %>% 
+
+# get seqeunce 200nt upstream of binding site
+mir181_bs_200up <- makeGRangesFromDataFrame(mir181_bs, keep.extra.columns = T) %>% resize(., width = 203, fix = "end")
+mir181_bs_200up_seq <- getSeq(mir181_bs_200up, x = BSgenome.Mmusculus.UCSC.mm10) %>% 
   RNAStringSet()
 
-seed_miR142 <- "ACACUA"
-
-Seeds <- vmatchPattern(pattern = seed_miR142, mir142_bs_200down_seq) %>%  map(., ~as.data.frame(.x))
-
-BS_ID_list <- as.list(mir142_only$BS_ID)
-
-Seeds <- map2(Seeds, BS_ID_list, ~mutate(.x, mir142BS_ID = .y))  %>% 
-               map_dfr(~.x)
-
-Seeds_1_per_BS <- Seeds %>%
-   group_by(mir142BS_ID) %>%
-  arrange(start) %>%
-  dplyr::slice(1) %>%
-  ungroup(.) 
-
-# plot seed distributions
-
-p2 <- ggplot(Seeds_1_per_BS, aes(x = start))+
-  geom_bar(color = "black")+
-  theme_paper()+
-  ggtitle("mir142 seed positions", 
-          subtitle = "in case of mutiple seeds the seed nearest to the bindingsite in used")
-p2
-
-
-
-p4 <- ggplot(Seeds, aes(x = start))+
-  geom_bar(color = "black")+
-  theme_paper()+
-  ggtitle("mir142 seed positions", 
-          subtitle = "in case of mutiple seeds all are used")
-p4
-
-#ggsave(p, filename = paste0(out, "seed_versions_Figure2E.pdf"), width = 6, height = 6, units = "cm"  )
-```
-
-
-
-### percent binding sites with a seed
-```{r}
-nrow(Seeds_1_per_BS)/ nrow(mir181_bs)
-```
-
-### number of 6mers per binding site
-```{r}
-vcountPattern(pattern = seed_list[[1]], mir181_bs_200down_seq) %>% table()
-
-hist(table(Seeds$mir142BS_ID))
-```
-
-```{r}
-#######################
-# get mir142 seed in 200er window
-#######################
-
-Seeds <- vmatchPattern(pattern = seed_miR142, mir181_bs_200down_seq) %>%  map(., ~as.data.frame(.x))
-
-BS_ID_list <- as.list(mir181_bs$BS_ID)
-
-Seeds <- map2(Seeds, BS_ID_list, ~mutate(.x, mir181BS_ID = .y))  %>% 
-               map_dfr(~.x)
-
-Seeds_1_per_BS <- Seeds %>%
-   group_by(mir181BS_ID) %>%
-  arrange(start) %>%
-  dplyr::slice(1) %>%
-  ungroup(.) 
-
-# plot seed distributions
-
-p2 <- ggplot(Seeds_1_per_BS, aes(x = start))+
-  geom_bar(color = "black")+
-  theme_paper()+
-  ggtitle("mir142 seed positions", 
-          subtitle = "in case of mutiple seeds the seed nearest to the bindingsite in used")
-p2
-
-
-
-p4 <- ggplot(Seeds, aes(x = start))+
-  geom_bar(color = "black")+
-  theme_paper()+
-  ggtitle("mir142 seed positions", 
-          subtitle = "in case of mutiple seeds all are used")
-p4
-
-#ggsave(p, filename = paste0(out, "seed_versions_Figure2E.pdf"), width = 6, height = 6, units = "cm"  )
-```
-
-# more on the 50nt window
-## Choose set
-
-```{r}
-mir181_bs_50down <- makeGRangesFromDataFrame( mir181_bs, keep.extra.columns = T) %>% resize(., width = 53, fix = "start")
-mir181_bs_50down_seq <- getSeq(mir181_bs_50down, x = BSgenome.Mmusculus.UCSC.mm10) %>% 
-  RNAStringSet()
-
-
-Seeds <- lapply(seed_list, function(x) {
-  vmatchPattern(pattern = x, mir181_bs_50down_seq) %>% 
+# count occurences of all seed variations
+Seeds_200up <- lapply(seed_list, function(x) {
+  vmatchPattern(pattern = x, mir181_bs_200up_seq) %>% 
   lapply(., function(x) as.data.frame(x))})
 
-BS_ID_list <- as.list(mir181_bs$mir181BS_ID)
 
-Seeds <- map(Seeds, ~map2(.x, BS_ID_list, ~mutate(.x, mir181BS_ID = .y) ) %>% 
+Seeds_200up <- map(Seeds_200up, 
+                     ~map2(.x, BS_ID_list, ~mutate(.x, mir181BS_ID = .y) ) %>% 
                map_dfr(~.x))
 
-Seeds <- map2(Seeds, seed_names_list, ~mutate(.x, seed = .y) ) %>% map_dfr(~.x)
+
+# add the seed type names and make one df of all
+Seeds_200up <- map2(Seeds_200up, seed_names_list, ~mutate(.x, seed = .y) ) %>% map_dfr(~.x)
 
 
-
-Seeds_1_per_BS <- Seeds %>% 
+# extract wobble positions
+Seeds_1_per_BS <- Seeds_200up %>% 
   mutate(wobble = grepl("wobble", seed),
          seed = case_when(wobble  ~ substr(seed, 1, nchar(seed)-7), T ~ seed))
 
+
+# order seeds by importance
 Seeds_1_per_BS$seed <- factor(Seeds_1_per_BS$seed, levels = seed_importance_order )
 
+# select 1 seed per BS --> closest seed with highest importance
 Seeds_1_per_BS <- Seeds_1_per_BS %>%
    group_by(mir181BS_ID) %>%
   arrange(start, seed ) %>%
   dplyr::slice(1) %>%
   ungroup(.) 
 
+########################
+# combine the closest seed, and all found seeds to the Binding site data.frame
+#######################
 
+# add all as list column
+
+colnames(Seeds_200up) <- c("Seeds_200up.start",
+                             "Seeds_200up.end",
+                             "Seeds_200up.width",
+                             "mir181BS_ID",
+                             "Seeds_200up.type")
+
+
+mir181_bs <- left_join(mir181_bs, Seeds_200up, by = "mir181BS_ID") %>%
+  tidyr::nest(all_seeds_200up = c("Seeds_200up.start",
+                             "Seeds_200up.end",
+                             "Seeds_200up.width",
+                             "Seeds_200up.type"))
+
+# add closest mir
+colnames(Seeds_1_per_BS) <- c("first_seed_200up.start",
+                             "first_seed_200up.end",
+                             "first_seed_200up.width",
+                             "mir181BS_ID",
+                             "first_seed_200up.type",
+                             "first_seed_200up.wobble")
+
+mir181_bs <- left_join(mir181_bs, Seeds_1_per_BS, by = "mir181BS_ID") 
+
+mir181_bs <- mir181_bs %>% 
+  rowwise() %>% 
+  mutate(seed_repetitions.200down = sum(all_seeds_200down$Seeds_200down.type == "seed_6mer"),
+        seed_repetitions.200down.wobble = sum(all_seeds_200down$Seeds_200down.type == "seed_6mer_wobble") )
 
 
 ```
 
-
-## Distribution of seeds in sets
-
 ```{r}
-# Add seed info to BS
-Seeds_1_per_BS <- Seeds_1_per_BS %>% select(c("mir181BS_ID", "seed", "start", "wobble"))
-colnames(Seeds_1_per_BS) <- c("mir181BS_ID", "seed", "seed_start_from_BS", "wobble")
+###################
+# plots
+###################
 
-mir181_bs <- mir181_bs %>% left_join(., Seeds_1_per_BS, by = "mir181BS_ID")
-table(mir181_bs$seed)
-```
-
-```{r}
-
-ggplot(mir181_bs, aes(x = seed, fill = wobble))+
-  geom_bar()+
+# plot seed variations
+p <- ggplot(mir181_bs, aes(x = first_seed_200up.type, fill = first_seed_200up.wobble))+
+  geom_bar(color = "black")+
   theme_paper()+
-  facet_wrap(~set)+
-  ylim(c(0,400))+
   scale_fill_manual(values = c(farbe4, darken(farbe4)))+
   theme(legend.position = "None") +
   scale_x_discrete(labels=c(seed_8mer = "U*GAA/UUGU*U",
                             seed_7mer_m8 = "U*GAA/UUGU",
                             seed_7mer_a1 = "GAA/UUGU*U",
                             seed_6mer = "GAA/UUGU"),
-                   guide = guide_axis(angle = 25))
+                   guide = guide_axis(angle = 25))+
+  ggtitle("mir181 seed variations in 200nt before the binding site", 
+          subtitle = "in case of mutiple seeds the seed nearest to the bindingsite in used")
+  
+p
 
-
-ggplot(mir181_bs, aes(x = seed, fill = wobble))+
-  geom_bar(position = "fill")+
+# plot seed distributions
+p2 <- ggplot(mir181_bs, aes(x = first_seed_200up.start))+
+  geom_bar(color = "black")+
   theme_paper()+
-  facet_wrap(~set)+
-  scale_fill_manual(values = c(farbe4, darken(farbe4)))+
-  theme(legend.position = "None") +
-  scale_x_discrete(labels=c(seed_8mer = "U*GAA/UUGU*U",
-                            seed_7mer_m8 = "U*GAA/UUGU",
-                            seed_7mer_a1 = "GAA/UUGU*U",
-                            seed_6mer = "GAA/UUGU"),
-                   guide = guide_axis(angle = 25))
+  ggtitle("mir181 seed positions before binding sites", 
+          subtitle = "in case of mutiple seeds the seed nearest to the bindingsite in used")
+p2
 
 
-ggplot(mir181_bs, aes(x = set, fill = wobble))+
-  geom_bar(position = "fill")+
+p3 <- ggplot(mir181_bs, aes(x = first_seed_200up.start))+
+  geom_bar(color = "black")+
   theme_paper()+
-  facet_wrap(~seed)+
-  scale_fill_manual(values = c(farbe4, darken(farbe4)))+
-  theme(legend.position = "None") +
-  scale_x_discrete(labels=c(seed_8mer = "U*GAA/UUGU*U",
-                            seed_7mer_m8 = "U*GAA/UUGU",
-                            seed_7mer_a1 = "GAA/UUGU*U",
-                            seed_6mer = "GAA/UUGU"),
-                   guide = guide_axis(angle = 25))
+  facet_wrap(~first_seed_200up.type)+
+  ggtitle("mir181 seed positions before binding sites", 
+          subtitle = "in case of mutiple seeds the seed nearest to the bindingsite in used")
+p3
+
+# all seeds per BS
+
+p4 <- ggplot(unnest(mir181_bs, cols = all_seeds_200up), aes(x = Seeds_200up.start))+
+  geom_bar(color = "black")+
+  theme_paper()+
+  ggtitle("mir181 seed positions before binding sites", 
+          subtitle = "in case of mutiple seeds all are used")
+p4
 
 
 
+p5 <- ggplot(unnest(mir181_bs, cols = all_seeds_200up), aes(x = Seeds_200up.start))+
+  geom_bar(color = "black")+
+  theme_paper()+
+  facet_wrap(~Seeds_200up.type, scales = "free_y")+
+  ggtitle("mir181 seed positions", 
+          subtitle = "in case of mutiple seeds all are used")
+p5
 
+
+
+#ggsave(p, filename = paste0(out, "seed_versions_Figure2E.pdf"), width = 6, height = 6, units = "cm"  )
 ```
 
-## Bound regions for different sets
+### percent binding sites with a seed downstream
+```{r}
+nrow(mir181_bs %>% subset(!is.na(first_seed_200down.start)))/ nrow(mir181_bs)
+```
+
+# Save table
 
 ```{r}
-ggplot(mir181_bs, aes(x = seed, fill = region))+
-  geom_bar(position = "fill")+
-  theme_paper()+
-  #scale_fill_manual(values = c(farbe4, darken(farbe4)))+
-  theme(legend.position = "top") +
-  scale_x_discrete(labels=c(seed_8mer = "U*GAA/UUGU*U",
-                            seed_7mer_m8 = "U*GAA/UUGU",
-                            seed_7mer_a1 = "GAA/UUGU*U",
-                            seed_6mer = "GAA/UUGU"),
-                   guide = guide_axis(angle = 25))
+saveRDS(mir181_bs, file = paste0(out, "mir181_bs_with_seeds.rds"))
 
 
 ```
-
-
-# Do different seeds lead to different activity?
-
-
-```{r}
-ggplot(mir181_bs, aes(x = resBs.log2FoldChange, color = seed))+
-  geom_vline(xintercept = 0, color = "grey")+
-  stat_ecdf()+
-  scale_color_manual(values = c("slateblue","darkslategrey","darksalmon", "slateblue1","darkslategray3", "darkred", farbeneg))+
-  theme_paper()+
-  theme(legend.position = "top")
-
-p1 <- ggplot(mir181_bs, aes(x = resBs.log2FoldChange, color = wobble))+
-  geom_vline(xintercept = 0, color = "grey")+
-  stat_ecdf()+
-  scale_color_manual(values = c(farbe4, darken(farbe6), farbeneg))+
-  theme_paper()+
-  theme(legend.position = "top", legend.title = element_text() )
-
-p1
-
-ggsave(p1, filename =  paste0(out, "differential_binding_wobble.pdf"), width = 5, height = 5, units = "cm")
-
-
-```
-
-
-# Save 50nt downstream for XSTREME search
-
-```{r eval=FALSE, include=FALSE}
-writeXStringSet(mir181_bs_50down_seq, filepath = paste0(out, "mirBS_50downstream.fasta" ))
-
-```
-
-
 
