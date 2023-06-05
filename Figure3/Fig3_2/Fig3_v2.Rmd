@@ -45,18 +45,9 @@ largetframe <- as.data.frame(larget)
 # modify dataset to only include working targetsets
 
 #only use miR181_enriched und both
-largetframe <- largetframe[largetframe$set %in% c("mir181_enriched", "ago_bs_mir181_chi&mir181_enriched"),]
+# largetframe <- largetframe[largetframe$set %in% c("mir181_enriched", "ago_bs_mir181_chi&mir181_enriched"),]
 
 
-
-
-
-
-#targets with introns and other
-tject <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
-names(tject) <- 1:length(tject$geneName)
-tframe <- as.data.frame(tject)
-head(tframe)
 
 #MMsat4
 repeat_masker <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure2/MMsat4/repeat_masker.rds")
@@ -92,8 +83,55 @@ RPFncol <- "#8d0391"
 
 
 
+# analysis pipeline including altering of basis date along the line
+
+## remove non seeds
+
+```{r seed}
+largetframe$first_seed_200down.wobble <- as.character(largetframe$first_seed_200down.wobble)
+largetframe$first_seed_200down.wobble[is.na(largetframe$first_seed_200down.wobble)] <- "No seed"
+table(largetframe$first_seed_200down.wobble)
+
+#remove non seeds
+largetframeS <- largetframe[!(largetframe$first_seed_200down.wobble =="No seed"),]
+table(largetframeS$first_seed_200down.wobble)
+```
 
 
+
+
+
+
+
+
+
+### ECDF plot seed yes or no (ignored wobble)
+
+```{r wobbleedcf}
+#adjust data
+#RNA
+RNA$wobble <- "Non-target"
+RNA$wobble[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble=="No seed","geneName"]] <- "No seed"
+RNA$wobble[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble=="TRUE","geneName"]] <- "Canonical"
+RNA$wobble[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble=="FALSE","geneName"]] <- "Non-canonical"
+
+
+
+
+#ecdf
+#RNA
+wobbleECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Seed")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-0.75, 0.75)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA wobble")
+
+wobbleECDFRNA
+
+
+```
 
 
 
