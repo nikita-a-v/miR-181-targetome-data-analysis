@@ -24,7 +24,8 @@ source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme
 library(ggplot2)
 library(rtracklayer)
 library(dplyr)
-
+library(tibble)
+library(Rtsne)
 
 ```
 
@@ -54,6 +55,7 @@ repeat_masker <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure2/MMsat
 MMSAT4 <- repeat_masker[repeat_masker$repName == "MMSAT4"]
 
 ```
+
 ## colours
 ```{r colours}
 #colours
@@ -84,6 +86,145 @@ RPFncol <- "#8d0391"
 
 
 # analysis pipeline including altering of basis date along the line
+
+
+## dotplot region vs num vs expression
+```{r dotplot}
+utr5tab <- as.data.frame(table(largetframe[largetframe$region == "utr5","geneName"]))
+colnames(utr5tab) <- c("gene_symbol", "utr5_sites")
+cdstab <- as.data.frame(table(largetframe[largetframe$region == "cds","geneName"]))
+colnames(cdstab) <- c("gene_symbol", "cds_sites")
+utr3tab <- as.data.frame(table(largetframe[largetframe$region == "utr3","geneName"]))
+colnames(utr3tab) <- c("gene_symbol", "utr3_sites")
+
+#RNA
+#regions seperately
+RNArnum <- left_join(RNA, utr5tab, by="gene_symbol")
+RNArnum[is.na(RNArnum$utr5_sites), "utr5_sites"] <- 0
+RNArnum <- left_join(RNArnum, cdstab, by="gene_symbol")
+RNArnum[is.na(RNArnum$cds_sites), "cds_sites"] <- 0
+RNArnum <- left_join(RNArnum, utr3tab, by="gene_symbol")
+RNArnum[is.na(RNArnum$utr3_sites), "utr3_sites"] <- 0
+#regions sum
+RNArnum$total_sites <- rowSums(RNArnum[, c("utr5_sites", "cds_sites", "utr3_sites")])
+#regions writing
+RNArnum$bsregions <- "Non-target"
+RNArnum$bsregions[RNArnum$utr5_sites > 0] <- "5'UTR"
+RNArnum$bsregions[RNArnum$cds_sites > 0] <- "CDS"
+RNArnum$bsregions[RNArnum$utr3_sites > 0] <- "3'UTR"
+RNArnum$bsregions[RNArnum$utr5_sites > 0 & RNArnum$cds_sites > 0] <- "5'UTR and CDS"
+RNArnum$bsregions[RNArnum$utr3_sites > 0 & RNArnum$cds_sites > 0] <- "CDS and 3'UTR"
+RNArnum$bsregions[RNArnum$utr5_sites > 0 & RNArnum$utr3_sites > 0] <- "5'UTR and 3'UTR"
+RNArnum$bsregions[RNArnum$utr5_sites > 0 & RNArnum$cds_sites > 0 & RNArnum$utr3_sites > 0] <- "5'UTR, CDS and 3'UTR"
+
+
+head(RNArnum)
+
+#RPF
+#regions seperately
+RPFrnum <- left_join(RPF, utr5tab, by="gene_symbol")
+RPFrnum[is.na(RPFrnum$utr5_sites), "utr5_sites"] <- 0
+RPFrnum <- left_join(RPFrnum, cdstab, by="gene_symbol")
+RPFrnum[is.na(RPFrnum$cds_sites), "cds_sites"] <- 0
+RPFrnum <- left_join(RPFrnum, utr3tab, by="gene_symbol")
+RPFrnum[is.na(RPFrnum$utr3_sites), "utr3_sites"] <- 0
+#regions sum
+RPFrnum$total_sites <- rowSums(RPFrnum[, c("utr5_sites", "cds_sites", "utr3_sites")])
+#regions writing
+RPFrnum$bsregions <- "Non-target"
+RPFrnum$bsregions[RPFrnum$utr5_sites > 0] <- "5'UTR"
+RPFrnum$bsregions[RPFrnum$cds_sites > 0] <- "CDS"
+RPFrnum$bsregions[RPFrnum$utr3_sites > 0] <- "3'UTR"
+RPFrnum$bsregions[RPFrnum$utr5_sites > 0 & RPFrnum$cds_sites > 0] <- "5'UTR and CDS"
+RPFrnum$bsregions[RPFrnum$utr3_sites > 0 & RPFrnum$cds_sites > 0] <- "CDS and 3'UTR"
+RPFrnum$bsregions[RPFrnum$utr5_sites > 0 & RPFrnum$utr3_sites > 0] <- "5'UTR and 3'UTR"
+RPFrnum$bsregions[RPFrnum$utr5_sites > 0 & RPFrnum$cds_sites > 0 & RPFrnum$utr3_sites > 0] <- "5'UTR, CDS and 3'UTR"
+
+
+head(RPFrnum)
+```
+
+### Dotplot for number and type of MRE
+
+```{r nrdotplot}
+#colour limits
+clim <- 0.5
+#RNA
+RNArnumlim <- RNArnum
+RNArnumlim[RNArnumlim$log2FoldChange > clim, "log2FoldChange"] <- clim
+RNArnumlim[RNArnumlim$log2FoldChange < -clim, "log2FoldChange"] <- -clim
+
+
+rndplotRNA <- ggplot(RNArnumlim[RNArnumlim$padj <= 0.05 ,], aes(x=factor(bsregions, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "5'UTR and CDS", "CDS and 3'UTR", "5'UTR and 3'UTR", "5'UTR, CDS and 3'UTR")),
+                                  y=total_sites, 
+                                  colour=log2FoldChange)) + 
+  geom_point(position = "jitter") +
+  scale_colour_gradient2(low = "#05fae6", mid="black", high="#fa8c05", limits=c(-clim, clim)) + 
+  theme_paper() + theme(legend.position = "right", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  ggtitle("RNA")
+
+rndplotRNA
+
+#RPF
+RPFrnumlim <- RPFrnum
+RPFrnumlim[RPFrnumlim$log2FoldChange > clim, "log2FoldChange"] <- clim
+RPFrnumlim[RPFrnumlim$log2FoldChange < -clim, "log2FoldChange"] <- -clim
+
+
+rndplotRPF <- ggplot(RPFrnumlim[RPFrnumlim$padj <= 0.05 ,], aes(x=factor(bsregions, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "5'UTR and CDS", "CDS and 3'UTR", "5'UTR and 3'UTR", "5'UTR, CDS and 3'UTR")),
+                                  y=total_sites, 
+                                  colour=log2FoldChange)) + 
+  geom_point(position = "jitter") +
+  scale_colour_gradient2(low = "#05fae6", mid="black", high="#fa8c05", limits=c(-clim, clim)) + 
+  theme_paper() + theme(legend.position = "right", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  ggtitle("RPF")
+
+rndplotRPF
+
+#export
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Dotplot_region_number-RNA.pdf", height = 4, width = 5)
+rndplotRNA 
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Dotplot_region_number-RPF.pdf", height = 4, width = 5)
+rndplotRPF 
+dev.off()
+```
+
+## mir181majoritys
+
+analyze the chimeric binders for mir181 majoritys
+(apparently not included in this dataframe anymore)
+```{r maj}
+larget
+table(larget$mir_IP)
+
+
+# Subset the columns you want to include in the t-SNE plot
+subset_cols <- c("scoreSum", "scoreMean", "scoreMax", "region", "n_mir181", "n_mir181a", "n_mir181b", "n_mir181c", "n_mir181d", "set", "counts.bs.1_KO", 
+                 "counts.bs.2_KO", "counts.bs.3_KO", "counts.bs.4_WT", "counts.bs.5_WT", "counts.bs.6_WT")
+
+# Subset the tibble based on the selected columns
+subset_data <- larget[, subset_cols]
+
+# Perform t-SNE dimensionality reduction
+tsne_result <- Rtsne(subset_data)
+
+# Create a data frame from the t-SNE result
+tsne_df <- data.frame(X = tsne_result$Y[, 1], Y = tsne_result$Y[, 2])
+
+# Plot the t-SNE result
+ggplot(tsne_df, aes(X, Y)) +
+  geom_point() +
+  labs(title = "t-SNE Plot")
+
+
+
+```
+
+
+
+
 
 ## remove non seeds
 
