@@ -41,7 +41,16 @@ gff23 <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/ge
 #targets
 larget <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_with_seeds.rds")
 largetframe <- as.data.frame(larget)
+largetframenNA <- largetframe[!is.na(largetframe$geneName),]
 
+table(largetframe$mir_IP)
+
+largetframe[largetframe$mir_IP == "mmu-miR-181c-5p",]
+largetframenNA[largetframenNA$mir_IP == "mmu-miR-181c-5p",]
+
+largetframe[duplicated(largetframe$mir181BS_ID),]
+
+largetframeBS <- largetframe[!is.na(largetframe$geneID.2),]
 
 # modify dataset to only include working targetsets
 
@@ -82,6 +91,133 @@ RNAncol <- "#027d73"
 RPFpcol <- "#c4c404"
 RPFncol <- "#8d0391"
 ```
+
+
+
+
+# Target vs non target ecdf
+```{r targetecdf}
+#RNA
+RNA$target <- "Non-target"
+RNA$target[RNA$gene_symbol %in% largetframe$geneName] <- "Target"
+#RPF
+RPF$target <- "Non-target"
+RPF$target[RPF$gene_symbol %in% largetframe$geneName] <- "Target"
+
+#RNA
+targetecdfRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1)) +
+  coord_cartesian(xlim = c(-0.5, 0.5)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Target genes RNAseq")
+
+targetecdfRNA
+
+#RPF
+targetecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1)) +
+  coord_cartesian(xlim = c(-0.5, 0.5)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Target genes ribosome footprint")
+
+targetecdfRPF
+
+
+#export RPF
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RPF.pdf", width=2, height = 2)
+targetecdfRPF
+dev.off()
+```
+
+
+# number of binding sites histogram
+```{r numHist}
+bsnum <- as.data.frame(table(largetframe$geneName))
+colnames(bsnum) <- c("gene_symbol", "BS_number")
+
+#RNA
+RNAnum <- left_join(RNA, bsnum, by="gene_symbol")
+
+#RPF
+RPFnum <- left_join(RPF, bsnum, by="gene_symbol")
+
+RPFnumT <- RPFnum[!is.na(RPFnum$BS_number),]
+
+# histogram
+numHist_RPF <- ggplot(RPFnumT, aes(x=BS_number)) + 
+  geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
+  theme_paper() +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous("Number of binding sites", breaks = seq(1, max(RPFnumT$BS_number), by = 10),
+                     labels = c("1", seq(10, max(RPFnumT$BS_number), by = 10))) +
+  coord_cartesian(ylim = c(0, 1250), xlim = c(1, max(RPFnumT$BS_number))) +
+  ggtitle("Number of binding sites per gene")
+
+numHist_RPF
+
+#export RPF
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_RPF.pdf", width=2, height = 2)
+numHist_RPF
+dev.off()
+
+```
+
+# number of bs ecdf
+```{r numecdf}
+RNAnum$BS_number[is.na(RNAnum$BS_number)] <- "Non-target"
+RNAnum$BS_num_plot <- ifelse(RNAnum$BS_number == "Non-target", "Non-target",
+                             ifelse(RNAnum$BS_number == 1, "One MRE",
+                                    ifelse(RNAnum$BS_number %in% c(2, 3), "Two to three MREs", "More")))
+                                    
+RPFnum$BS_number[is.na(RPFnum$BS_number)] <- "Non-target"
+RPFnum$BS_num_plot <- ifelse(RPFnum$BS_number == "Non-target", "Non-target",
+                             ifelse(RPFnum$BS_number == 1, "One MRE",
+                                    ifelse(RPFnum$BS_number == 2, "Two MREs", "More")))
+
+
+#ecdf plot
+numecdfRPF <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-0.5, 0.5)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Number of binding sites ribosome footprint")
+
+numecdfRPF
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF.pdf", width=2, height = 2)
+numecdfRPF
+dev.off()
+
+
+RPFnum$BS_num_plot2 <- ifelse(RPFnum$BS_number == "Non-target", "Non-target",
+                             ifelse(RPFnum$BS_number %in% c(1,2), "1-2 MREs", "More"))
+
+
+#ecdf plot
+numecdfRPF2 <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot2, levels = c("Non-target", "1-2 MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-0.5, 0.5)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Number of binding sites ribosome footprint")
+
+numecdfRPF2
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF2.pdf", width=2, height = 2)
+numecdfRPF2
+dev.off()
+```
+
+
+# position of binding site histogram
+
 
 
 
@@ -522,6 +658,10 @@ numECDFRPF <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_nu
 
 numECDFRPF
 
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF2.pdf", width=2, height = 2)
+numECDFRPF
+dev.off()
 ```
 
 ## MMsat4
