@@ -26,6 +26,8 @@ library(rtracklayer)
 library(dplyr)
 library(tibble)
 library(Rtsne)
+library(cliProfiler)
+library(GenomicRanges)
 
 ```
 
@@ -37,20 +39,12 @@ RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterfram
 
 #load the gtf file to compare genes
 gff23 <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
+gff23path <- file.path("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
 
 #targets
 larget <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_with_seeds.rds")
 largetframe <- as.data.frame(larget)
-largetframenNA <- largetframe[!is.na(largetframe$geneName),]
 
-table(largetframe$mir_IP)
-
-largetframe[largetframe$mir_IP == "mmu-miR-181c-5p",]
-largetframenNA[largetframenNA$mir_IP == "mmu-miR-181c-5p",]
-
-largetframe[duplicated(largetframe$mir181BS_ID),]
-
-largetframeBS <- largetframe[!is.na(largetframe$geneID.2),]
 
 # modify dataset to only include working targetsets
 
@@ -107,6 +101,7 @@ RPF$target[RPF$gene_symbol %in% largetframe$geneName] <- "Target"
 #RNA
 targetecdfRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
   stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
   scale_colour_manual(values = c("black", farbe1)) +
   coord_cartesian(xlim = c(-0.5, 0.5)) + 
   theme_paper() +
@@ -118,6 +113,7 @@ targetecdfRNA
 #RPF
 targetecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
   stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
   scale_colour_manual(values = c("black", farbe1)) +
   coord_cartesian(xlim = c(-0.5, 0.5)) + 
   theme_paper() +
@@ -182,6 +178,7 @@ RPFnum$BS_num_plot <- ifelse(RPFnum$BS_number == "Non-target", "Non-target",
 #ecdf plot
 numecdfRPF <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
   stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
   coord_cartesian(xlim = c(-0.5, 0.5)) + 
   theme_paper() +
@@ -202,6 +199,7 @@ RPFnum$BS_num_plot2 <- ifelse(RPFnum$BS_number == "Non-target", "Non-target",
 #ecdf plot
 numecdfRPF2 <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot2, levels = c("Non-target", "1-2 MREs", "More")))) + 
   stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
   coord_cartesian(xlim = c(-0.5, 0.5)) + 
   theme_paper() +
@@ -216,8 +214,86 @@ dev.off()
 ```
 
 
-# position of binding site histogram
+#  metaGeneProfile
 
+```{r metaGeneProfile}
+glarget <- makeGRangesFromDataFrame(largetframe, keep.extra.columns = F)
+meta <- metaGeneProfile(object = glarget, annotation = gff23path)
+
+meta
+
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/metagene_profile.pdf", width=2, height = 2)
+meta
+dev.off()
+```
+
+
+# position in gene ECDF
+```{r posecdf}
+# majority votes region
+
+# add data to RNA/RPF frames
+utr5 <- as.data.frame(table(largetframe[largetframe$region == "utr5","geneName"]))
+colnames(utr5) <- c("gene_symbol", "num_5UTR")
+cds <- as.data.frame(table(largetframe[largetframe$region == "cds","geneName"]))
+colnames(cds) <- c("gene_symbol", "num_CDS")
+utr3 <- as.data.frame(table(largetframe[largetframe$region == "utr3","geneName"]))
+colnames(utr3) <- c("gene_symbol", "num_3UTR")
+
+#RNA
+RNAnumr <- left_join(RNAnum, utr5, by="gene_symbol")
+RNAnumr <- left_join(RNAnumr, cds, by="gene_symbol")
+RNAnumr <- left_join(RNAnumr, utr3, by="gene_symbol")
+
+RNAnumr[is.na(RNAnumr$num_5UTR), "num_5UTR"] <- 0
+RNAnumr[is.na(RNAnumr$num_CDS), "num_CDS"] <- 0
+RNAnumr[is.na(RNAnumr$num_3UTR), "num_3UTR"] <- 0
+
+# make majority id
+RNAnumr$region_majority <- "Equal"
+RNAnumr$region_majority[RNAnumr$num_5UTR > RNAnumr$num_CDS & RNAnumr$num_5UTR > RNAnumr$num_3UTR] <- "5'UTR" 
+RNAnumr$region_majority[RNAnumr$num_CDS > RNAnumr$num_5UTR & RNAnumr$num_CDS > RNAnumr$num_3UTR] <- "CDS" 
+RNAnumr$region_majority[RNAnumr$num_3UTR > RNAnumr$num_5UTR & RNAnumr$num_3UTR > RNAnumr$num_CDS] <- "3'UTR" 
+RNAnumr$region_majority[RNAnumr$num_5UTR == 0 & RNAnumr$num_CDS == 0 & RNAnumr$num_3UTR == 0] <- "Non-target"
+
+#RPF
+RPFnumr <- left_join(RPFnum, utr5, by="gene_symbol")
+RPFnumr <- left_join(RPFnumr, cds, by="gene_symbol")
+RPFnumr <- left_join(RPFnumr, utr3, by="gene_symbol")
+
+RPFnumr[is.na(RPFnumr$num_5UTR), "num_5UTR"] <- 0
+RPFnumr[is.na(RPFnumr$num_CDS), "num_CDS"] <- 0
+RPFnumr[is.na(RPFnumr$num_3UTR), "num_3UTR"] <- 0
+
+# make majority id
+RPFnumr$region_majority <- "Equal"
+RPFnumr$region_majority[RPFnumr$num_5UTR > RPFnumr$num_CDS & RPFnumr$num_5UTR > RPFnumr$num_3UTR] <- "5'UTR" 
+RPFnumr$region_majority[RPFnumr$num_CDS > RPFnumr$num_5UTR & RPFnumr$num_CDS > RPFnumr$num_3UTR] <- "CDS" 
+RPFnumr$region_majority[RPFnumr$num_3UTR > RPFnumr$num_5UTR & RPFnumr$num_3UTR > RPFnumr$num_CDS] <- "3'UTR" 
+RPFnumr$region_majority[RPFnumr$num_5UTR == 0 & RPFnumr$num_CDS == 0 & RPFnumr$num_3UTR == 0] <- "Non-target"
+
+
+
+#ECDF
+#ecdf plot
+regMAJecdfRPF <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor(region_majority, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Equal")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-0.5, 0.5)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Region by majority vote ribosome footprint")
+
+regMAJecdfRPF
+
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RPF.pdf", width=2, height = 2)
+regMAJecdfRPF
+dev.off()
+
+```
 
 
 
