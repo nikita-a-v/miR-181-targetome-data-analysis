@@ -87,6 +87,17 @@ RPFncol <- "#8d0391"
 ```
 
 
+## axis limits
+```{r axislim}
+xlim <- 0.8
+zoomfac <- 0.45
+```
+
+
+# venn diagram RPF vs targetsites
+```{r venntarget}
+
+```
 
 
 # Target vs non target ecdf
@@ -115,18 +126,38 @@ targetecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(targe
   stat_ecdf(geom="step", linewidth=2) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
   scale_colour_manual(values = c("black", farbe1)) +
-  coord_cartesian(xlim = c(-0.5, 0.5)) + 
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
   ggtitle("Target genes ribosome footprint")
 
 targetecdfRPF
 
+# zoom
+targetecdfRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+targetecdfRPFZ
+
 
 #export RPF
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RPF.pdf", width=2, height = 2)
 targetecdfRPF
 dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+targetecdfRPFZ
+dev.off()
+
+table(RPF$target) 
+length(RPF$target)
 ```
 
 
@@ -142,7 +173,7 @@ RNAnum <- left_join(RNA, bsnum, by="gene_symbol")
 RPFnum <- left_join(RPF, bsnum, by="gene_symbol")
 
 RPFnumT <- RPFnum[!is.na(RPFnum$BS_number),]
-
+RPFnumT$BS_number[RPFnumT$BS_number > 21] <- 21
 # histogram
 numHist_RPF <- ggplot(RPFnumT, aes(x=BS_number)) + 
   geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
@@ -180,15 +211,33 @@ numecdfRPF <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_nu
   stat_ecdf(geom="step", linewidth=2) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
-  coord_cartesian(xlim = c(-0.5, 0.5)) + 
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
   ggtitle("Number of binding sites ribosome footprint")
 
 numecdfRPF
 
+# zoom
+numecdfRPFZ <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+numecdfRPFZ
+
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF.pdf", width=2, height = 2)
 numecdfRPF
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+numecdfRPFZ
 dev.off()
 
 
@@ -201,16 +250,36 @@ numecdfRPF2 <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_n
   stat_ecdf(geom="step", linewidth=2) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
-  coord_cartesian(xlim = c(-0.5, 0.5)) + 
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
   ggtitle("Number of binding sites ribosome footprint")
 
 numecdfRPF2
 
+#zoom
+numecdfRPF2Z <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot2, levels = c("Non-target", "1-2 MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+numecdfRPF2Z
+
+
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF2.pdf", width=2, height = 2)
 numecdfRPF2
 dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF2_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+numecdfRPF2Z
+dev.off()
+
+table(RPFnum$BS_num_plot)
 ```
 
 
@@ -281,7 +350,7 @@ regMAJecdfRPF <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor(r
   stat_ecdf(geom="step", linewidth=2) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
-  coord_cartesian(xlim = c(-0.5, 0.5)) + 
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
   ggtitle("Region by majority vote ribosome footprint")
@@ -289,9 +358,28 @@ regMAJecdfRPF <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor(r
 regMAJecdfRPF
 
 
+regMAJecdfRPFZ <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor(region_majority, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Equal")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+regMAJecdfRPFZ
+
+
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RPF.pdf", width=2, height = 2)
 regMAJecdfRPF
 dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+regMAJecdfRPFZ
+dev.off()
+
+table(RPFnumr$region_majority)
 
 ```
 
