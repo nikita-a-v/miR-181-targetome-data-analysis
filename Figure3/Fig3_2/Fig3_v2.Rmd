@@ -44,6 +44,8 @@ gff23path <- file.path("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome"
 #targets
 larget <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_with_seeds.rds")
 largetframe <- as.data.frame(larget)
+table(largetframe$set)
+largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
 
 
 # modify dataset to only include working targetsets
@@ -89,7 +91,7 @@ RPFncol <- "#8d0391"
 
 ## axis limits
 ```{r axislim}
-xlim <- 0.8
+xlim <- 0.5
 zoomfac <- 0.45
 ```
 
@@ -173,14 +175,13 @@ RNAnum <- left_join(RNA, bsnum, by="gene_symbol")
 RPFnum <- left_join(RPF, bsnum, by="gene_symbol")
 
 RPFnumT <- RPFnum[!is.na(RPFnum$BS_number),]
-RPFnumT$BS_number[RPFnumT$BS_number > 21] <- 21
+RPFnumT$BS_number[RPFnumT$BS_number > 20] <- 20
 # histogram
 numHist_RPF <- ggplot(RPFnumT, aes(x=BS_number)) + 
   geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
   theme_paper() +
   scale_y_continuous(expand = c(0,0)) +
-  scale_x_continuous("Number of binding sites", breaks = seq(1, max(RPFnumT$BS_number), by = 10),
-                     labels = c("1", seq(10, max(RPFnumT$BS_number), by = 10))) +
+  scale_x_continuous("Number of binding sites") +
   coord_cartesian(ylim = c(0, 1250), xlim = c(1, max(RPFnumT$BS_number))) +
   ggtitle("Number of binding sites per gene")
 
