@@ -30,6 +30,7 @@ library(Rtsne)
 library(cliProfiler)
 library(GenomicRanges)
 library(cowplot)
+library(eulerr)
 
 ```
 
@@ -46,7 +47,8 @@ gff23path <- file.path("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome"
 #targets
 larget <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_with_seeds.rds")
 largetframe <- as.data.frame(larget)
-
+table(largetframe$set)
+largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
 
 # modify dataset to only include working targetsets
 
@@ -58,6 +60,8 @@ largetframe <- as.data.frame(larget)
 #MMsat4
 repeat_masker <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure2/MMsat4/repeat_masker.rds")
 MMSAT4 <- repeat_masker[repeat_masker$repName == "MMSAT4"]
+MurSatRep1 <- repeat_masker[repeat_masker$repName == "MurSatRep1"]
+
 ```
 
 
@@ -90,7 +94,7 @@ RPFncol <- "#8d0391"
 
 ## axis limits
 ```{r axislim}
-xlim <- 0.8
+xlim <- 0.5
 zoomfac <- 0.45
 ```
 
@@ -221,6 +225,152 @@ dev.off()
 table(RPF$MREtype)
 ```
 
+
+
+# mmsat4
+```{r mmsat4}
+mmsat4frame <- as.data.frame(subsetByOverlaps(gff23, MMSAT4))
+
+#RNA
+RNA$tvsmmsat4 <- "Non-target"
+RNA$tvsmmsat4[RNA$gene_symbol %in% mmsat4frame$gene_name] <- "MMsat4"
+RNA$tvsmmsat4[RNA$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
+RNA$tvsmmsat4[RNA$gene_symbol %in% largetframe$geneName & RNA$gene_symbol %in% mmsat4frame$gene_name] <- "both"
+table(RNA$tvsmmsat4)
+
+#RPF
+RPF$tvsmmsat4 <- "Non-target"
+RPF$tvsmmsat4[RPF$gene_symbol %in% mmsat4frame$gene_name] <- "MMsat4"
+RPF$tvsmmsat4[RPF$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
+RPF$tvsmmsat4[RPF$gene_symbol %in% largetframe$geneName & RPF$gene_symbol %in% mmsat4frame$gene_name] <- "both"
+table(RPF$tvsmmsat4)
+
+#RNA
+tolECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat4, levels = c("Non-target", "MMsat4", "miR-181 target", "both")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA Mmsat4 vs target")
+
+tolECDFRNA
+
+
+#RPF
+tolECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat4, levels = c("Non-target", "MMsat4", "miR-181 target", "both")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF Mmsat4 vs target")
+
+tolECDFRPF
+
+#export RPF
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_RPF.pdf", width=2, height = 2)
+tolECDFRPF
+dev.off()
+
+
+table(RPF$tvsmmsat4)
+```
+
+# MurSatRep1
+```{r MurSatRep1}
+MurSatRep1frame <- as.data.frame(subsetByOverlaps(gff23, MurSatRep1))
+
+#RNA
+RNA$tvsMurSatRep1 <- "Non-target"
+RNA$tvsMurSatRep1[RNA$gene_symbol %in% MurSatRep1frame$gene_name] <- "MurSatRep1"
+RNA$tvsMurSatRep1[RNA$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
+RNA$tvsMurSatRep1[RNA$gene_symbol %in% largetframe$geneName & RNA$gene_symbol %in% MurSatRep1frame$gene_name] <- "both"
+table(RNA$tvsMurSatRep1)
+
+#RPF
+RPF$tvsMurSatRep1 <- "Non-target"
+RPF$tvsMurSatRep1[RPF$gene_symbol %in% MurSatRep1frame$gene_name] <- "MurSatRep1"
+RPF$tvsMurSatRep1[RPF$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
+RPF$tvsMurSatRep1[RPF$gene_symbol %in% largetframe$geneName & RPF$gene_symbol %in% MurSatRep1frame$gene_name] <- "both"
+table(RPF$tvsMurSatRep1)
+
+#RNA
+murECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(tvsMurSatRep1, levels = c("Non-target", "MurSatRep1", "miR-181 target", "both")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA MurSatRep1 vs target")
+
+murECDFRNA
+
+
+#RPF
+murECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(tvsMurSatRep1, levels = c("Non-target", "MurSatRep1", "miR-181 target", "both")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF MurSatRep1 vs target")
+
+murECDFRPF
+
+
+
+#export RPF
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_RPF.pdf", width=2, height = 2)
+murECDFRPF
+dev.off()
+
+
+table(RPF$tvsMurSatRep1)
+```
+
+
+## metagene plot
+```{r metageneplot}
+MMSAT4$id <- "MMsat4"
+MurSatRep1$id <- "MurSatRep1"
+
+metaob <- c(MMSAT4, MurSatRep1)
+
+metael <- metaGeneProfile(object = metaob, annotation = gff23path, group = "id")
+metasat4 <- metaGeneProfile(object = MMSAT4, annotation = gff23path)
+metamur <- metaGeneProfile(object = MurSatRep1, annotation = gff23path)
+
+metasat4
+metamur
+
+metael
+
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/metagene_profile_both.pdf", width=2, height = 2)
+metael 
+dev.off()
+
+```
+
+
+
+## venn diagram
+```{r vennmmsat4}
+vset <- list(mmsat4frame[!duplicated(mmsat4frame$gene_name),"gene_name"], MurSatRep1frame[!duplicated(MurSatRep1frame$gene_name),"gene_name"])
+names(vset) <- c("MMSAT4", "MurSatRep1")
+
+vplot <- plot(euler(vset, shape = "ellipse"), quantities = TRUE, main="Genes by contained motifes" , fills=c(farbe1, farbe2)) 
+
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/Venn_motifes.pdf", width=2, height = 2)
+vplot
+dev.off()
+```
 
 # Session info
 ```{r sessioninfo}
