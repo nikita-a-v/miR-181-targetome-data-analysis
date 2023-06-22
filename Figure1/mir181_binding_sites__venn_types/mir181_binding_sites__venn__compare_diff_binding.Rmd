@@ -39,14 +39,14 @@ library(ggpubr)
 # ----------------------------------------
 # settings
 # ----------------------------------------
-# out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/mir181_binding_sites__venn_types/"
-# source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
-# source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
+out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/mir181_binding_sites__venn_types/"
+source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
+source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
 
-#nikita
-out <- "D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/"
-source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
-source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/CustomThemes.R")
+# #nikita
+# out <- "D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/"
+# source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+# source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/CustomThemes.R")
 
 # farben
 farbeneg <- "#B4B4B4"
@@ -86,35 +86,35 @@ mir181 binding sites are defined as the union of
 # ----------------------------------------
 # mir181 enriched binding sites
 # ----------------------------------------
-# mir181_enriched <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/mir181-enriched_binding_site_definition/2023-04-03-BS_mir181_enriched.rds")
+mir181_enriched <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/mir181-enriched_binding_site_definition/2023-04-03-BS_mir181_enriched.rds")
 
-#nikita
-mir181_enriched <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/mir181-enriched_binding_site_definition/2023-04-03-BS_mir181_enriched.rds")
+# #nikita
+# mir181_enriched <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/mir181-enriched_binding_site_definition/2023-04-03-BS_mir181_enriched.rds")
 
 # ----------------------------------------
 # chimeric reads
 # ----------------------------------------
 
-# chimeric_reads <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Ago_targetome/mir_chimeric_crosslinks.rds")
+chimeric_reads <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Ago_targetome/mir_chimeric_crosslinks.rds")
 
 #nikita
-chimeric_reads <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Ago_targetome/mir_chimeric_crosslinks.rds")
+# chimeric_reads <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Ago_targetome/mir_chimeric_crosslinks.rds")
 
 # ----------------------------------------
 # AGO binding sites
 # ----------------------------------------
-# ago_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
+ago_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
 
 #nikita
-ago_bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
+# ago_bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
 
 # ----------------------------------------
 # BS downregulated in mir181 KO
 # ----------------------------------------
-# diff <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Differential_Binding/BsDifferentialResult.rds")
+diff <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Differential_Binding/BsDifferentialResult.rds")
 
 #nikita
-diff <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Differential_Binding/BsDifferentialResult.rds")
+# diff <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Differential_Binding/BsDifferentialResult.rds")
 
 
 diff$down <- (diff$resBs.padj < 0.05) & (diff$resBs.log2FoldChange < -log2(2))
@@ -352,6 +352,40 @@ venn_df <- data.frame(ago_bs_mir181_chi =
 
 venn <- eulerr::euler(venn_df)
 plot(venn, quantities = T)
+
+```
+
+# pie chart mir181 enriched set
+
+```{r}
+names(mir181_bs) <- 1:NROW(mir181_bs)
+
+mir181_enriched_set <- mir181_bs %>% 
+  as.data.frame(.) %>%
+  subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched"))
+
+mir181_enriched_set_df <-   table(mir181_enriched_set$set) %>% 
+  as.data.frame(.) 
+
+p <- ggplot(mir181_enriched_set_df, aes(y=Freq, x="", fill=Var1)) +
+     geom_col()+
+     coord_polar(theta="y") +
+  #    xlim(c(2, 4)) +
+  geom_label(aes( fill=Var1, label = Freq),
+             position = position_stack(vjust = 0.5),
+             show.legend = FALSE) +
+  scale_fill_manual(values = c (farbe6, farbe4)) +
+  theme_paper() +
+  theme_nice_pie() +
+  #theme(legend.position = "none") +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  labs(y = NULL,
+       x = NULL)
+p
+
+ggsave(p, filename = paste0(out, "Figure1I_pie_miR181_enriched_BS.pdf"), width = unit(8, "cm"), height = unit(6,"cm"))
+
+
 
 ```
 

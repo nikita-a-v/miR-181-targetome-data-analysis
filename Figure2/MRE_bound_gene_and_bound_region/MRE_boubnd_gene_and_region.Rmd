@@ -75,6 +75,13 @@ farbe16 <- "#FF6348FF"
 
 mir181_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
 
+names(mir181_bs) <- 1:NROW(mir181_bs)
+mir181_bs <- as.data.frame(mir181_bs)
+
+mir181_enriched_set <- mir181_bs %>% 
+  as.data.frame(.) %>%
+  subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched"))
+
 ```
 
 
@@ -83,10 +90,11 @@ mir181_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181
 ## mir181 bound genes - Figure 2A
 
 ```{r}
-names(mir181_bs) <- 1:NROW(mir181_bs)
-mir181_bs <- as.data.frame(mir181_bs)
 
-gene_type_df <- mutate(mir181_bs, geneType = case_when(geneType != "protein_coding" ~ "other", T ~ "protein_coding"))
+gene_type_df <- mutate(mir181_enriched_set, geneType =
+                         case_when(geneType != "protein_coding" ~ "other",
+                                   region == "intron" ~ "other",
+                                    T ~ "mature protein_coding RNA"))
 gene_type_df <-   table(gene_type_df$geneType) %>% 
   as.data.frame(.) 
 
@@ -94,7 +102,7 @@ p <- ggplot(gene_type_df, aes(y=Freq, x="", fill=Var1)) +
      geom_col()+
      coord_polar(theta="y") +
   #    xlim(c(2, 4)) +
-  geom_label(data = gene_type_df %>% subset(gene_type_df == "protein_coding"), aes(y=Freq, x="", fill=Var1, label = Freq),
+  geom_label(data = gene_type_df %>% subset(gene_type_df == "mature protein_coding RNA"), aes(y=Freq, x="", fill=Var1, label = Freq),
              position = position_stack(vjust = 0.5),
              show.legend = FALSE) +
   scale_fill_manual(values = c (farbe6, farbe4)) +
@@ -115,14 +123,14 @@ ggsave(p, filename = paste0(out, "Figure2A_bound_gene_types_miR181_BS", Sys.Date
 For all further analyses we removed binding sites on non protein-coding RNAs.
 
 ```{r}
-mir181_bs <- subset(mir181_bs, geneType == "protein_coding")
+mir181_enriched_set <- subset(mir181_enriched_set, geneType == "protein_coding")
 
 ```
 
 ## mir181 bound regions - Figure 2B
 
 ```{r}
-gene_region_df <- table(mir181_bs$region) %>% 
+gene_region_df <- table(mir181_enriched_set$region) %>% 
   as.data.frame(.) %>%
   arrange(desc(Freq))
 
