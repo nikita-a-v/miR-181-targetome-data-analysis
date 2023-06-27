@@ -327,6 +327,10 @@ RNAnumr$region_majority[RNAnumr$num_CDS > RNAnumr$num_5UTR & RNAnumr$num_CDS > R
 RNAnumr$region_majority[RNAnumr$num_3UTR > RNAnumr$num_5UTR & RNAnumr$num_3UTR > RNAnumr$num_CDS] <- "3'UTR" 
 RNAnumr$region_majority[RNAnumr$num_5UTR == 0 & RNAnumr$num_CDS == 0 & RNAnumr$num_3UTR == 0] <- "Non-target"
 
+# make single id
+RNAnumr$region_single <- RNAnumr$region_majority
+RNAnumr$region_single[as.numeric(RNAnumr$BS_number) > 1] <- "Multiple"
+
 #RPF
 RPFnumr <- left_join(RPFnum, utr5, by="gene_symbol")
 RPFnumr <- left_join(RPFnumr, cds, by="gene_symbol")
@@ -343,10 +347,13 @@ RPFnumr$region_majority[RPFnumr$num_CDS > RPFnumr$num_5UTR & RPFnumr$num_CDS > R
 RPFnumr$region_majority[RPFnumr$num_3UTR > RPFnumr$num_5UTR & RPFnumr$num_3UTR > RPFnumr$num_CDS] <- "3'UTR" 
 RPFnumr$region_majority[RPFnumr$num_5UTR == 0 & RPFnumr$num_CDS == 0 & RPFnumr$num_3UTR == 0] <- "Non-target"
 
+# make single id
+RPFnumr$region_single <- RPFnumr$region_majority
+RPFnumr$region_single[as.numeric(RPFnumr$BS_number) > 1] <- "Multiple"
 
 
 #ECDF
-#ecdf plot
+#majority
 regMAJecdfRPF <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor(region_majority, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Equal")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
@@ -381,6 +388,44 @@ regMAJecdfRPFZ
 dev.off()
 
 table(RPFnumr$region_majority)
+
+
+
+#single
+regMAJecdfRPFS <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Region single ribosome footprint")
+
+regMAJecdfRPFS
+
+
+regMAJecdfRPFSZ <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+regMAJecdfRPFSZ
+
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_RPF.pdf", width=2, height = 2)
+regMAJecdfRPFS
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+regMAJecdfRPFSZ
+dev.off()
+
+table(RPFnumr$region_single)
 
 ```
 
