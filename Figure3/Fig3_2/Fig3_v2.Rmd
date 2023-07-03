@@ -142,7 +142,7 @@ targetecdfRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(targ
   scale_colour_manual(values = c("black", farbe1)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
@@ -226,7 +226,7 @@ numecdfRPFZ <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_n
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
@@ -265,7 +265,7 @@ numecdfRPF2Z <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
@@ -372,7 +372,7 @@ regMAJecdfRPFZ <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor(
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
@@ -410,7 +410,7 @@ regMAJecdfRPFSZ <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
