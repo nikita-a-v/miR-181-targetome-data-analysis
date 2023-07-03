@@ -98,6 +98,14 @@ xlim <- 0.5
 zoomfac <- 0.45
 ```
 
+
+## number of binding sites 
+```{r num}
+bsnum <- as.data.frame(table(largetframe$geneName))
+colnames(bsnum) <- c("gene_symbol", "BS_number")
+```
+
+
 # wobble plot
 
 ## ecdf
@@ -107,19 +115,20 @@ RNA$wobble <- "Non-target"
 RNA$wobble[RNA$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.wobble) ,"geneName"]] <- "No seed"
 RNA$wobble[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == FALSE ,"geneName"]] <- "Canonical"
 RNA$wobble[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == TRUE ,"geneName"]] <- "Non-Canonical"
-
+RNA$wobble[RNA$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
 #RPF
 RPF$wobble <- "Non-target"
 RPF$wobble[RPF$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.wobble) ,"geneName"]] <- "No seed"
 RPF$wobble[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == FALSE ,"geneName"]] <- "Canonical"
 RPF$wobble[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == TRUE ,"geneName"]] <- "Non-Canonical"
+RPF$wobble[RPF$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
 
 
 #RPF
-wobbleecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical")))) + 
+wobbleecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
-  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2)) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
   coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
@@ -128,10 +137,10 @@ wobbleecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobbl
 wobbleecdfRPF
 
 #zoom
-wobbleecdfRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical")))) + 
+wobbleecdfRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2*zoomfac) +
   geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
-  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2)) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
   theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
@@ -163,6 +172,8 @@ RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type
 RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
 RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
 RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+RNA$MREtype[RNA$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
 
 #RPF
 RPF$MREtype <- "Non-target"
@@ -171,13 +182,14 @@ RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type
 RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
 RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
 RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+RPF$MREtype[RPF$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
 
 # ecdf plots
 #RNA
 typeECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), 
-                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer")))) + 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
-  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
   coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
@@ -187,10 +199,10 @@ typeECDFRNA
 
 #RPF
 typeECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
-                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer")))) + 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
-  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
   coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
@@ -200,10 +212,10 @@ typeECDFRPF
 
 # zoom
 typeECDFRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
-                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer")))) + 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2*zoomfac) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
-  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
   theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
