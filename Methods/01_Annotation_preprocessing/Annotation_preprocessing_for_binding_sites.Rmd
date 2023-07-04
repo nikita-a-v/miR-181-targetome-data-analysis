@@ -3,18 +3,18 @@ title: "Annotation file preprocessing for binding sites"
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  BiocStyle::html_document:
-    toc_float: TRUE
-    code_folding: hide
-    toc: TRUE
-    number_sections: yes
-    fig_caption: yes
-  # pdf_document:
-  #   fig_caption: true
-  #   fig_crop: true
-  #   toc: true
-  #   toc_depth: 1
-  #   number_sections: true
+  # BiocStyle::html_document:
+  #   toc_float: TRUE
+  #   code_folding: hide
+  #   toc: TRUE
+  #   number_sections: yes
+  #   fig_caption: yes
+  pdf_document:
+    fig_caption: true
+    fig_crop: true
+    toc: true
+    toc_depth: 1
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -72,6 +72,7 @@ anno$geneID <- sub("\\..*", "", anno$gene_id)
 # make txdb and save
 annoDb = makeTxDbFromGRanges(anno)
 saveDb(annoDb, paste0(out, "annotation.db"))
+saveRDS(anno, paste0(out, "annotation.rds"))
 
 
 kable(head(anno)) %>%
