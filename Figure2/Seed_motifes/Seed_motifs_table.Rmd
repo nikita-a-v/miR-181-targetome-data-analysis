@@ -3,18 +3,18 @@ title: "Seed motifs"
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  # BiocStyle::html_document:
-  # toc_float: TRUE
-  # code_folding: hide
-  # toc: TRUE
-  # number_sections: yes
-  # fig_caption: yes
-  pdf_document:
-    fig_caption: true
-    fig_crop: true
-    toc: true
-    toc_depth: 1
-    number_sections: true
+  BiocStyle::html_document:
+  toc_float: TRUE
+  code_folding: hide
+  toc: TRUE
+  number_sections: yes
+  fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -134,22 +134,26 @@ ggsave(logo, filename = paste0(out, "xstreme_logo.pdf"), height = 6, width = 8, 
 # the mir181 seed and interesting seed variations
 #################
 
-seed_8mer <- "UGAAUGUU"
+seed_8mer <- "UGAAUGUA"
 seed_7mer_m8 <- "UGAAUGU"
-seed_7mer_a1 <- "GAAUGUU"
+seed_7mer_a1 <- "GAAUGUA"
 seed_6mer <- "GAAUGU"
 seed_6mer_wobble <- "GAUUGU"
-seed_8mer_wobble <- "UGAUUGUU"
+seed_8mer_wobble <- "UGAUUGUA"
 seed_7mer_m8_wobble <- "UGAUUGU"
-seed_7mer_a1_wobble <- "GAUUGUU"
+seed_7mer_a1_wobble <- "GAUUGUA"
+
+seed_alt_38 <- "UGAAUG"
+seed_alt_38_wobble <- "UGAUUG"
+
 
 # make a list of all seeds
-seed_list <- list(seed_8mer, seed_7mer_m8, seed_7mer_a1,seed_6mer, seed_6mer_wobble, seed_8mer_wobble, seed_7mer_m8_wobble, seed_7mer_a1_wobble )
+seed_list <- list(seed_8mer, seed_7mer_m8, seed_7mer_a1,seed_6mer, seed_6mer_wobble, seed_8mer_wobble, seed_7mer_m8_wobble, seed_7mer_a1_wobble, seed_alt_38, seed_alt_38_wobble  )
 
-seed_names_list <- list( "seed_8mer",  "seed_7mer_m8", "seed_7mer_a1",  "seed_6mer", "seed_6mer_wobble", "seed_8mer_wobble", "seed_7mer_m8_wobble", "seed_7mer_a1_wobble")
+seed_names_list <- list( "seed_8mer",  "seed_7mer_m8", "seed_7mer_a1",  "seed_6mer", "seed_6mer_wobble", "seed_8mer_wobble", "seed_7mer_m8_wobble", "seed_7mer_a1_wobble", "seed_alt_38", "seed_alt_38_wobble" )
 
 # hierarchy order, to decide which seed to use if several ar present
-seed_importance_order <- c("seed_8mer",  "seed_7mer_m8", "seed_7mer_a1",  "seed_6mer")
+seed_importance_order <- c("seed_8mer",  "seed_7mer_m8", "seed_7mer_a1",  "seed_6mer", "seed_alt_38", "seed_alt_38_wobble")
 
 ```
 
@@ -247,19 +251,35 @@ p <- ggplot(mir181_bs %>% subset(set %in% c("ago_bs_mir181_chi&mir181_enriched",
   theme_paper()+
   scale_fill_manual(values = c(farbe4, darken(farbe4)))+
   theme(legend.position = "None") +
-  scale_x_discrete(labels=c(seed_8mer = "U*GAA/UUGU*U",
+  scale_x_discrete(labels=c(seed_8mer = "U*GAA/UUGU*A",
                             seed_7mer_m8 = "U*GAA/UUGU",
-                            seed_7mer_a1 = "GAA/UUGU*U",
-                            seed_6mer = "GAA/UUGU"),
+                            seed_7mer_a1 = "GAA/UUGU*A",
+                            seed_6mer = "GAA/UUGU",
+                            seed_alt_38 = "UGAA/UUG"),
                    guide = guide_axis(angle = 25))
   
 p+
   ggtitle("mir181 seed variations in 200nt after the binding site", 
           subtitle = "in case of mutiple seeds the seed nearest to the bindingsite in used")
 
+p1 <- ggplot(mir181_bs %>% subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")) %>% subset(!is.na(first_seed_200down.type)), aes(x = first_seed_200down.type))+
+  geom_bar(color = "black")+
+  theme_paper()+
+  theme(legend.position = "None") +
+  scale_x_discrete(labels=c(seed_8mer = "U*GAA/UUGU*A",
+                            seed_7mer_m8 = "U*GAA/UUGU",
+                            seed_7mer_a1 = "GAA/UUGU*A",
+                            seed_6mer = "GAA/UUGU",
+                            seed_alt_38 = "UGAA/UUG"),
+                   guide = guide_axis(angle = 25))
+  
+p1+
+  ggtitle("mir181 seed variations in 200nt after the binding site", 
+          subtitle = "in case of mutiple seeds the seed nearest to the bindingsite in used")
+
 # plot seed distributions
 p2 <- ggplot(mir181_bs %>% subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")), aes(x = first_seed_200down.start))+
-  geom_bar(color = "black")+
+  geom_histogram(color = "black", binwidth = 5)+
   theme_paper()+
   ggtitle("mir181 seed positions", 
           subtitle = "in case of mutiple seeds the seed nearest to the bindingsite in used")
@@ -276,10 +296,12 @@ p3
 
 # all seeds per BS
 
-p4 <- ggplot(unnest(mir181_bs) %>% subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")), aes(x = Seeds_200down.start))+
-  geom_bar(color = "black")+
-  theme_paper()+
-  ylim(c(0,350))
+p4 <- ggplot(unnest(mir181_bs) %>% 
+               subset(Seeds_200down.type %in% c("seed_6mer", "seed_6mer_wobble")) %>%
+               subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")), aes(x = Seeds_200down.start))+
+  geom_histogram(color = "black", binwidth = 5)+
+  theme_paper()
+
 p4+
   ggtitle("mir181 seed positions", 
           subtitle = "in case of mutiple seeds all are used")
@@ -295,14 +317,14 @@ p5 <- ggplot(unnest(mir181_bs) %>% subset(set %in% c("ago_bs_mir181_chi&mir181_e
 p5
 
 p6 <- ggplot(unnest(mir181_bs) %>% subset(Seeds_200down.type == "seed_6mer_wobble") %>% subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")), aes(x = Seeds_200down.start))+
-  geom_bar(color = "black")+
+  geom_histogram(color = "black", binwidth = 5)+
   theme_paper()
 p6+
   ggtitle("mir181 wobble seed positions", 
           subtitle = "in case of mutiple seeds all are used")
 
 p7 <- ggplot(unnest(mir181_bs) %>% subset(Seeds_200down.type == "seed_6mer_wobble") %>% subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")), aes(x = Seeds_200down.start))+
-  geom_bar(color = "black")+
+  geom_histogram(color = "black", binwidth = 5)+
   theme_paper()+
   ylim(c(0,350))
 
@@ -312,7 +334,8 @@ p7+
 
 nrow(mir181_bs)
 
-ggsave(p, filename = paste0(out, "seed_versions_Figure2E.pdf"), width = 6, height = 6, units = "cm"  )
+ggsave(p, filename = paste0(out, "seed_versions_SupFigureX.pdf"), width = 6, height = 6, units = "cm"  )
+ggsave(p1, filename = paste0(out, "seed_versions_Figure4C.pdf"), width = 6, height = 6, units = "cm"  )
 ggsave(p4, filename = paste0(out, "seed_position_after_BS.pdf"), width = 6, height = 6, units = "cm"  )
 ggsave(p6, filename = paste0(out, "wobbleseed_position_after_BS.pdf"), width = 6, height = 4, units = "cm"  )
 
@@ -411,10 +434,11 @@ p <- ggplot(mir181_bs %>% subset(set %in% c("ago_bs_mir181_chi&mir181_enriched",
   theme_paper()+
   scale_fill_manual(values = c(farbe4, darken(farbe4)))+
   theme(legend.position = "None") +
-  scale_x_discrete(labels=c(seed_8mer = "U*GAA/UUGU*U",
+  scale_x_discrete(labels=c(seed_8mer = "U*GAA/UUGU*A",
                             seed_7mer_m8 = "U*GAA/UUGU",
-                            seed_7mer_a1 = "GAA/UUGU*U",
-                            seed_6mer = "GAA/UUGU"),
+                            seed_7mer_a1 = "GAA/UUGU*A",
+                            seed_6mer = "GAA/UUGU",
+                            seed_alt_38 = "UGAAUG"),
                    guide = guide_axis(angle = 25))
   
 p +
