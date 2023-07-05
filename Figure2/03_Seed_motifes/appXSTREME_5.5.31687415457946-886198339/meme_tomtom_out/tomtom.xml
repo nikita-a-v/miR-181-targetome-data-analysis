@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<tomtom version="5.5.3" release="Sat Jun 10 16:19:38 2023 -0700">
+  <model>
+    <command_line>tomtom -verbosity 1 -oc meme_tomtom_out -min-overlap 5 -dist ed -evalue -thresh 1 -no-ssc meme_out/meme.xml motifs.meme</command_line>
+    <distance_measure value="ed"/>
+    <threshold type="evalue">1</threshold>
+    <alphabet name="RNA" like="rna">
+      <letter id="A" symbol="A" name="Adenine" colour="CC0000"/>
+      <letter id="C" symbol="C" name="Cytosine" colour="0000CC"/>
+      <letter id="G" symbol="G" name="Guanine" colour="FFB300"/>
+      <letter id="U" symbol="U" aliases="T" name="Uracil" colour="008000"/>
+      <letter id="N" symbol="N" aliases="X." equals="ACGU" name="Any base"/>
+      <letter id="V" symbol="V" equals="ACG" name="Not U"/>
+      <letter id="H" symbol="H" equals="ACU" name="Not G"/>
+      <letter id="D" symbol="D" equals="AGU" name="Not C"/>
+      <letter id="B" symbol="B" equals="CGU" name="Not A"/>
+      <letter id="M" symbol="M" equals="AC" name="Amino"/>
+      <letter id="R" symbol="R" equals="AG" name="Purine"/>
+      <letter id="W" symbol="W" equals="AU" name="Weak"/>
+      <letter id="S" symbol="S" equals="CG" name="Strong"/>
+      <letter id="Y" symbol="Y" equals="CU" name="Pyrimidine"/>
+      <letter id="K" symbol="K" equals="GU" name="Keto"/>
+    </alphabet>
+    <strands>none</strands>
+    <background from="--query--" A="0.26" C="0.223" G="0.233" U="0.284"/>
+    <host>noble-meme.grid.gs.washington.edu</host>
+    <when>Wed Jun 21 23:44:32 2023</when>
+  </model>
+  <query_dbs>
+    <db source="meme_out/meme.xml" name="meme.xml" loaded="4" excluded="0" last_mod_date="Wed Jun 21 23:43:51 2023"/>
+  </query_dbs>
+  <target_dbs>
+    <db source="motifs.meme" name="motifs" loaded="1" excluded="0" last_mod_date="Wed Jun 21 23:30:57 2023"/>
+  </target_dbs>
+  <queries>
+    <motif db="0" id="AGAGAAACCC" alt="MEME-1" length="10" nsites="289" evalue="3.6e-012">
+      <pos A="0.882138" C="7.7136e-05" G="8.0595e-05" U="0.117705"/>
+      <pos A="8.99343e-05" C="7.7136e-05" G="0.999735" U="9.82359e-05"/>
+      <pos A="0.999744" C="7.7136e-05" G="8.0595e-05" U="9.82359e-05"/>
+      <pos A="8.99343e-05" C="7.7136e-05" G="0.989357" U="0.0104756"/>
+      <pos A="0.999744" C="7.7136e-05" G="8.0595e-05" U="9.82359e-05"/>
+      <pos A="0.999744" C="7.7136e-05" G="8.0595e-05" U="9.82359e-05"/>
+      <pos A="0.774909" C="7.7136e-05" G="0.224916" U="9.82359e-05"/>
+      <pos A="8.99343e-05" C="0.999731" G="8.0595e-05" U="9.82359e-05"/>
+      <pos A="8.99343e-05" C="0.965141" G="0.0346706" U="9.82359e-05"/>
+      <pos A="0.06927" C="0.930551" G="8.0595e-05" U="9.82359e-05"/>
+    </motif>
+    <motif db="0" id="GAGAGAAACC" alt="MEME-4" length="10" nsites="314" evalue="5.6e-004">
+      <pos A="8.27762e-05" C="7.09965e-05" G="0.999756" U="9.0417e-05"/>
+      <pos A="0.834212" C="7.09965e-05" G="7.41802e-05" U="0.165643"/>
+      <pos A="8.27762e-05" C="7.09965e-05" G="0.999756" U="9.0417e-05"/>
+      <pos A="0.964744" C="7.09965e-05" G="7.41802e-05" U="0.0351113"/>
+      <pos A="0.121063" C="7.09965e-05" G="0.878775" U="9.0417e-05"/>
+      <pos A="0.999764" C="7.09965e-05" G="7.41802e-05" U="9.0417e-05"/>
+      <pos A="0.999764" C="7.09965e-05" G="7.41802e-05" U="9.0417e-05"/>
+      <pos A="0.846947" C="0.0350918" G="0.117871" U="9.0417e-05"/>
+      <pos A="0.0160017" C="0.929711" G="0.0541969" U="9.0417e-05"/>
+      <pos A="8.27762e-05" C="0.999753" G="7.41802e-05" U="9.0417e-05"/>
+    </motif>
+    <motif db="0" id="GGGGYGGGG" alt="MEME-3" length="9" nsites="357" evalue="1.1e-007">
+      <pos A="0.112086" C="6.24475e-05" G="0.691748" U="0.196103"/>
+      <pos A="7.28087e-05" C="0.0616702" G="0.938177" U="7.95295e-05"/>
+      <pos A="7.28087e-05" C="6.24475e-05" G="0.999785" U="7.95295e-05"/>
+      <pos A="7.28087e-05" C="6.24475e-05" G="0.996985" U="0.00287975"/>
+      <pos A="0.0140749" C="0.358505" G="6.52478e-05" U="0.627355"/>
+      <pos A="7.28087e-05" C="6.24475e-05" G="0.946579" U="0.0532856"/>
+      <pos A="0.0784818" C="0.019665" G="0.901774" U="7.95295e-05"/>
+      <pos A="7.28087e-05" C="6.24475e-05" G="0.999785" U="7.95295e-05"/>
+      <pos A="7.28087e-05" C="6.24475e-05" G="0.999785" U="7.95295e-05"/>
+    </motif>
+    <motif db="0" id="UAUGAAUGUA" alt="MEME-2" length="10" nsites="1345" evalue="5.8e-010">
+      <pos A="0.182162" C="0.154652" G="0.0535453" U="0.609641"/>
+      <pos A="0.63789" C="1.65787e-05" G="0.071387" U="0.290706"/>
+      <pos A="0.193314" C="0.0446233" G="1.73221e-05" U="0.762046"/>
+      <pos A="1.93294e-05" C="0.00522019" G="0.994739" U="2.11137e-05"/>
+      <pos A="0.934522" C="1.65787e-05" G="1.73221e-05" U="0.0654442"/>
+      <pos A="0.831927" C="1.65787e-05" G="1.73221e-05" U="0.168039"/>
+      <pos A="1.93294e-05" C="1.65787e-05" G="1.73221e-05" U="0.999947"/>
+      <pos A="1.93294e-05" C="1.65787e-05" G="0.999943" U="2.11137e-05"/>
+      <pos A="1.93294e-05" C="1.65787e-05" G="1.73221e-05" U="0.999947"/>
+      <pos A="0.642351" C="0.0698994" G="0.116738" U="0.171012"/>
+    </motif>
+  </queries>
+  <targets>
+    <motif db="0" id="1" alt="GAAUGU" length="6" nsites="1">
+      <pos A="0.0236364" C="0.0202727" G="0.930273" U="0.0258182"/>
+      <pos A="0.932727" C="0.0202727" G="0.0211818" U="0.0258182"/>
+      <pos A="0.932727" C="0.0202727" G="0.0211818" U="0.0258182"/>
+      <pos A="0.0236364" C="0.0202727" G="0.0211818" U="0.934909"/>
+      <pos A="0.0236364" C="0.0202727" G="0.930273" U="0.0258182"/>
+      <pos A="0.0236364" C="0.0202727" G="0.0211818" U="0.934909"/>
+    </motif>
+  </targets>
+  <matches>
+    <query idx="0">
+      <target idx="0" off="-3" pv="5.43e-01" ev="5.43e-01" qv="5.43e-01"/>
+    </query>
+    <query idx="3">
+      <target idx="0" off="-3" pv="1.37e-03" ev="1.37e-03" qv="1.37e-03"/>
+    </query>
+    <query idx="2">
+      <target idx="0" off="-1" pv="8.70e-01" ev="8.70e-01" qv="8.70e-01"/>
+    </query>
+    <query idx="1">
+      <target idx="0" off="-4" pv="6.11e-01" ev="6.11e-01" qv="6.11e-01"/>
+    </query>
+  </matches>
+  <runtime cycles="10502" seconds="0.011"/>
+</tomtom>

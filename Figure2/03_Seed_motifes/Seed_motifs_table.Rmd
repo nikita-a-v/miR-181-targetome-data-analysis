@@ -78,7 +78,7 @@ farbe16 <- "#FF6348FF"
 # MREs
 # ----------------------------------------
 
-mir181_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+mir181_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/assign_transcripts/mir181_bs_on_transcripts.rds")
 
 mir_crosslinks <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/xx_down_stream_R/01_Characterisation_of_chimeric_reads/out/mir_crosslinks_per_cond.rds")
 
