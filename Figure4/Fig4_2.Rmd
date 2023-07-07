@@ -384,6 +384,101 @@ vplot
 dev.off()
 ```
 
+## Sequence overlap mmsat4 mursatrep1
+Just check to make sure these are not the same
+```{r seqol}
+olmmsat4 <- subsetByOverlaps(MMSAT4, MurSatRep1)
+olmursatrep1 <- subsetByOverlaps(MurSatRep1, MMSAT4)
+
+
+#make pie charts
+pimmsat <- data.frame(c("MMsat4", "Overlap"),
+                      c(length(MMSAT4)-length(olmmsat4), length(olmmsat4)))
+colnames(pimmsat) <- c("Group", "Count")
+
+pimursatrep1 <- data.frame(c("MurSatRep1", "Overlap"),
+                      c(length(MurSatRep1)-length(olmursatrep1), length(olmursatrep1)))
+colnames(pimursatrep1) <- c("Group", "Count")
+
+pimmsatP <- ggplot(pimmsat, aes(x="", y=Count, fill=Group)) + 
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  geom_text(aes(label = Count),
+            position = position_stack(vjust = 0.5)) 
+
+pimmsatP
+
+pimursatrep1P <- ggplot(pimursatrep1, aes(x="", y=Count, fill=Group)) + 
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  geom_text(aes(label = Count),
+            position = position_stack(vjust = 0.5)) 
+
+pimursatrep1P
+
+```
+
+
+# MAplots of targets with satellites
+```{r masat}
+#mmsat4 RNA
+MAmmsat4RNA <- ggplot(RNA, aes(x=log10(baseMean), y=log2FoldChange, fill=factor(tvsmmsat4, levels = c("Non-target", "miR-181 target", "MMsat4", "both"))), colour="black") + 
+  geom_point(shape=21, size=1) + 
+  scale_fill_manual(values = c(farbeneg, farbe1, farbe2, farbe3)) +
+  geom_point(data = RNA[RNA$tvsmmsat4=="Non-target",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour=farbeneg, fill=farbeneg, size=1) +
+  geom_point(data = RNA[RNA$tvsmmsat4=="miR-181 target",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour="black", fill=farbe1, size=2) +
+  geom_point(data = RNA[RNA$tvsmmsat4=="MMsat4",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour="black", fill=farbe2, size=2) +
+  geom_point(data = RNA[RNA$tvsmmsat4=="both",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour="black", fill=farbe3, size=3) +
+  geom_hline(yintercept = 0, linetype="dashed", colour="black")+
+  theme_paper() +
+  coord_cartesian(ylim = c(-2,2), xlim = c(1,5))
+MAmmsat4RNA
+
+##mmsat4 RPF
+MAmmsat4RPF <- ggplot(RPF, aes(x=log10(baseMean), y=log2FoldChange, fill=factor(tvsmmsat4, levels = c("Non-target", "miR-181 target", "MMsat4", "both"))), colour="black") + 
+  geom_point(shape=21, size=1) + 
+  scale_fill_manual(values = c(farbeneg, farbe1, farbe2, farbe3)) +
+  geom_point(data = RPF[RPF$tvsmmsat4=="Non-target",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour=farbeneg, fill=farbeneg, size=1) +
+  geom_point(data = RPF[RPF$tvsmmsat4=="miR-181 target",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour="black", fill=farbe1, size=2) +
+  geom_point(data = RPF[RPF$tvsmmsat4=="MMsat4",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour="black", fill=farbe2, size=2) +
+  geom_point(data = RPF[RPF$tvsmmsat4=="both",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour="black", fill=farbe3, size=3) +
+  geom_hline(yintercept = 0, linetype="dashed", colour="black")+
+  theme_paper() +
+  coord_cartesian(ylim = c(-2,2), xlim = c(1,5))
+MAmmsat4RPF
+
+#Mursatrep1 RNA
+MAmursatrep1RNA <- ggplot(RNA, aes(x=log10(baseMean), y=log2FoldChange, fill=factor(tvsMurSatRep1, levels = c("Non-target", "miR-181 target", "MurSatRep1", "both"))), colour="black") + 
+  geom_point(shape=21, size=1) + 
+  scale_fill_manual(values = c(farbeneg, farbe1, farbe2, farbe3)) +
+  geom_point(data = RNA[RNA$tvsMurSatRep1=="Non-target",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour=farbeneg, fill=farbeneg, size=1) +
+  geom_point(data = RNA[RNA$tvsMurSatRep1=="miR-181 target",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour="black", fill=farbe1, size=2) +
+  geom_point(data = RNA[RNA$tvsMurSatRep1=="MurSatRep1",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour="black", fill=farbe2, size=2) +
+  geom_point(data = RNA[RNA$tvsMurSatRep1=="both",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour="black", fill=farbe3, size=3) +
+  geom_hline(yintercept = 0, linetype="dashed", colour="black")+
+  theme_paper() +
+  coord_cartesian(ylim = c(-2,2), xlim = c(1,5))
+MAmursatrep1RNA
+
+#Mursatrep1 RPF
+MAmursatrep1RPF <- ggplot(RPF, aes(x=log10(baseMean), y=log2FoldChange, fill=factor(tvsMurSatRep1, levels = c("Non-target", "miR-181 target", "MurSatRep1", "both"))), colour="black") + 
+  geom_point(shape=21, size=1) + 
+  scale_fill_manual(values = c(farbeneg, farbe1, farbe2, farbe3)) +
+  geom_point(data = RPF[RPF$tvsMurSatRep1=="Non-target",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour=farbeneg, fill=farbeneg, size=1) +
+  geom_point(data = RPF[RPF$tvsMurSatRep1=="miR-181 target",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour="black", fill=farbe1, size=2) +
+  geom_point(data = RPF[RPF$tvsMurSatRep1=="MurSatRep1",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour="black", fill=farbe2, size=2) +
+  geom_point(data = RPF[RPF$tvsMurSatRep1=="both",], aes(x=log10(baseMean), y=log2FoldChange), shape=21, colour="black", fill=farbe3, size=3) +
+  geom_hline(yintercept = 0, linetype="dashed", colour="black")+
+  theme_paper() +
+  coord_cartesian(ylim = c(-2,2), xlim = c(1,5))
+MAmursatrep1RPF
+
+
+```
+
+
 # Session info
 ```{r sessioninfo}
 sessionInfo()
