@@ -38,7 +38,7 @@ library(gghalves)
 # ----------------------------------------
 # settings
 # ----------------------------------------
-out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/MRE_bound_gene_and_bound_region/"
+out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/01_MRE_bound_gene_and_bound_region/"
 source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
 source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
 
@@ -91,11 +91,13 @@ mir181_enriched_set <- mir181_bs %>%
 
 ```{r}
 
-gene_type_df <- mutate(mir181_enriched_set, geneType =
+mir181_enriched_set <- mutate(mir181_enriched_set, geneType =
                          case_when(geneType != "protein_coding" ~ "other",
                                    region == "intron" ~ "other",
+                                   region == "outside" ~ "other",
+                                   is.na(region) ~ "other",
                                     T ~ "mature protein_coding RNA"))
-gene_type_df <-   table(gene_type_df$geneType) %>% 
+gene_type_df <-   table(mir181_enriched_set$geneType) %>% 
   as.data.frame(.) 
 
 p <- ggplot(gene_type_df, aes(y=Freq, x="", fill=Var1)) +
@@ -123,7 +125,7 @@ ggsave(p, filename = paste0(out, "Figure2A_bound_gene_types_miR181_BS", Sys.Date
 For all further analyses we removed binding sites on non protein-coding RNAs.
 
 ```{r}
-mir181_enriched_set <- subset(mir181_enriched_set, geneType == "protein_coding")
+mir181_enriched_set <- subset(mir181_enriched_set, geneType == "mature protein_coding RNA")
 
 ```
 
@@ -143,13 +145,22 @@ p
 
 ggsave(p, filename = paste0(out, "Figure2B_bound_gene_regions_miR181_BS", Sys.Date(), ".pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
 
+sum(gene_region_df$Freq)
 ```
 ### Remove binding sites in introns or outside of any gene region
 
 For all further analyses we removed binding sites in introns or in a gene regions with no region annotation.
 
 ```{r}
-mir181_bs <- subset(mir181_bs, !(region %in% c("outside", "intron") ))
+mir181_bs <- mutate(mir181_bs, geneType =
+                         case_when(geneType != "protein_coding" ~ "other",
+                                   region == "intron" ~ "other",
+                                   region == "outside" ~ "other",
+                                   is.na(region) ~ "other",
+                                    T ~ "mature protein_coding RNA")) %>%
+  subset(.,  geneType == "mature protein_coding RNA")
+
+
 
 ```
 
