@@ -31,6 +31,7 @@ library(cliProfiler)
 library(GenomicRanges)
 library(cowplot)
 library(eulerr)
+library(readxl)
 
 ```
 
@@ -45,7 +46,7 @@ gff23 <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/ge
 gff23path <- file.path("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
 
 #targets
-larget <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_with_seeds.rds")
+larget <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure4/mir181_bs_with_seeds_transcripts.rds")
 largetframe <- as.data.frame(larget)
 table(largetframe$set)
 largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
@@ -54,6 +55,27 @@ largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
 
 #only use miR181_enriched und both
 # largetframe <- largetframe[largetframe$set %in% c("mir181_enriched", "ago_bs_mir181_chi&mir181_enriched"),]
+
+
+#ms
+MS <- as.data.frame(read_xlsx("D:/Krueger_Lab/Publications/miR181_paper/Figure3/MS_analysis.xlsx", 
+                              sheet = 2))
+#adjust upper case lower case of gene names of MS data:
+#function
+capFirst <- function(s) {
+  paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")
+}
+MS$`Gene Symbol` <- tolower(MS$`Gene Symbol`)
+MS$`Gene Symbol` <- capFirst(MS$`Gene Symbol`)
+names(MS)[names(MS) == 'Gene Symbol'] <- 'gene_symbol'
+names(MS)[names(MS) == 'P-value'] <- 'pvalue'
+names(MS)[names(MS) == 'Log2(FC)'] <- 'log2FoldChange'
+
+head(MS$gene_symbol)
+
+#Translational efficiency
+TE <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Supporting scipts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+
 
 
 
@@ -123,6 +145,48 @@ RPF$wobble[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobbl
 RPF$wobble[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == TRUE ,"geneName"]] <- "Non-Canonical"
 RPF$wobble[RPF$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
 
+#MS
+MS$wobble <- "Non-target"
+MS$wobble[MS$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.wobble) ,"geneName"]] <- "No seed"
+MS$wobble[MS$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == FALSE ,"geneName"]] <- "Canonical"
+MS$wobble[MS$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == TRUE ,"geneName"]] <- "Non-Canonical"
+MS$wobble[MS$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
+#TE
+TE$wobble <- "Non-target"
+TE$wobble[TE$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.wobble) ,"geneName"]] <- "No seed"
+TE$wobble[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == FALSE ,"geneName"]] <- "Canonical"
+TE$wobble[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == TRUE ,"geneName"]] <- "Non-Canonical"
+TE$wobble[TE$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
+#ECDF
+
+#RNA
+wobbleecdfRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Target genes RNAseq")
+
+wobbleecdfRNA
+
+#zoom
+wobbleecdfRNAZ <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+wobbleecdfRNAZ
 
 #RPF
 wobbleecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
@@ -132,7 +196,7 @@ wobbleecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobbl
   coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
-  ggtitle("Target genes RPFseq")
+  ggtitle("Target genes ribosome profiling")
 
 wobbleecdfRPF
 
@@ -151,6 +215,68 @@ wobbleecdfRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobb
 
 wobbleecdfRPFZ
 
+#MS
+wobbleecdfMS <- ggplot(MS, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Target genes mass spectrometry")
+
+wobbleecdfMS
+
+#zoom
+wobbleecdfMSZ <- ggplot(MS, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+wobbleecdfMSZ
+
+#TE
+wobbleecdfTE <- ggplot(TE, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Target genes translational efficiency")
+
+wobbleecdfTE
+
+#zoom
+wobbleecdfTEZ <- ggplot(TE, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+wobbleecdfTEZ
+
+
+#export RNA
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RNA.pdf", width=2, height = 2)
+wobbleecdfRNA
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+wobbleecdfRNAZ
+dev.off()
 
 #export RPF
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RPF.pdf", width=2, height = 2)
@@ -158,6 +284,22 @@ wobbleecdfRPF
 dev.off()
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 wobbleecdfRPFZ
+dev.off()
+
+#export MS
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_MS.pdf", width=2, height = 2)
+wobbleecdfMS
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+wobbleecdfMSZ
+dev.off()
+
+#export TE
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_TE.pdf", width=2, height = 2)
+wobbleecdfTE
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+wobbleecdfTEZ
 dev.off()
 
 
@@ -184,6 +326,28 @@ RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type
 RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
 RPF$MREtype[RPF$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
 
+
+#MS
+MS$MREtype <- "Non-target"
+MS$MREtype[MS$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.type),"geneName"]] <- "No seed"
+MS$MREtype[MS$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_6mer","geneName"]] <- "seed_6mer"
+MS$MREtype[MS$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
+MS$MREtype[MS$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
+MS$MREtype[MS$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+MS$MREtype[MS$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
+
+#TE
+TE$MREtype <- "Non-target"
+TE$MREtype[TE$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.type),"geneName"]] <- "No seed"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_6mer","geneName"]] <- "seed_6mer"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+TE$MREtype[TE$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
+
+
 # ecdf plots
 #RNA
 typeECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), 
@@ -197,6 +361,22 @@ typeECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange),
 
 typeECDFRNA
 
+
+# zoom
+typeECDFRNAZ <- ggplot(RNA, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+typeECDFRNAZ
+
 #RPF
 typeECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
@@ -206,7 +386,7 @@ typeECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange),
   coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
-  ggtitle("RPFtype of MRE")
+  ggtitle("RPF type of MRE")
 
 typeECDFRPF
 
@@ -225,12 +405,95 @@ typeECDFRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange),
 
 typeECDFRPFZ
 
+
+#MS
+typeECDFMS <- ggplot(MS, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("MS type of MRE")
+
+typeECDFMS
+
+# zoom
+typeECDFMSZ <- ggplot(MS, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+typeECDFMSZ
+
+
+#TE
+typeECDFTE <- ggplot(TE, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("TE type of MRE")
+
+typeECDFTE
+
+# zoom
+typeECDFTEZ <- ggplot(TE, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+typeECDFTEZ
+
+
+#export RNA
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RNA.pdf", width=2, height = 2)
+typeECDFRNA
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+typeECDFRNAZ
+dev.off()
+
 #export RPF
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RPF.pdf", width=2, height = 2)
 typeECDFRPF
 dev.off()
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 typeECDFRPFZ
+dev.off()
+
+#export MS
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_MS.pdf", width=2, height = 2)
+typeECDFMS
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+typeECDFMSZ
+dev.off()
+
+#export TE
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_TE.pdf", width=2, height = 2)
+typeECDFTE
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+typeECDFTEZ
 dev.off()
 
 
@@ -257,6 +520,22 @@ RPF$tvsmmsat4[RPF$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
 RPF$tvsmmsat4[RPF$gene_symbol %in% largetframe$geneName & RPF$gene_symbol %in% mmsat4frame$gene_name] <- "both"
 table(RPF$tvsmmsat4)
 
+#MS
+MS$tvsmmsat4 <- "Non-target"
+MS$tvsmmsat4[MS$gene_symbol %in% mmsat4frame$gene_name] <- "MMsat4"
+MS$tvsmmsat4[MS$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
+MS$tvsmmsat4[MS$gene_symbol %in% largetframe$geneName & MS$gene_symbol %in% mmsat4frame$gene_name] <- "both"
+table(MS$tvsmmsat4)
+
+#TE
+TE$tvsmmsat4 <- "Non-target"
+TE$tvsmmsat4[TE$gene_symbol %in% mmsat4frame$gene_name] <- "MMsat4"
+TE$tvsmmsat4[TE$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
+TE$tvsmmsat4[TE$gene_symbol %in% largetframe$geneName & TE$gene_symbol %in% mmsat4frame$gene_name] <- "both"
+table(TE$tvsmmsat4)
+
+
+
 #RNA
 tolECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat4, levels = c("Non-target", "MMsat4", "miR-181 target", "both")))) + 
   stat_ecdf(geom="step", linewidth=2*zoomfac) +
@@ -282,9 +561,49 @@ tolECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat
 
 tolECDFRPF
 
+#MS
+tolECDFMS <- ggplot(MS, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat4, levels = c("Non-target", "MMsat4", "miR-181 target", "both")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("MS Mmsat4 vs target")
+
+tolECDFMS
+
+#TE
+tolECDFTE <- ggplot(TE, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat4, levels = c("Non-target", "MMsat4", "miR-181 target", "both")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("TE Mmsat4 vs target")
+
+tolECDFTE
+
+#export RNA
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_RNA.pdf", width=2, height = 2)
+tolECDFRNA
+dev.off()
+
+
 #export RPF
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_RPF.pdf", width=2, height = 2)
 tolECDFRPF
+dev.off()
+
+#export MS
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_MS.pdf", width=2, height = 2)
+tolECDFMS
+dev.off()
+
+#export TE
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_TE.pdf", width=2, height = 2)
+tolECDFTE
 dev.off()
 
 
@@ -308,6 +627,21 @@ RPF$tvsMurSatRep1[RPF$gene_symbol %in% MurSatRep1frame$gene_name] <- "MurSatRep1
 RPF$tvsMurSatRep1[RPF$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
 RPF$tvsMurSatRep1[RPF$gene_symbol %in% largetframe$geneName & RPF$gene_symbol %in% MurSatRep1frame$gene_name] <- "both"
 table(RPF$tvsMurSatRep1)
+
+#MS
+MS$tvsMurSatRep1 <- "Non-target"
+MS$tvsMurSatRep1[MS$gene_symbol %in% MurSatRep1frame$gene_name] <- "MurSatRep1"
+MS$tvsMurSatRep1[MS$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
+MS$tvsMurSatRep1[MS$gene_symbol %in% largetframe$geneName & MS$gene_symbol %in% MurSatRep1frame$gene_name] <- "both"
+table(MS$tvsMurSatRep1)
+
+#TE
+TE$tvsMurSatRep1 <- "Non-target"
+TE$tvsMurSatRep1[TE$gene_symbol %in% MurSatRep1frame$gene_name] <- "MurSatRep1"
+TE$tvsMurSatRep1[TE$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
+TE$tvsMurSatRep1[TE$gene_symbol %in% largetframe$geneName & TE$gene_symbol %in% MurSatRep1frame$gene_name] <- "both"
+table(TE$tvsMurSatRep1)
+
 
 #RNA
 murECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(tvsMurSatRep1, levels = c("Non-target", "MurSatRep1", "miR-181 target", "both")))) + 
@@ -334,11 +668,50 @@ murECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(tvsMurSa
 
 murECDFRPF
 
+#MS
+murECDFMS <- ggplot(MS, aes(as.numeric(log2FoldChange), colour=factor(tvsMurSatRep1, levels = c("Non-target", "MurSatRep1", "miR-181 target", "both")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("MS MurSatRep1 vs target")
 
+murECDFMS
+
+#TE
+murECDFTE <- ggplot(TE, aes(as.numeric(log2FoldChange), colour=factor(tvsMurSatRep1, levels = c("Non-target", "MurSatRep1", "miR-181 target", "both")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("TE MurSatRep1 vs target")
+
+murECDFTE
+
+
+
+#export RNA
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_RNA.pdf", width=2, height = 2)
+murECDFRNA
+dev.off()
 
 #export RPF
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_RPF.pdf", width=2, height = 2)
 murECDFRPF
+dev.off()
+
+#export MS
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_MS.pdf", width=2, height = 2)
+murECDFMS
+dev.off()
+
+#export TE
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_TE.pdf", width=2, height = 2)
+murECDFTE
 dev.off()
 
 
