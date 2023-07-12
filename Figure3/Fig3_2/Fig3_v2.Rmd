@@ -28,6 +28,7 @@ library(tibble)
 library(Rtsne)
 library(cliProfiler)
 library(GenomicRanges)
+library(readxl)
 
 ```
 
@@ -42,10 +43,31 @@ gff23 <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/ge
 gff23path <- file.path("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
 
 #targets
-larget <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_with_seeds.rds")
+larget <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_afterFigure2B.rds")
 largetframe <- as.data.frame(larget)
 table(largetframe$set)
 largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
+
+
+#ms
+MS <- as.data.frame(read_xlsx("D:/Krueger_Lab/Publications/miR181_paper/Figure3/MS_analysis.xlsx", 
+                              sheet = 2))
+#adjust upper case lower case of gene names of MS data:
+#function
+capFirst <- function(s) {
+  paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")
+}
+MS$`Gene Symbol` <- tolower(MS$`Gene Symbol`)
+MS$`Gene Symbol` <- capFirst(MS$`Gene Symbol`)
+names(MS)[names(MS) == 'Gene Symbol'] <- 'gene_symbol'
+names(MS)[names(MS) == 'P-value'] <- 'pvalue'
+names(MS)[names(MS) == 'Log2(FC)'] <- 'log2FoldChange'
+
+head(MS$gene_symbol)
+
+#Translational efficiency
+TE <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Supporting scipts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+
 
 
 # modify dataset to only include working targetsets
@@ -111,6 +133,14 @@ RNA$target[RNA$gene_symbol %in% largetframe$geneName] <- "Target"
 RPF$target <- "Non-target"
 RPF$target[RPF$gene_symbol %in% largetframe$geneName] <- "Target"
 
+#MS
+MS$target <- "Non-target"
+MS$target[MS$gene_symbol %in% largetframe$geneName] <- "Target"
+#TE
+TE$target <- "Non-target"
+TE$target[TE$gene_symbol %in% largetframe$geneName] <- "Target"
+
+
 #RNA
 targetecdfRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
   stat_ecdf(geom="step", linewidth=2) +
@@ -122,6 +152,20 @@ targetecdfRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(targe
   ggtitle("Target genes RNAseq")
 
 targetecdfRNA
+
+# zoom
+targetecdfRNAZ <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+targetecdfRNAZ
 
 #RPF
 targetecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
@@ -150,12 +194,86 @@ targetecdfRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(targ
 targetecdfRPFZ
 
 
-#export RPF
+#MS
+targetecdfMS <- ggplot(MS, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Target genes mass spectrometry")
+
+targetecdfMS
+
+# zoom
+targetecdfMSZ <- ggplot(MS, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+targetecdfMSZ
+
+#TE
+targetecdfTE <- ggplot(TE, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Target genes translational efficiency")
+
+targetecdfTE
+
+# zoom
+targetecdfTEZ <- ggplot(TE, aes(as.numeric(log2FoldChange), colour=factor(target, levels = c("Non-target", "Target")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+targetecdfTEZ
+
+
+#export 
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RNA.pdf", width=2, height = 2)
+targetecdfRNA
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+targetecdfRNAZ
+dev.off()
+
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RPF.pdf", width=2, height = 2)
 targetecdfRPF
 dev.off()
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 targetecdfRPFZ
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_MS.pdf", width=2, height = 2)
+targetecdfMS
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+targetecdfMSZ
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_TE.pdf", width=2, height = 2)
+targetecdfTE
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+targetecdfTEZ
 dev.off()
 
 table(RPF$target) 
@@ -170,6 +288,20 @@ colnames(bsnum) <- c("gene_symbol", "BS_number")
 
 #RNA
 RNAnum <- left_join(RNA, bsnum, by="gene_symbol")
+
+RNAnumT <- RNAnum[!is.na(RNAnum$BS_number),]
+RNAnumT$BS_number[RNAnumT$BS_number > 20] <- 20
+
+# histogram
+numHist_RNA <- ggplot(RNAnumT, aes(x=BS_number)) + 
+  geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
+  theme_paper() +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous("Number of binding sites") +
+  coord_cartesian(ylim = c(0, 1250), xlim = c(1, max(RNAnumT$BS_number))) +
+  ggtitle("Number of binding sites per gene")
+
+numHist_RNA
 
 #RPF
 RPFnum <- left_join(RPF, bsnum, by="gene_symbol")
@@ -187,9 +319,56 @@ numHist_RPF <- ggplot(RPFnumT, aes(x=BS_number)) +
 
 numHist_RPF
 
+#MS
+MSnum <- left_join(MS, bsnum, by="gene_symbol")
+
+MSnumT <- MSnum[!is.na(MSnum$BS_number),]
+MSnumT$BS_number[MSnumT$BS_number > 20] <- 20
+# histogram
+numHist_MS <- ggplot(MSnumT, aes(x=BS_number)) + 
+  geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
+  theme_paper() +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous("Number of binding sites") +
+  coord_cartesian(ylim = c(0, 1250), xlim = c(1, max(MSnumT$BS_number))) +
+  ggtitle("Number of binding sites per gene")
+
+numHist_MS
+
+#TE
+TEnum <- left_join(TE, bsnum, by="gene_symbol")
+
+TEnumT <- TEnum[!is.na(TEnum$BS_number),]
+TEnumT$BS_number[TEnumT$BS_number > 20] <- 20
+# histogram
+numHist_TE <- ggplot(TEnumT, aes(x=BS_number)) + 
+  geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
+  theme_paper() +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous("Number of binding sites") +
+  coord_cartesian(ylim = c(0, 1250), xlim = c(1, max(TEnumT$BS_number))) +
+  ggtitle("Number of binding sites per gene")
+
+numHist_TE
+
 #export RPF
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_RPF.pdf", width=2, height = 2)
 numHist_RPF
+dev.off()
+
+#export RNA
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_RNA.pdf", width=2, height = 2)
+numHist_RNA
+dev.off()
+
+#export MS
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_MS.pdf", width=2, height = 2)
+numHist_MS
+dev.off()
+
+#export TE
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_TE.pdf", width=2, height = 2)
+numHist_TE
 dev.off()
 
 ```
@@ -206,8 +385,46 @@ RPFnum$BS_num_plot <- ifelse(RPFnum$BS_number == "Non-target", "Non-target",
                              ifelse(RPFnum$BS_number == 1, "One MRE",
                                     ifelse(RPFnum$BS_number == 2, "Two MREs", "More")))
 
+MSnum$BS_number[is.na(MSnum$BS_number)] <- "Non-target"
+MSnum$BS_num_plot <- ifelse(MSnum$BS_number == "Non-target", "Non-target",
+                             ifelse(MSnum$BS_number == 1, "One MRE",
+                                    ifelse(MSnum$BS_number == 2, "Two MREs", "More")))
+
+TEnum$BS_number[is.na(TEnum$BS_number)] <- "Non-target"
+TEnum$BS_num_plot <- ifelse(TEnum$BS_number == "Non-target", "Non-target",
+                             ifelse(TEnum$BS_number == 1, "One MRE",
+                                    ifelse(TEnum$BS_number == 2, "Two MREs", "More")))
+
 
 #ecdf plot
+#RNA
+numecdfRNA <- ggplot(RNAnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Number of binding sites RNAseq")
+
+numecdfRNA
+
+# zoom
+numecdfRNAZ <- ggplot(RNAnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+numecdfRNAZ
+
+#RPF
 numecdfRPF <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
@@ -234,6 +451,71 @@ numecdfRPFZ <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_n
 
 numecdfRPFZ
 
+#MS
+numecdfMS <- ggplot(MSnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Number of binding sites mass spectrometry")
+
+numecdfMS
+
+# zoom
+numecdfMSZ <- ggplot(MSnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+numecdfMSZ
+
+#TE
+numecdfTE <- ggplot(TEnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Number of binding sites translational efficiency")
+
+numecdfTE
+
+# zoom
+numecdfTEZ <- ggplot(TEnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+numecdfTEZ
+
+
+# export
+#RNA
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RNA.pdf", width=2, height = 2)
+numecdfRNA
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+numecdfRNAZ
+dev.off()
+
+#RPF
 pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF.pdf", width=2, height = 2)
 numecdfRPF
 dev.off()
@@ -241,6 +523,24 @@ pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF_zoom.pd
 numecdfRPFZ
 dev.off()
 
+#MS
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_MS.pdf", width=2, height = 2)
+numecdfMS
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+numecdfMSZ
+dev.off()
+
+#TE
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_TE.pdf", width=2, height = 2)
+numecdfTE
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+numecdfTEZ
+dev.off()
+
+
+#numplot 2 samples
 
 RPFnum$BS_num_plot2 <- ifelse(RPFnum$BS_number == "Non-target", "Non-target",
                              ifelse(RPFnum$BS_number %in% c(1,2), "1-2 MREs", "More"))
