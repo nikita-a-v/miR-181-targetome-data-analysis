@@ -378,7 +378,7 @@ dev.off()
 RNAnum$BS_number[is.na(RNAnum$BS_number)] <- "Non-target"
 RNAnum$BS_num_plot <- ifelse(RNAnum$BS_number == "Non-target", "Non-target",
                              ifelse(RNAnum$BS_number == 1, "One MRE",
-                                    ifelse(RNAnum$BS_number %in% c(2, 3), "Two to three MREs", "More")))
+                                    ifelse(RNAnum$BS_number == 2, "Two MREs", "More")))
                                     
 RPFnum$BS_number[is.na(RPFnum$BS_number)] <- "Non-target"
 RPFnum$BS_num_plot <- ifelse(RPFnum$BS_number == "Non-target", "Non-target",
