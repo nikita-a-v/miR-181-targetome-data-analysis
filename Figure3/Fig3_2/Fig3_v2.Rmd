@@ -652,7 +652,127 @@ RPFnumr$region_single <- RPFnumr$region_majority
 RPFnumr$region_single[as.numeric(RPFnumr$BS_number) > 1] <- "Multiple"
 
 
+#MS
+MSnumr <- left_join(MSnum, utr5, by="gene_symbol")
+MSnumr <- left_join(MSnumr, cds, by="gene_symbol")
+MSnumr <- left_join(MSnumr, utr3, by="gene_symbol")
+
+MSnumr[is.na(MSnumr$num_5UTR), "num_5UTR"] <- 0
+MSnumr[is.na(MSnumr$num_CDS), "num_CDS"] <- 0
+MSnumr[is.na(MSnumr$num_3UTR), "num_3UTR"] <- 0
+
+# make majority id
+MSnumr$region_majority <- "Equal"
+MSnumr$region_majority[MSnumr$num_5UTR > MSnumr$num_CDS & MSnumr$num_5UTR > MSnumr$num_3UTR] <- "5'UTR" 
+MSnumr$region_majority[MSnumr$num_CDS > MSnumr$num_5UTR & MSnumr$num_CDS > MSnumr$num_3UTR] <- "CDS" 
+MSnumr$region_majority[MSnumr$num_3UTR > MSnumr$num_5UTR & MSnumr$num_3UTR > MSnumr$num_CDS] <- "3'UTR" 
+MSnumr$region_majority[MSnumr$num_5UTR == 0 & MSnumr$num_CDS == 0 & MSnumr$num_3UTR == 0] <- "Non-target"
+
+# make single id
+MSnumr$region_single <- MSnumr$region_majority
+MSnumr$region_single[as.numeric(MSnumr$BS_number) > 1] <- "Multiple"
+
+
+#TE
+TEnumr <- left_join(TEnum, utr5, by="gene_symbol")
+TEnumr <- left_join(TEnumr, cds, by="gene_symbol")
+TEnumr <- left_join(TEnumr, utr3, by="gene_symbol")
+
+TEnumr[is.na(TEnumr$num_5UTR), "num_5UTR"] <- 0
+TEnumr[is.na(TEnumr$num_CDS), "num_CDS"] <- 0
+TEnumr[is.na(TEnumr$num_3UTR), "num_3UTR"] <- 0
+
+# make majority id
+TEnumr$region_majority <- "Equal"
+TEnumr$region_majority[TEnumr$num_5UTR > TEnumr$num_CDS & TEnumr$num_5UTR > TEnumr$num_3UTR] <- "5'UTR" 
+TEnumr$region_majority[TEnumr$num_CDS > TEnumr$num_5UTR & TEnumr$num_CDS > TEnumr$num_3UTR] <- "CDS" 
+TEnumr$region_majority[TEnumr$num_3UTR > TEnumr$num_5UTR & TEnumr$num_3UTR > TEnumr$num_CDS] <- "3'UTR" 
+TEnumr$region_majority[TEnumr$num_5UTR == 0 & TEnumr$num_CDS == 0 & TEnumr$num_3UTR == 0] <- "Non-target"
+
+# make single id
+TEnumr$region_single <- TEnumr$region_majority
+TEnumr$region_single[as.numeric(TEnumr$BS_number) > 1] <- "Multiple"
+
+
+
 #ECDF
+
+#RNA
+#majority
+regMAJecdfRNA <- ggplot(RNAnumr, aes(as.numeric(log2FoldChange), colour=factor(region_majority, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Equal")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Region by majority vote RNAseq")
+
+regMAJecdfRNA
+
+
+regMAJecdfRNAZ <- ggplot(RNAnumr, aes(as.numeric(log2FoldChange), colour=factor(region_majority, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Equal")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+regMAJecdfRNAZ
+
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RNA.pdf", width=2, height = 2)
+regMAJecdfRNA
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+regMAJecdfRNAZ
+dev.off()
+
+table(RNAnumr$region_majority)
+
+
+
+#single
+regMAJecdfRNAS <- ggplot(RNAnumr, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Region single RNAseq")
+
+regMAJecdfRNAS
+
+
+regMAJecdfRNASZ <- ggplot(RNAnumr, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+regMAJecdfRNASZ
+
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_RNA.pdf", width=2, height = 2)
+regMAJecdfRNAS
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+regMAJecdfRNASZ
+dev.off()
+
+table(RNAnumr$region_single)
+
+#RPF
 #majority
 regMAJecdfRPF <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor(region_majority, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Equal")))) + 
   stat_ecdf(geom="step", linewidth=2) +
@@ -726,6 +846,158 @@ regMAJecdfRPFSZ
 dev.off()
 
 table(RPFnumr$region_single)
+
+
+#MS
+#majority
+regMAJecdfMS <- ggplot(MSnumr, aes(as.numeric(log2FoldChange), colour=factor(region_majority, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Equal")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Region by majority vote mass spectrometry")
+
+regMAJecdfMS
+
+
+regMAJecdfMSZ <- ggplot(MSnumr, aes(as.numeric(log2FoldChange), colour=factor(region_majority, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Equal")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+regMAJecdfMSZ
+
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_MS.pdf", width=2, height = 2)
+regMAJecdfMS
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+regMAJecdfMSZ
+dev.off()
+
+table(MSnumr$region_majority)
+
+
+
+#single
+regMAJecdfMSS <- ggplot(MSnumr, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Region single mass spectrometry")
+
+regMAJecdfMSS
+
+
+regMAJecdfMSSZ <- ggplot(MSnumr, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+regMAJecdfMSSZ
+
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_MS.pdf", width=2, height = 2)
+regMAJecdfMSS
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+regMAJecdfMSSZ
+dev.off()
+
+table(MSnumr$region_single)
+
+
+#TE
+#majority
+regMAJecdfTE <- ggplot(TEnumr, aes(as.numeric(log2FoldChange), colour=factor(region_majority, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Equal")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Region by majority vote translational efficiency")
+
+regMAJecdfTE
+
+
+regMAJecdfTEZ <- ggplot(TEnumr, aes(as.numeric(log2FoldChange), colour=factor(region_majority, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Equal")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+regMAJecdfTEZ
+
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_TE.pdf", width=2, height = 2)
+regMAJecdfTE
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+regMAJecdfTEZ
+dev.off()
+
+table(TEnumr$region_majority)
+
+
+
+#single
+regMAJecdfTES <- ggplot(TEnumr, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Region single translational efficiency")
+
+regMAJecdfTES
+
+
+regMAJecdfTESZ <- ggplot(TEnumr, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+regMAJecdfTESZ
+
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_TE.pdf", width=2, height = 2)
+regMAJecdfTES
+dev.off()
+
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+regMAJecdfTESZ
+dev.off()
+
+table(TEnumr$region_single)
 
 ```
 
