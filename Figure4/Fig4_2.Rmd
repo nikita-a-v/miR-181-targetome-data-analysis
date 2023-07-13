@@ -180,7 +180,7 @@ wobbleecdfRNAZ <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(wobb
   scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(),
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
@@ -207,7 +207,7 @@ wobbleecdfRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobb
   scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(),
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
@@ -234,7 +234,7 @@ wobbleecdfMSZ <- ggplot(MS, aes(as.numeric(log2FoldChange), colour=factor(wobble
   scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(),
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
@@ -261,7 +261,7 @@ wobbleecdfTEZ <- ggplot(TE, aes(as.numeric(log2FoldChange), colour=factor(wobble
   scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(),
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
@@ -314,6 +314,7 @@ RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type
 RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
 RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
 RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_alt_38","geneName"]] <- "seed_alt_38"
 RNA$MREtype[RNA$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
 
 
@@ -324,6 +325,7 @@ RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type
 RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
 RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
 RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_alt_38","geneName"]] <- "seed_alt_38"
 RPF$MREtype[RPF$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
 
 
@@ -334,6 +336,7 @@ MS$MREtype[MS$gene_symbol %in% largetframe[largetframe$first_seed_200down.type =
 MS$MREtype[MS$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
 MS$MREtype[MS$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
 MS$MREtype[MS$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+MS$MREtype[MS$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_alt_38","geneName"]] <- "seed_alt_38"
 MS$MREtype[MS$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
 
 
@@ -344,6 +347,7 @@ TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type =
 TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
 TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
 TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_alt_38","geneName"]] <- "seed_alt_38"
 TE$MREtype[TE$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
 
 
@@ -351,9 +355,9 @@ TE$MREtype[TE$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Mu
 # ecdf plots
 #RNA
 typeECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), 
-                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
-  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
   coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
@@ -364,13 +368,13 @@ typeECDFRNA
 
 # zoom
 typeECDFRNAZ <- ggplot(RNA, aes(as.numeric(log2FoldChange), 
-                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2*zoomfac) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
-  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(),
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
@@ -379,10 +383,10 @@ typeECDFRNAZ
 
 #RPF
 typeECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
-                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
-  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
   coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
@@ -392,13 +396,13 @@ typeECDFRPF
 
 # zoom
 typeECDFRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
-                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2*zoomfac) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
-  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(),
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
@@ -408,10 +412,10 @@ typeECDFRPFZ
 
 #MS
 typeECDFMS <- ggplot(MS, aes(as.numeric(log2FoldChange), 
-                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
-  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
   coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
@@ -421,13 +425,13 @@ typeECDFMS
 
 # zoom
 typeECDFMSZ <- ggplot(MS, aes(as.numeric(log2FoldChange), 
-                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2*zoomfac) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
-  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(),
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
@@ -437,10 +441,10 @@ typeECDFMSZ
 
 #TE
 typeECDFTE <- ggplot(TE, aes(as.numeric(log2FoldChange), 
-                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
-  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
   coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
@@ -450,13 +454,13 @@ typeECDFTE
 
 # zoom
 typeECDFTEZ <- ggplot(TE, aes(as.numeric(log2FoldChange), 
-                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "Multiple")))) + 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2*zoomfac) +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
-  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6)) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
   coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
   theme_bw() +
-  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(),
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA)) +
   scale_y_continuous("") + scale_x_continuous("")
