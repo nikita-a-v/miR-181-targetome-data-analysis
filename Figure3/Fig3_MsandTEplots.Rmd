@@ -175,13 +175,13 @@ ribo$density <- get_density(ribo$RNA_log2FoldChange, ribo$RPF_log2FoldChange, n=
 
 
 #plot
-riboplot <- ggplot(ribo, aes(x=RNA_log2FoldChange, y=RPF_log2FoldChange, colour=density)) +
-  geom_point_rast(size=1) +
+riboplot <- ggplot(ribo, aes(x=RNA_log2FoldChange, y=RPF_log2FoldChange, colour=log2(density))) +
+  geom_point_rast(size=0.5) +
   geom_abline(slope = 1, colour=farbe1) +
   geom_hline(yintercept = 0, linetype="dashed") +
   geom_vline(xintercept = 0, linetype="dashed") +
   coord_cartesian(ylim = c(-3,3), xlim = c(-3,3)) +
-  scale_colour_gradientn(colours = c(farbe3, farbe3, farbeneg), values = c(7, 0.25, 0)) +
+  scale_colour_gradient(high=farbe3, low=farbeneg) +
   theme_paper()
 
 
@@ -262,14 +262,15 @@ msribo$density <- get_density(msribo$MS_log2FoldChange, msribo$RPF_log2FoldChang
 
 
 #plot
-msriboplot <- ggplot(msribo, aes(x=MS_log2FoldChange, y=RPF_log2FoldChange, fill=density)) +
-  geom_point_rast(size=1, shape=21, colour="black", stroke=0.1) +
+msriboplot <- ggplot(msribo, aes(x=MS_log2FoldChange, y=RPF_log2FoldChange, colour=log2(density))) +
+  geom_point_rast(size=0.5) +
   geom_abline(slope = 1, colour=farbe1) +
   geom_hline(yintercept = 0, linetype="dashed") +
   geom_vline(xintercept = 0, linetype="dashed") +
   coord_cartesian(ylim = c(-3,3), xlim = c(-3,3)) +
-  scale_fill_gradientn(colours = c(farbe3, farbe3, farbeneg), values = c(7, 0.25, 0)) +
-  theme_paper()
+  scale_colour_gradient(low=farbeneg, high=farbe3) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1), ylim = c(-1,1))
 
 
 msriboplot
