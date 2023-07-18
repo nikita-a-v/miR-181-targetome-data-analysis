@@ -298,6 +298,25 @@ ggsave(p1, filename =  paste0(out, "Figure_1J_ecdf_differntial_binding_vs_mir181
 ggsave(p2, filename = paste0(out, "violin_differntial_binding_vs_mir181BS.pdf"), width = 10, height = 10, units = "cm")
 ```
 
+### nikitas version of violin plot
+includes t test and only 3 sets
+```{r nikitasviolin}
+mycomp <- list(c(), c())
+table(mir181_bs_diff$set)
+
+p2n <- ggplot(mir181_bs_diff[!(mir181_bs_diff$set == "ago_bs_mir181_chi"),], aes(y = resBs.log2FoldChange, x = as.character(set), fill = as.character(set)))+
+  geom_half_violin()+
+  geom_half_boxplot(side = "r")+
+  theme_paper()+
+  scale_fill_manual(values = c(farbe1, farbe14, farbe2))+
+  theme(legend.position = "top")+
+  scale_x_discrete(guide = guide_axis(angle = 25)) 
+
+p2n
+```
+
+
+
 ### Statistical tests for differential binding changes
 
 #### T-tests

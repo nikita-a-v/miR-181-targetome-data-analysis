@@ -24,6 +24,7 @@ library(ggplot2)
 library(ggrastr)
 library(dplyr)
 library(MASS)
+library(ggpubr)
 ```
 
 ## data
@@ -125,6 +126,30 @@ mscovolcano
 dev.off()
 ```
 
+## MS Barplots
+```{r MSbarplots}
+msbardat <- data.frame(c("Significantly_up", "Significantly_down"),
+                        c(length(ms[ms$Log2.FC. > 0 & ms$P.value <= 0.05,"GeneName"]), -length(ms[ms$Log2.FC. < 0 & ms$P.value <= 0.05,"GeneName"])))
+colnames(msbardat)=c("ID", "Number_of_genes")
+
+
+msbar <- ggplot(data=msbardat, aes(x=ID, y=Number_of_genes, fill=ID)) +
+  geom_bar(stat = "identity") +
+  geom_hline(yintercept = 0) +
+  scale_fill_manual(values = c(RPFncol, RPFpcol)) +
+  theme_paper() + 
+  theme(legend.position = "None")
+  
+
+msbar
+
+# export
+pdf("MSbarplot.pdf", width=1, height = 2)
+msbar
+dev.off()
+
+```
+
 # TE crossover
 ```{r tecross}
 names(RNA)[4] <- "RNA_log2FoldChange"
@@ -141,17 +166,7 @@ get_density <- function(x, y, ...) {
   return(dens$z[ii])
 }
 
-set.seed(1)
-dat <- data.frame(
-  x = c(
-    rnorm(1e4, mean = 0, sd = 0.1),
-    rnorm(1e3, mean = 0, sd = 0.1)
-  ),
-  y = c(
-    rnorm(1e4, mean = 0, sd = 0.1),
-    rnorm(1e3, mean = 0.1, sd = 0.2)
-  )
-)
+
 
 #implement density
 ribo$density <- get_density(ribo$RNA_log2FoldChange, ribo$RPF_log2FoldChange, n=100)
@@ -161,12 +176,12 @@ ribo$density <- get_density(ribo$RNA_log2FoldChange, ribo$RPF_log2FoldChange, n=
 
 #plot
 riboplot <- ggplot(ribo, aes(x=RNA_log2FoldChange, y=RPF_log2FoldChange, colour=density)) +
-  geom_point(size=1) +
-  geom_smooth(method=lm, colour=farbe1) +
+  geom_point_rast(size=1) +
+  geom_abline(slope = 1, colour=farbe1) +
   geom_hline(yintercept = 0, linetype="dashed") +
   geom_vline(xintercept = 0, linetype="dashed") +
   coord_cartesian(ylim = c(-3,3), xlim = c(-3,3)) +
-  scale_color_gradient(low = farbeneg, high = farbe3) +
+  scale_colour_gradientn(colours = c(farbe3, farbe3, farbeneg), values = c(7, 0.25, 0)) +
   theme_paper()
 
 
@@ -180,7 +195,7 @@ dev.off()
 
 
 
-#Te volcano
+# Te volcano
 ```{r tevol}
 head(TEframe)
 
@@ -196,7 +211,7 @@ TEco$significance[TEco$pvalue <= pms & TEco$log2FoldChange < 0] <- "Significant 
 
 #plot
 TEcovolcano <- ggplot(TEco, aes(y=-log10(pvalue), x=log2FoldChange,  fill=factor(significance, levels = c("Not significant", "Significant up","Significant down")))) + geom_point_rast(shape=21, size=0.5, colour=farbeneg) +
-  scale_fill_manual(values=c(farbeneg, RPFpcol, RPFncol)) +
+  scale_fill_manual(values=c(farbeneg, "#CD534C", "#E3A09C")) +
   geom_point(data = TEco[TEco$significance == "Significant up",], shape=21, colour="black", fill="#CD534C") +
   geom_point(data = TEco[TEco$significance == "Significant down",], shape=21, colour="black", fill="#E3A09C") +
   geom_hline(yintercept = -log10(pms), linetype="dashed") +
@@ -212,6 +227,107 @@ pdf("Volcanoplot_TE.pdf", width = 2, height = 2)
 TEcovolcano
 dev.off()
 ```
+
+
+## TE barplots
+```{r tebarplots}
+tebar <- ggplot(data = TEco[!(TEco$significance == "Not significant"),], aes(x=significance, fill=significance)) + 
+  geom_bar() +
+  scale_fill_manual(values = c("#E3A09C", "#CD534C")) +
+  theme_paper() +
+  theme(legend.position = "None")
+  
+
+tebar
+
+# export
+pdf("TEbarplot.pdf", width=1, height = 2)
+tebar
+dev.off()
+```
+
+
+# RPF vs MS
+```{r RPFvsMS}
+names(ms)[40] <- "MS_log2FoldChange"
+names(ms)[24] <- "gene_symbol"
+
+msribo <- inner_join(RPF[!is.na(RPF$gene_symbol),], ms[!is.na(ms$gene_symbol),], by="gene_symbol")
+
+
+#implement density
+msribo$density <- get_density(msribo$MS_log2FoldChange, msribo$RPF_log2FoldChange, n=100)
+
+#colour brewer
+
+
+#plot
+msriboplot <- ggplot(msribo, aes(x=MS_log2FoldChange, y=RPF_log2FoldChange, fill=density)) +
+  geom_point_rast(size=1, shape=21, colour="black", stroke=0.1) +
+  geom_abline(slope = 1, colour=farbe1) +
+  geom_hline(yintercept = 0, linetype="dashed") +
+  geom_vline(xintercept = 0, linetype="dashed") +
+  coord_cartesian(ylim = c(-3,3), xlim = c(-3,3)) +
+  scale_fill_gradientn(colours = c(farbe3, farbe3, farbeneg), values = c(7, 0.25, 0)) +
+  theme_paper()
+
+
+msriboplot
+
+#export
+pdf("Crossdots_MSvsRPF.pdf", width = 2, height = 2)
+msriboplot
+dev.off()
+```
+
+
+
+# RNA and RPF bar plots
+
+## RNA
+```{r RNAbarplot}
+RNAbardat <- data.frame(c("Significantly_up", "Significantly_down"),
+                        c(length(RNA[RNA$RNA_log2FoldChange > 0 & RNA$padj <= 0.05,"gene_symbol"]), -length(RNA[RNA$RNA_log2FoldChange < 0 & RNA$padj <= 0.05,"gene_symbol"])))
+colnames(RNAbardat)=c("ID", "Number_of_genes")
+
+RNAbar <- ggplot(data=RNAbardat, aes(x=ID, y=Number_of_genes, fill=ID)) +
+  geom_bar(stat = "identity") +
+  geom_hline(yintercept = 0) +
+  scale_fill_manual(values = c(RNAncol, RNApcol)) +
+  theme_paper() + 
+  theme(legend.position = "None")
+
+RNAbar
+
+# export
+pdf("RNAbarplot.pdf", width=1, height = 2)
+RNAbar
+dev.off()
+
+```
+
+
+## RPF
+```{r RPFbarplot}
+RPFbardat <- data.frame(c("Significantly_up", "Significantly_down"),
+                        c(length(RPF[RPF$RPF_log2FoldChange > 0 & RPF$padj <= 0.05,"gene_symbol"]), -length(RPF[RPF$RPF_log2FoldChange < 0 & RPF$padj <= 0.05,"gene_symbol"])))
+colnames(RPFbardat)=c("ID", "Number_of_genes")
+
+RPFbar <- ggplot(data=RPFbardat, aes(x=ID, y=Number_of_genes, fill=ID)) +
+  geom_bar(stat = "identity") +
+  geom_hline(yintercept = 0) +
+  scale_fill_manual(values = c(RNAncol, RNApcol)) +
+  theme_paper() + 
+  theme(legend.position = "None")
+
+RPFbar
+
+# export
+pdf("RPFbarplot.pdf", width=1, height = 2)
+RPFbar
+dev.off()
+```
+
 
 
 # Session info
