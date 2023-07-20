@@ -19,7 +19,7 @@ setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3")
 ## packages 
 ```{r packages}
 source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
-library(xlsx)
+library(readxl)
 library(ggplot2)
 library(ggrastr)
 library(dplyr)
@@ -30,8 +30,8 @@ library(ggpubr)
 ## data
 ```{r data}
 #ms
-ms <- as.data.frame(read.xlsx("D:/Krueger_Lab/R/ECDF plots/Kreuger_analysis_ms.xlsx", 
-                              sheetName = "Analysis"))
+ms <- as.data.frame(read_xls("D:/Krueger_Lab/Publications/miR181_paper/Figure3/MS_analysis.xlsx", 
+                              sheet = "Analysis"))
 #adjust upper case lower case of gene names of MS data:
 #function
 capFirst <- function(s) {
