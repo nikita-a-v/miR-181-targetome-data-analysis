@@ -44,9 +44,9 @@ library(ggpubr)
 # source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
 
 #nikita
-out <- "D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/"
-source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
-source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/CustomThemes.R")
+out <- "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/"
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/CustomThemes.R")
 
 # farben
 farbeneg <- "#B4B4B4"
@@ -89,7 +89,7 @@ mir181 binding sites are defined as the union of
 # mir181_enriched <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/mir181-enriched_binding_site_definition/2023-04-03-BS_mir181_enriched.rds")
 
 #nikita
-mir181_enriched <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/mir181-enriched_binding_site_definition/2023-04-03-BS_mir181_enriched.rds")
+mir181_enriched <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Methods/mir181-enriched_binding_site_definition/2023-04-03-BS_mir181_enriched.rds")
 
 # ----------------------------------------
 # chimeric reads
@@ -98,7 +98,7 @@ mir181_enriched <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/mir
 # chimeric_reads <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Ago_targetome/mir_chimeric_crosslinks.rds")
 
 #nikita
-chimeric_reads <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Ago_targetome/mir_chimeric_crosslinks.rds")
+chimeric_reads <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure1/Ago_targetome/mir_chimeric_crosslinks.rds")
 
 # ----------------------------------------
 # AGO binding sites
@@ -106,7 +106,7 @@ chimeric_reads <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Ago_
 # ago_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
 
 #nikita
-ago_bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
+ago_bs <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
 
 # ----------------------------------------
 # BS downregulated in mir181 KO
@@ -114,7 +114,7 @@ ago_bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/AGO_binding_
 # diff <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Differential_Binding/BsDifferentialResult.rds")
 
 #nikita
-diff <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Differential_Binding/BsDifferentialResult.rds")
+diff <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure1/Differential_Binding/BsDifferentialResult.rds")
 
 
 diff$down <- (diff$resBs.padj < 0.05) & (diff$resBs.log2FoldChange < -log2(2))
@@ -301,16 +301,17 @@ ggsave(p2, filename = paste0(out, "violin_differntial_binding_vs_mir181BS.pdf"),
 ### nikitas version of violin plot
 includes t test and only 3 sets
 ```{r nikitasviolin}
-mycomp <- list(c(), c())
+mycomp <- list(c("ago_bs_mir181_chi", "ago_bs_mir181_chi&mir181_enriched"), c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched"), c("ago_bs_mir181_chi", "mir181_enriched"))
 table(mir181_bs_diff$set)
 
-p2n <- ggplot(mir181_bs_diff[!(mir181_bs_diff$set == "ago_bs_mir181_chi"),], aes(y = resBs.log2FoldChange, x = as.character(set), fill = as.character(set)))+
+p2n <- ggplot(mir181_bs_diff[!is.na(mir181_bs_diff$set),], aes(y = resBs.log2FoldChange, x = as.character(set), fill = as.character(set)))+
   geom_half_violin()+
   geom_half_boxplot(side = "r")+
   theme_paper()+
   scale_fill_manual(values = c(farbe1, farbe14, farbe2))+
   theme(legend.position = "top")+
-  scale_x_discrete(guide = guide_axis(angle = 25)) 
+  scale_x_discrete(guide = guide_axis(angle = 25)) #+add significances
+  
 
 p2n
 ```
