@@ -23,13 +23,13 @@ knitr::opts_chunk$set(echo = TRUE)
 #Setup
 
 ```{r}
-setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3")
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3")
 ```
 
 
 load packages
 ```{r packages}
-source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
 library(DESeq2)
 library(ggplot2)
 library(ggrepel)
@@ -45,20 +45,20 @@ Load countmatrices
 Reference genome used: Gencode m23
 ```{r dataimport}
 #RNA
-KOtotal1411 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKOtotal1411_S12_R1_001Aligned.txt")
-KOtotal1601 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKOtotal1601_S4_R1_001Aligned.txt")
-KOtotal1710 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKOtotal1710_S2_R1_001Aligned.txt")
-WTtotal1411 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBWTtotal1411_S11_R1_001Aligned.txt")
-WTtotal1601 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBWTtotal1601_S8_R1_001Aligned.txt")
-WTtotal1710 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBWTtotal1710_S1_R1_001Aligned.txt")
+KOtotal1411 <- read.table("C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/Htseq/clean_FBKOtotal1411_S12_R1_001Aligned.txt")
+KOtotal1601 <- read.table("C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/Htseq/clean_FBKOtotal1601_S4_R1_001Aligned.txt")
+KOtotal1710 <- read.table("C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/Htseq/clean_FBKOtotal1710_S2_R1_001Aligned.txt")
+WTtotal1411 <- read.table("C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/Htseq/clean_FBWTtotal1411_S11_R1_001Aligned.txt")
+WTtotal1601 <- read.table("C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/Htseq/clean_FBWTtotal1601_S8_R1_001Aligned.txt")
+WTtotal1710 <- read.table("C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/Htseq/clean_FBWTtotal1710_S1_R1_001Aligned.txt")
 
 #RPF
-KORPF1411 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKORFP1411_S5_R1_001Aligned.txt")
-KORPF1601 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKORFP1601_S7_R1_001Aligned.txt")
-KORPF1710 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBKORFP1710_S9_R1_001Aligned.txt")
-WTRPF1411 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBWTRFP1411_S10_R1_001Aligned.txt")
-WTRPF1601 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBWTRFP1601_S3_R1_001Aligned.txt")
-WTRPF1710 <- read.table("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/Htseq/clean_FBWTRFP1710_S6_R1_001Aligned.txt")
+KORPF1411 <- read.table("C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/Htseq/clean_FBKORFP1411_S5_R1_001Aligned.txt")
+KORPF1601 <- read.table("C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/Htseq/clean_FBKORFP1601_S7_R1_001Aligned.txt")
+KORPF1710 <- read.table("C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/Htseq/clean_FBKORFP1710_S9_R1_001Aligned.txt")
+WTRPF1411 <- read.table("C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/Htseq/clean_FBWTRFP1411_S10_R1_001Aligned.txt")
+WTRPF1601 <- read.table("C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/Htseq/clean_FBWTRFP1601_S3_R1_001Aligned.txt")
+WTRPF1710 <- read.table("C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/Htseq/clean_FBWTRFP1710_S6_R1_001Aligned.txt")
 
 #combine tables
 total <- cbind(WTtotal1411, WTtotal1601$V2, WTtotal1710$V2, KOtotal1411$V2, KOtotal1601$V2, KOtotal1710$V2)
@@ -92,8 +92,8 @@ head(adjustedtotalRPF)
 
 write adjusted count matrices
 ```{r writeadjtable}
-write.csv(adjustedtotal, "RNAadjusted_countmatrix_15112022.csv")
-write.csv(adjustedtotalRPF, "RPFadjusted_countmatrix_15112022.csv")
+# write.csv(adjustedtotal, "RNAadjusted_countmatrix_15112022.csv")
+# write.csv(adjustedtotalRPF, "RPFadjusted_countmatrix_15112022.csv")
 ```
 
 # deseq2
@@ -159,12 +159,12 @@ grid.arrange(PCA, PCAadj, PCARPF, PCAadjRPF,
                                    c(3,4))
 )
 
-pdf("pca before and after combat seq 22032022.pdf", width = 7, height = 6)
-grid.arrange(PCA, PCAadj, PCARPF, PCAadjRPF,
-             layout_matrix = rbind(c(1,2),
-                                   c(3,4))
-)
-dev.off()
+# pdf("pca before and after combat seq 22032022.pdf", width = 7, height = 6)
+# grid.arrange(PCA, PCAadj, PCARPF, PCAadjRPF,
+#              layout_matrix = rbind(c(1,2),
+#                                    c(3,4))
+# )
+# dev.off()
 ```
 
 
@@ -300,9 +300,9 @@ RNAma <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x=lo
 
 RNAma
 
-pdf("MAplot_RNA.pdf", width = 2, height = 2)
-RNAma
-dev.off()
+# pdf("MAplot_RNA.pdf", width = 2, height = 2)
+# RNAma
+# dev.off()
 ```
 RPF MA plot
 ```{r RPFMA, fig.width=2.5, fig.height=2.5}
@@ -323,10 +323,80 @@ RPFma <- ggplot(RPFdat[!(RPFdat$xcutoff == "high"),], aes(y=log2FoldChange, x=lo
 
 RPFma
 
-pdf("MAplot_RPF.pdf", width = 2, height = 2)
-RPFma
+# pdf("MAplot_RPF.pdf", width = 2, height = 2)
+# RPFma
+# dev.off()
+```
+
+# Volcano plots for supplementary
+## RNA
+
+```{r RNAvolcano}
+plim <- 10^-30
+
+#make columns with identifiers
+RNAdat$ycutoff[RNAdat$padj < plim] <- "phigh"
+
+#implement cutoff
+RNAdat$padj[RNAdat$padj < plim] <- plim
+RNAdat$baseMean[RNAdat$baseMean > xlim] <- xlim
+
+table(RNAdat$ycutoff)
+
+RNAvol <- ggplot(RNAdat, aes(y=-log10(padj), x=log2FoldChange)) + geom_point_rast(shape=21, size = 0.5, 
+     aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
+  scale_fill_manual(values = c(negcol, RNAncol, RNApcol)) + scale_colour_manual(values = c(negcol, "black", "black")) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=-log10(padj), x=log2FoldChange), shape=21, size = 1, colour="black", fill=RNAncol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=-log10(padj), x=log2FoldChange), shape=21, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="phigh" & RNAdat$xcutoff == "in",], aes(y=-log10(padj), x=log2FoldChange), shape=24, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="phigh" & RNAdat$xcutoff == "in",], aes(y=-log10(padj), x=log2FoldChange), shape=24, size = 1, colour="black", fill=RNAncol) +
+  theme_paper() +
+  geom_hline(yintercept = -log10(pvsig), linetype="solid", colour="black") + 
+  geom_vline(xintercept = lfcsig, linetype="dashed", colour="black") + 
+  geom_vline(xintercept = -lfcsig, linetype="dashed", colour="black") + 
+  scale_y_continuous("Adjusted p-value (-log10)") + scale_x_continuous("Fold change (log2)") +
+  guides(color = guide_legend(override.aes = list(size = 3))) + ggtitle("RNAseq")
+
+RNAvol
+
+pdf("Volcanoplot_RNA.pdf", width = 2, height = 2)
+RNAvol
 dev.off()
 ```
+## RPF
+
+```{r RPFvolcano}
+#make columns with identifiers
+RPFdat$ycutoff[RPFdat$padj < plim] <- "phigh"
+
+#implement cutoff
+RPFdat$padj[RPFdat$padj < plim] <- plim
+RPFdat$baseMean[RPFdat$baseMean > xlim] <- xlim
+
+table(RPFdat$ycutoff)
+
+RPFvol <- ggplot(RPFdat, aes(y=-log10(padj), x=log2FoldChange)) + geom_point_rast(shape=21, size = 0.5, 
+     aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
+  scale_fill_manual(values = c(negcol, RNAncol, RNApcol)) + scale_colour_manual(values = c(negcol, "black", "black")) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=-log10(padj), x=log2FoldChange), shape=21, size = 1, colour="black", fill=RNAncol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=-log10(padj), x=log2FoldChange), shape=21, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="phigh" & RPFdat$xcutoff == "in",], aes(y=-log10(padj), x=log2FoldChange), shape=24, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="phigh" & RPFdat$xcutoff == "in",], aes(y=-log10(padj), x=log2FoldChange), shape=24, size = 1, colour="black", fill=RNAncol) +
+  theme_paper() +
+  geom_hline(yintercept = -log10(pvsig), linetype="solid", colour="black") + 
+  geom_vline(xintercept = lfcsig, linetype="dashed", colour="black") + 
+  geom_vline(xintercept = -lfcsig, linetype="dashed", colour="black") + 
+  scale_y_continuous("Adjusted p-value (-log10)") + scale_x_continuous("Fold change (log2)") +
+  guides(color = guide_legend(override.aes = list(size = 3))) + ggtitle("RPF")
+
+RPFvol
+
+pdf("Volcanoplot_RPF.pdf", width = 2, height = 2)
+RPFvol
+dev.off()
+```
+
+
 
 # Export mAster data.frames
 
@@ -357,8 +427,8 @@ head(RPFexp)
 save master DFs
 
 ```{r}
-write.csv(RNAexp, "RNA_masterframe.csv")
-write.csv(RPFexp, "RPF_masterframe.csv")
+# write.csv(RNAexp, "RNA_masterframe.csv")
+# write.csv(RPFexp, "RPF_masterframe.csv")
 
 ```
 
