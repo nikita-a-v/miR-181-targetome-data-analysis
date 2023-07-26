@@ -13,12 +13,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 dir
 ```{r dir}
-setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3")
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3")
 ```
 
 ## packages 
 ```{r packages}
-source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
 library(readxl)
 library(ggplot2)
 library(ggrastr)
@@ -30,24 +30,24 @@ library(ggpubr)
 ## data
 ```{r data}
 #ms
-ms <- as.data.frame(read_xls("D:/Krueger_Lab/Publications/miR181_paper/Figure3/MS_analysis.xlsx", 
+ms <- as.data.frame(read_xlsx(path = "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/MS_analysis.xlsx", 
                               sheet = "Analysis"))
 #adjust upper case lower case of gene names of MS data:
 #function
 capFirst <- function(s) {
   paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")
 }
-ms$Gene.Symbol <- tolower(ms$Gene.Symbol)
-ms$Gene.Symbol <- capFirst(ms$Gene.Symbol)
-names(ms)[names(ms) == 'Gene.Symbol'] <- 'GeneName'
+ms$`Gene Symbol` <- tolower(ms$`Gene Symbol`)
+ms$`Gene Symbol` <- capFirst(ms$`Gene Symbol`)
+names(ms)[names(ms) == 'Gene Symbol'] <- 'GeneName'
 head(ms$GeneName)
 
 #Ribo profiling
-RNA <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
-RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
+RNA <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
+RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
 
 #Translational efficiency
-TEframe <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Supporting scipts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+TEframe <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/deltaTE/TE_m23_genesInRNAandRPF.csv")
 head(TEframe)
 
 
@@ -89,29 +89,29 @@ lfccutoffmax <- 1.5
 # #make columns with identifiers
 msco <- ms
 # msco$lfccutoff <- "in"
-# msco$lfccutoff[msco$Log2.FC. > lfccutoffmax] <- "high"
-# msco$lfccutoff[msco$Log2.FC. < -lfccutoffmax] <- "low"
+# msco$lfccutoff[msco$`Log2(FC)` > lfccutoffmax] <- "high"
+# msco$lfccutoff[msco$`Log2(FC)` < -lfccutoffmax] <- "low"
 # 
 # #implement cutoff
-# msco$Log2.FC.[msco$Log2.FC. > lfccutoffmax] <- lfccutoffmax
-# msco$Log2.FC.[msco$Log2.FC. < -lfccutoffmax] <- -lfccutoffmax
+# msco$`Log2(FC)`[msco$`Log2(FC)` > lfccutoffmax] <- lfccutoffmax
+# msco$`Log2(FC)`[msco$`Log2(FC)` < -lfccutoffmax] <- -lfccutoffmax
 
 
 
 #add significance identifier
 msco$significance <- "Not significant"
-msco$significance[msco$P.value <= pms & msco$Log2.FC. > 0] <- "Significant up"
-msco$significance[msco$P.value <= pms & msco$Log2.FC. < 0] <- "Significant down"
+msco$significance[msco$`P-value` <= pms & msco$`Log2(FC)` > 0] <- "Significant up"
+msco$significance[msco$`P-value` <= pms & msco$`Log2(FC)` < 0] <- "Significant down"
 
 
 
 #plot
-mscovolcano <- ggplot(msco, aes(y=-log10(P.value), x=Log2.FC.,  fill=factor(significance, levels = c("Not significant", "Significant up","Significant down")))) + geom_point_rast(shape=21, size=0.5, colour=farbeneg) +
+mscovolcano <- ggplot(msco, aes(y=-log10(`P-value`), x=`Log2(FC)`,  fill=factor(significance, levels = c("Not significant", "Significant up","Significant down")))) + geom_point_rast(shape=21, size=0.5, colour=farbeneg) +
   scale_fill_manual(values=c(farbeneg, RPFpcol, RPFncol)) +
   geom_point(data = msco[msco$significance == "Significant up",], shape=21, colour="black", fill=RPFpcol) +
   geom_point(data = msco[msco$significance == "Significant down",], shape=21, colour="black", fill=RPFncol) +
-  # geom_point(data=msco[msco$significance == "Significant up" & msco$lfccutoff =="high",], aes(y=-log10(P.value), x=Log2.FC.), shape=23, size = 2, colour="black", fill=RPFpcol) +
-  # geom_point(data=msco[msco$significance == "Significant down" & msco$lfccutoff =="low",], aes(y=-log10(P.value), x=Log2.FC.), shape=24, size = 2, colour="black", fill=RPFncol) +
+  # geom_point(data=msco[msco$significance == "Significant up" & msco$lfccutoff =="high",], aes(y=-log10(`P-value`), x=`Log2(FC)`), shape=23, size = 2, colour="black", fill=RPFpcol) +
+  # geom_point(data=msco[msco$significance == "Significant down" & msco$lfccutoff =="low",], aes(y=-log10(`P-value`), x=`Log2(FC)`), shape=24, size = 2, colour="black", fill=RPFncol) +
   geom_hline(yintercept = -log10(pms), linetype="dashed") +
   geom_vline(xintercept = 0, linetype="dashed") +
   coord_cartesian(xlim = c(-lfccutoffmax, lfccutoffmax))+
@@ -129,7 +129,7 @@ dev.off()
 ## MS Barplots
 ```{r MSbarplots}
 msbardat <- data.frame(c("Significantly_up", "Significantly_down"),
-                        c(length(ms[ms$Log2.FC. > 0 & ms$P.value <= 0.05,"GeneName"]), -length(ms[ms$Log2.FC. < 0 & ms$P.value <= 0.05,"GeneName"])))
+                        c(length(ms[ms$`Log2(FC)` > 0 & ms$`P-value` <= 0.05,"GeneName"]), -length(ms[ms$`Log2(FC)` < 0 & ms$`P-value` <= 0.05,"GeneName"])))
 colnames(msbardat)=c("ID", "Number_of_genes")
 
 
@@ -180,6 +180,7 @@ riboplot <- ggplot(ribo, aes(x=RNA_log2FoldChange, y=RPF_log2FoldChange, colour=
   geom_abline(slope = 1, colour=farbe1) +
   geom_hline(yintercept = 0, linetype="dashed") +
   geom_vline(xintercept = 0, linetype="dashed") +
+  stat_cor(method = "pearson", label.x = -2, label.y = 2) +
   coord_cartesian(ylim = c(-3,3), xlim = c(-3,3)) +
   scale_colour_gradient(high=farbe3, low=farbeneg) +
   theme_paper()
@@ -267,7 +268,7 @@ msriboplot <- ggplot(msribo, aes(x=MS_log2FoldChange, y=RPF_log2FoldChange, colo
   geom_abline(slope = 1, colour=farbe1) +
   geom_hline(yintercept = 0, linetype="dashed") +
   geom_vline(xintercept = 0, linetype="dashed") +
-  coord_cartesian(ylim = c(-3,3), xlim = c(-3,3)) +
+  stat_cor(method = "pearson", label.x = -1, label.y = 1) +
   scale_colour_gradient(low=farbeneg, high=farbe3) +
   theme_paper() +
   coord_cartesian(xlim = c(-1,1), ylim = c(-1,1))
