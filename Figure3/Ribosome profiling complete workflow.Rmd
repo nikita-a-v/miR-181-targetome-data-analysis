@@ -300,9 +300,9 @@ RNAma <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x=lo
 
 RNAma
 
-# pdf("MAplot_RNA.pdf", width = 2, height = 2)
-# RNAma
-# dev.off()
+pdf("MAplot_RNA.pdf", width = 1.5, height = 1.8)
+RNAma
+dev.off()
 ```
 RPF MA plot
 ```{r RPFMA, fig.width=2.5, fig.height=2.5}
@@ -323,9 +323,9 @@ RPFma <- ggplot(RPFdat[!(RPFdat$xcutoff == "high"),], aes(y=log2FoldChange, x=lo
 
 RPFma
 
-# pdf("MAplot_RPF.pdf", width = 2, height = 2)
-# RPFma
-# dev.off()
+pdf("MAplot_RPF.pdf", width = 1.5, height = 1.8)
+RPFma
+dev.off()
 ```
 
 # Volcano plots for supplementary

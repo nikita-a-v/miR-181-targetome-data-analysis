@@ -15,12 +15,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 dir
 ```{r dir}
-setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2")
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2")
 ```
 
 ## packages
 ```{r packages}
-source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
 library(ggplot2)
 library(rtracklayer)
 library(dplyr)
@@ -35,22 +35,22 @@ library(readxl)
 ## data
 ```{r data}
 #Ribo profiling
-RNA <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
-RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
+RNA <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
+RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
 
 #load the gtf file to compare genes
-gff23 <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
-gff23path <- file.path("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
+gff23 <- import.gff3("C:/Users/nikit/Documents/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
+gff23path <- file.path("C:/Users/nikit/Documents/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
 
 #targets
-larget <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_afterFigure2B.rds")
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_afterFigure2B.rds")
 largetframe <- as.data.frame(larget)
 table(largetframe$set)
 largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
 
 
 #ms
-MS <- as.data.frame(read_xlsx("D:/Krueger_Lab/Publications/miR181_paper/Figure3/MS_analysis.xlsx", 
+MS <- as.data.frame(read_xlsx("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/MS_analysis.xlsx", 
                               sheet = 2))
 #adjust upper case lower case of gene names of MS data:
 #function
@@ -66,7 +66,7 @@ names(MS)[names(MS) == 'Log2(FC)'] <- 'log2FoldChange'
 head(MS$gene_symbol)
 
 #Translational efficiency
-TE <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Supporting scipts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+TE <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/deltaTE/TE_m23_genesInRNAandRPF.csv")
 
 
 
@@ -78,8 +78,8 @@ TE <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Supporting sc
 
 
 #MMsat4
-repeat_masker <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure2/MMsat4/repeat_masker.rds")
-MMSAT4 <- repeat_masker[repeat_masker$repName == "MMSAT4"]
+# repeat_masker <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/MMsat4/repeat_masker.rds")
+# MMSAT4 <- repeat_masker[repeat_masker$repName == "MMSAT4"]
 
 ```
 
@@ -248,31 +248,31 @@ targetecdfTEZ
 
 
 #export 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RNA.pdf", width=2, height = 2)
 targetecdfRNA
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 targetecdfRNAZ
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RPF.pdf", width=2, height = 2)
 targetecdfRPF
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 targetecdfRPFZ
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_MS.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_MS.pdf", width=2, height = 2)
 targetecdfMS
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 targetecdfMSZ
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_TE.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_TE.pdf", width=2, height = 2)
 targetecdfTE
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 targetecdfTEZ
 dev.off()
 
@@ -352,22 +352,22 @@ numHist_TE <- ggplot(TEnumT, aes(x=BS_number)) +
 numHist_TE
 
 #export RPF
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_RPF.pdf", width=2, height = 2)
 numHist_RPF
 dev.off()
 
 #export RNA
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_RNA.pdf", width=2, height = 2)
 numHist_RNA
 dev.off()
 
 #export MS
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_MS.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_MS.pdf", width=2, height = 2)
 numHist_MS
 dev.off()
 
 #export TE
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_TE.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_TE.pdf", width=2, height = 2)
 numHist_TE
 dev.off()
 
@@ -508,34 +508,34 @@ numecdfTEZ
 
 # export
 #RNA
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RNA.pdf", width=2, height = 2)
 numecdfRNA
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 numecdfRNAZ
 dev.off()
 
 #RPF
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF.pdf", width=2, height = 2)
 numecdfRPF
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 numecdfRPFZ
 dev.off()
 
 #MS
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_MS.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_MS.pdf", width=2, height = 2)
 numecdfMS
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 numecdfMSZ
 dev.off()
 
 #TE
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_TE.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_TE.pdf", width=2, height = 2)
 numecdfTE
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 numecdfTEZ
 dev.off()
 
@@ -573,10 +573,10 @@ numecdfRPF2Z <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_
 numecdfRPF2Z
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF2.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF2.pdf", width=2, height = 2)
 numecdfRPF2
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF2_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF2_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 numecdfRPF2Z
 dev.off()
 
@@ -593,7 +593,7 @@ meta <- metaGeneProfile(object = glarget, annotation = gff23path)
 meta
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/metagene_profile.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/metagene_profile.pdf", width=2, height = 2)
 meta
 dev.off()
 ```
@@ -724,11 +724,11 @@ regMAJecdfRNAZ <- ggplot(RNAnumr, aes(as.numeric(log2FoldChange), colour=factor(
 regMAJecdfRNAZ
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RNA.pdf", width=2, height = 2)
 regMAJecdfRNA
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 regMAJecdfRNAZ
 dev.off()
 
@@ -762,11 +762,11 @@ regMAJecdfRNASZ <- ggplot(RNAnumr, aes(as.numeric(log2FoldChange), colour=factor
 regMAJecdfRNASZ
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_RNA.pdf", width=2, height = 2)
 regMAJecdfRNAS
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 regMAJecdfRNASZ
 dev.off()
 
@@ -799,11 +799,11 @@ regMAJecdfRPFZ <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor(
 regMAJecdfRPFZ
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RPF.pdf", width=2, height = 2)
 regMAJecdfRPF
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 regMAJecdfRPFZ
 dev.off()
 
@@ -837,11 +837,11 @@ regMAJecdfRPFSZ <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor
 regMAJecdfRPFSZ
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_RPF.pdf", width=2, height = 2)
 regMAJecdfRPFS
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 regMAJecdfRPFSZ
 dev.off()
 
@@ -875,11 +875,11 @@ regMAJecdfMSZ <- ggplot(MSnumr, aes(as.numeric(log2FoldChange), colour=factor(re
 regMAJecdfMSZ
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_MS.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_MS.pdf", width=2, height = 2)
 regMAJecdfMS
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 regMAJecdfMSZ
 dev.off()
 
@@ -913,11 +913,11 @@ regMAJecdfMSSZ <- ggplot(MSnumr, aes(as.numeric(log2FoldChange), colour=factor(r
 regMAJecdfMSSZ
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_MS.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_MS.pdf", width=2, height = 2)
 regMAJecdfMSS
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 regMAJecdfMSSZ
 dev.off()
 
@@ -951,11 +951,11 @@ regMAJecdfTEZ <- ggplot(TEnumr, aes(as.numeric(log2FoldChange), colour=factor(re
 regMAJecdfTEZ
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_TE.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_TE.pdf", width=2, height = 2)
 regMAJecdfTE
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_majorityECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 regMAJecdfTEZ
 dev.off()
 
@@ -989,11 +989,11 @@ regMAJecdfTESZ <- ggplot(TEnumr, aes(as.numeric(log2FoldChange), colour=factor(r
 regMAJecdfTESZ
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_TE.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_TE.pdf", width=2, height = 2)
 regMAJecdfTES
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/region_singleECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 regMAJecdfTESZ
 dev.off()
 
@@ -1100,11 +1100,11 @@ rndplotRPF <- ggplot(RPFrnumlim[RPFrnumlim$padj <= 0.05 ,], aes(x=factor(bsregio
 rndplotRPF
 
 #export
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Dotplot_region_number-RNA.pdf", height = 4, width = 5)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Dotplot_region_number-RNA.pdf", height = 4, width = 5)
 rndplotRNA 
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Dotplot_region_number-RPF.pdf", height = 4, width = 5)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Dotplot_region_number-RPF.pdf", height = 4, width = 5)
 rndplotRPF 
 dev.off()
 ```
@@ -1441,7 +1441,7 @@ numECDFRPF <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_nu
 numECDFRPF
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF2.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumECDF_RPF2.pdf", width=2, height = 2)
 numECDFRPF
 dev.off()
 ```
@@ -1725,113 +1725,113 @@ head(largetframe)
 
 
 # Export
-"D:/Krueger_Lab/Publications/miR181_paper/Figure4"
+"C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4"
 ```{r export}
 #target
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/targetoldintronECDFRNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/targetoldintronECDFRNA.pdf", width=2, height = 2)
 targetoldECDFRNA
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/targetoldintronECDFRPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/targetoldintronECDFRPF.pdf", width=2, height = 2)
 targetoldECDFRPF
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/targetECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/targetECDF_RNA.pdf", width=2, height = 2)
 targetECDFRNA
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/targetECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/targetECDF_RPF.pdf", width=2, height = 2)
 targetECDFRPF
 dev.off()
 
 #set
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/setECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/setECDF_RNA.pdf", width=2, height = 2)
 setECDFRNA
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/setECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/setECDF_RPF.pdf", width=2, height = 2)
 setECDFRPF
 dev.off()
 
 #region single targets
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/regsingECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/regsingECDF_RNA.pdf", width=2, height = 2)
 regsingECDFRNA
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/regsingECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/regsingECDF_RPF.pdf", width=2, height = 2)
 regsingECDFRPF
 dev.off()
 
 #number
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/numECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/numECDF_RNA.pdf", width=2, height = 2)
 numECDFRNA
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/numECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/numECDF_RPF.pdf", width=2, height = 2)
 numECDFRPF
 dev.off()
 
 # MMsat4 vs target
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/MMsat4vsTargetECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/MMsat4vsTargetECDF_RNA.pdf", width=2, height = 2)
 tolECDFRNA
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/MMsat4vsTargetECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/MMsat4vsTargetECDF_RPF.pdf", width=2, height = 2)
 tolECDFRPF
 dev.off()
 
 # region with MMsat4 cds and 3'utr
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/MMsat4byRegionECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/MMsat4byRegionECDF_RNA.pdf", width=2, height = 2)
 posECDFRNA
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/MMsat4byRegionECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/MMsat4byRegionECDF_RPF.pdf", width=2, height = 2)
 posECDFRPF
 dev.off()
 
 # MRE type
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/MRtypeECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/MRtypeECDF_RNA.pdf", width=2, height = 2)
 typeECDFRNA
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/MRtypeECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/MRtypeECDF_RPF.pdf", width=2, height = 2)
 typeECDFRPF
 dev.off()
 
 # Wobble
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/wobbleECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/wobbleECDF_RNA.pdf", width=2, height = 2)
 wobbleECDFRNA
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/wobbleECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/wobbleECDF_RPF.pdf", width=2, height = 2)
 wobbleECDFRPF
 dev.off()
 
 # transcript expression
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/expresssionECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/expresssionECDF_RNA.pdf", width=2, height = 2)
 expECDFRNA
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/expresssionECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/expresssionECDF_RPF.pdf", width=2, height = 2)
 expECDFRPF
 dev.off()
 
 # transcript expression
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/regiomultiECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/regiomultiECDF_RNA.pdf", width=2, height = 2)
 regionmultiECDFRNA
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/regiomultiECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/regiomultiECDF_RPF.pdf", width=2, height = 2)
 regionmultiECDFRPF
 dev.off()
 
