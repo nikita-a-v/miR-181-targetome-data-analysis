@@ -521,16 +521,16 @@ mmsat4frame <- as.data.frame(MMSAT4)
 
 #RNA
 RNA$tvsmmsat4 <- "Non-target"
-RNA$tvsmmsat4[sub("\\..*", "", RNA$Gene) %in% mmsat4frame$gene_id.x] <- "MMsat4"
+RNA$tvsmmsat4[sub("\\..*", "", RNA$Gene) %in% mmsat4frame$gene_id] <- "MMsat4"
 RNA$tvsmmsat4[sub("\\..*", "", RNA$Gene) %in% largetframe$geneID] <- "miR-181 target"
-RNA$tvsmmsat4[sub("\\..*", "", RNA$Gene) %in% largetframe$geneID & sub("\\..*", "", RNA$Gene) %in% mmsat4frame$gene_id.x] <- "both"
+RNA$tvsmmsat4[sub("\\..*", "", RNA$Gene) %in% largetframe$geneID & sub("\\..*", "", RNA$Gene) %in% mmsat4frame$gene_id] <- "both"
 table(RNA$tvsmmsat4)
 
 #RPF
 RPF$tvsmmsat4 <- "Non-target"
-RPF$tvsmmsat4[sub("\\..*", "", RPF$Gene) %in% mmsat4frame$gene_id.x] <- "MMsat4"
+RPF$tvsmmsat4[sub("\\..*", "", RPF$Gene) %in% mmsat4frame$gene_id] <- "MMsat4"
 RPF$tvsmmsat4[sub("\\..*", "", RPF$Gene) %in% largetframe$geneID] <- "miR-181 target"
-RPF$tvsmmsat4[sub("\\..*", "", RPF$Gene) %in% largetframe$geneID & sub("\\..*", "", RPF$Gene) %in% mmsat4frame$gene_id.x] <- "both"
+RPF$tvsmmsat4[sub("\\..*", "", RPF$Gene) %in% largetframe$geneID & sub("\\..*", "", RPF$Gene) %in% mmsat4frame$gene_id] <- "both"
 table(RPF$tvsmmsat4)
 
 #MS
@@ -542,9 +542,9 @@ table(MS$tvsmmsat4)
 
 #TE
 TE$tvsmmsat4 <- "Non-target"
-TE$tvsmmsat4[sub("\\..*", "", TE$Gene) %in% mmsat4frame$gene_id.x] <- "MMsat4"
+TE$tvsmmsat4[sub("\\..*", "", TE$Gene) %in% mmsat4frame$gene_id] <- "MMsat4"
 TE$tvsmmsat4[sub("\\..*", "", TE$Gene) %in% largetframe$geneID] <- "miR-181 target"
-TE$tvsmmsat4[sub("\\..*", "", TE$Gene) %in% largetframe$geneID & sub("\\..*", "", TE$Gene) %in% mmsat4frame$gene_id.x] <- "both"
+TE$tvsmmsat4[sub("\\..*", "", TE$Gene) %in% largetframe$geneID & sub("\\..*", "", TE$Gene) %in% mmsat4frame$gene_id] <- "both"
 table(TE$tvsmmsat4)
 
 
@@ -629,16 +629,16 @@ MurSatRep1frame <- as.data.frame(MurSatRep1)
 
 #RNA
 RNA$tvsMurSatRep1 <- "Non-target"
-RNA$tvsMurSatRep1[sub("\\..*", "", RNA$Gene) %in% MurSatRep1frame$gene_id.x] <- "MurSatRep1"
+RNA$tvsMurSatRep1[sub("\\..*", "", RNA$Gene) %in% MurSatRep1frame$gene_id] <- "MurSatRep1"
 RNA$tvsMurSatRep1[sub("\\..*", "", RNA$Gene) %in% largetframe$geneID] <- "miR-181 target"
-RNA$tvsMurSatRep1[sub("\\..*", "", RNA$Gene) %in% largetframe$geneID & sub("\\..*", "", RNA$Gene) %in% MurSatRep1frame$gene_id.x] <- "both"
+RNA$tvsMurSatRep1[sub("\\..*", "", RNA$Gene) %in% largetframe$geneID & sub("\\..*", "", RNA$Gene) %in% MurSatRep1frame$gene_id] <- "both"
 table(RNA$tvsMurSatRep1)
 
 #RPF
 RPF$tvsMurSatRep1 <- "Non-target"
-RPF$tvsMurSatRep1[sub("\\..*", "", RPF$Gene) %in% MurSatRep1frame$gene_id.x] <- "MurSatRep1"
+RPF$tvsMurSatRep1[sub("\\..*", "", RPF$Gene) %in% MurSatRep1frame$gene_id] <- "MurSatRep1"
 RPF$tvsMurSatRep1[sub("\\..*", "", RPF$Gene) %in% largetframe$geneID] <- "miR-181 target"
-RPF$tvsMurSatRep1[sub("\\..*", "", RPF$Gene) %in% largetframe$geneID & sub("\\..*", "", RPF$Gene) %in% MurSatRep1frame$gene_id.x] <- "both"
+RPF$tvsMurSatRep1[sub("\\..*", "", RPF$Gene) %in% largetframe$geneID & sub("\\..*", "", RPF$Gene) %in% MurSatRep1frame$gene_id] <- "both"
 table(RPF$tvsMurSatRep1)
 
 #MS
@@ -650,9 +650,9 @@ table(MS$tvsMurSatRep1)
 
 #TE
 TE$tvsMurSatRep1 <- "Non-target"
-TE$tvsMurSatRep1[sub("\\..*", "", TE$Gene) %in% MurSatRep1frame$gene_id.x] <- "MurSatRep1"
+TE$tvsMurSatRep1[sub("\\..*", "", TE$Gene) %in% MurSatRep1frame$gene_id] <- "MurSatRep1"
 TE$tvsMurSatRep1[sub("\\..*", "", TE$Gene) %in% largetframe$geneID] <- "miR-181 target"
-TE$tvsMurSatRep1[sub("\\..*", "", TE$Gene) %in% largetframe$geneID & sub("\\..*", "", TE$Gene) %in% MurSatRep1frame$gene_id.x] <- "both"
+TE$tvsMurSatRep1[sub("\\..*", "", TE$Gene) %in% largetframe$geneID & sub("\\..*", "", TE$Gene) %in% MurSatRep1frame$gene_id] <- "both"
 table(TE$tvsMurSatRep1)
 
 
@@ -778,7 +778,7 @@ dev.off()
 ## venn diagram
 ```{r vennmmsat4}
 
-vset <- list(mmsat4frame[!duplicated(mmsat4frame$gene_id.x) & mmsat4frame$gene_id.x %in% largetframe$geneID,"gene_id.x"], MurSatRep1frame[!duplicated(MurSatRep1frame$gene_id.x) & MurSatRep1frame$gene_id.x %in% largetframe$geneID,"gene_id.x"])
+vset <- list(mmsat4frame[!duplicated(mmsat4frame$gene_id) & mmsat4frame$gene_id %in% largetframe$geneID,"gene_id"], MurSatRep1frame[!duplicated(MurSatRep1frame$gene_id) & MurSatRep1frame$gene_id %in% largetframe$geneID,"gene_id"])
 names(vset) <- c("MMSAT4", "MurSatRep1")
 
 vplot <- plot(euler(vset, shape = "ellipse"), quantities = TRUE, main="Genes by contained motifes" , fills=c(farbe1, farbe2)) 
@@ -789,7 +789,7 @@ vplot
 dev.off()
 
 
-vsetECDF <- list(mmsat4frame[!duplicated(mmsat4frame$gene_id.x) & mmsat4frame$gene_id.x %in% largetframe$geneID & mmsat4frame$gene_id.x %in% sub("\\..*", "", RNA$Gene) & mmsat4frame$gene_id.x %in% sub("\\..*", "", RPF$Gene) ,"gene_id.x"], MurSatRep1frame[!duplicated(MurSatRep1frame$gene_id.x) & MurSatRep1frame$gene_id.x %in% largetframe$geneID & MurSatRep1frame$gene_id.x %in% sub("\\..*", "", RNA$Gene) & MurSatRep1frame$gene_id.x %in% sub("\\..*", "", RPF$Gene),"gene_id.x"])
+vsetECDF <- list(mmsat4frame[!duplicated(mmsat4frame$gene_id) & mmsat4frame$gene_id %in% largetframe$geneID & mmsat4frame$gene_id %in% sub("\\..*", "", RNA$Gene) & mmsat4frame$gene_id %in% sub("\\..*", "", RPF$Gene) ,"gene_id"], MurSatRep1frame[!duplicated(MurSatRep1frame$gene_id) & MurSatRep1frame$gene_id %in% largetframe$geneID & MurSatRep1frame$gene_id %in% sub("\\..*", "", RNA$Gene) & MurSatRep1frame$gene_id %in% sub("\\..*", "", RPF$Gene),"gene_id"])
 names(vsetECDF) <- c("MMSAT4", "MurSatRep1")
 
 vplotecdf <- plot(euler(vsetECDF, shape = "ellipse"), quantities = TRUE, main="Genes by contained motifes" , fills=c(farbe1, farbe2)) 
@@ -804,17 +804,18 @@ dev.off()
 
 # histogram MREs per gene with repeat
 ```{r mresPerGeneRep}
-histmremmsat4 <- as.data.frame(table(largetframe[largetframe$geneID %in% mmsat4frame$gene_id.x, "geneID"]))
+histmremmsat4 <- as.data.frame(table(largetframe[largetframe$geneID %in% mmsat4frame$gene_id, "geneID"]))
 dim(histmremmsat4)
 
-mmsat4GMRElist <- as.data.frame(table(largetframe[largetframe$geneID %in% mmsat4frame$gene_id.x, "geneName"]))
+mmsat4GMRElist <- as.data.frame(table(largetframe[largetframe$geneID %in% mmsat4frame$gene_id, "geneName"]))
 colnames(mmsat4GMRElist) = c("Gene", "Number of MREs")
 write.csv(mmsat4GMRElist, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/genelist_MMsat4withMRE.csv")
 
-histmremmsat4P <- ggplot(histmremmsat4, aes(x=Freq)) + 
+histmremmsat4P <- ggplot(histmremmsat4, aes(y=Freq)) + 
   geom_histogram(binwidth = 1, colour="black", fill="#B4B4B4") +
   theme_paper() +
-  scale_y_continuous(expand = c(0,0))
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_reverse()
 
 histmremmsat4P
 
@@ -822,17 +823,18 @@ pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/MRE_
 histmremmsat4P
 dev.off()
 
-histmremursat <- as.data.frame(table(largetframe[largetframe$geneID %in% MurSatRep1frame$gene_id.x, "geneID"]))
+histmremursat <- as.data.frame(table(largetframe[largetframe$geneID %in% MurSatRep1frame$gene_id, "geneID"]))
 dim(histmremursat)
 
-mursatrep1GMRElist <- as.data.frame(table(largetframe[largetframe$geneID %in% MurSatRep1frame$gene_id.x, "geneName"]))
+mursatrep1GMRElist <- as.data.frame(table(largetframe[largetframe$geneID %in% MurSatRep1frame$gene_id, "geneName"]))
 colnames(mursatrep1GMRElist) = c("Gene", "Number of MREs")
 write.csv(mursatrep1GMRElist, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/genelist_MursatRep1withMRE.csv")
 
-histmremursatP<- ggplot(histmremursat, aes(x=Freq)) + 
+histmremursatP<- ggplot(histmremursat, aes(y=Freq)) + 
   geom_histogram(binwidth = 1, colour="black", fill="#B4B4B4") +
   theme_paper() +
-  scale_y_continuous(expand = c(0,0))
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_reverse()
 
 histmremursatP
 
@@ -841,13 +843,14 @@ histmremursatP
 dev.off()
 
 #like ecdf (occurs in RNA and RPF)
-histmremmsat4ECDF <- as.data.frame(table(largetframe[largetframe$geneID %in% mmsat4frame$gene_id.x & largetframe$geneID %in% sub("\\..*", "", RNA$Gene) & largetframe$geneID %in% sub("\\..*", "", RPF$Gene), "geneID"]))
+histmremmsat4ECDF <- as.data.frame(table(largetframe[largetframe$geneID %in% mmsat4frame$gene_id & largetframe$geneID %in% sub("\\..*", "", RNA$Gene) & largetframe$geneID %in% sub("\\..*", "", RPF$Gene), "geneID"]))
 dim(histmremmsat4ECDF)
 
-histmremmsat4ECDFP <- ggplot(histmremmsat4ECDF, aes(x=Freq)) + 
+histmremmsat4ECDFP <- ggplot(histmremmsat4ECDF, aes(y=Freq)) + 
   geom_histogram(binwidth = 1, colour="black", fill="#B4B4B4") +
   theme_paper() +
-  scale_y_continuous(expand = c(0,0))
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_reverse()
 
 histmremmsat4ECDFP
 
@@ -855,14 +858,15 @@ pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/MRE_
 histmremmsat4ECDFP
 dev.off()
 
-histmremursatECDF <- as.data.frame(table(largetframe[largetframe$geneID %in% MurSatRep1frame$gene_id.x & largetframe$geneID %in% sub("\\..*", "", RNA$Gene) & largetframe$geneID %in% sub("\\..*", "", RPF$Gene), "geneID"]))
+histmremursatECDF <- as.data.frame(table(largetframe[largetframe$geneID %in% MurSatRep1frame$gene_id & largetframe$geneID %in% sub("\\..*", "", RNA$Gene) & largetframe$geneID %in% sub("\\..*", "", RPF$Gene), "geneID"]))
 dim(histmremursatECDF)
 
 
-histmremursatECDFP<- ggplot(histmremursatECDF, aes(x=Freq)) + 
+histmremursatECDFP<- ggplot(histmremursatECDF, aes(y=Freq)) + 
   geom_histogram(binwidth = 1, colour="black", fill="#B4B4B4") +
   theme_paper() +
-  scale_y_continuous(expand = c(0,0))
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_reverse()
 
 histmremursatECDFP
 

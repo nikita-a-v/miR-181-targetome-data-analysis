@@ -290,7 +290,7 @@ colnames(bsnum) <- c("gene_symbol", "BS_number")
 RNAnum <- left_join(RNA, bsnum, by="gene_symbol")
 
 RNAnumT <- RNAnum[!is.na(RNAnum$BS_number),]
-RNAnumT$BS_number[RNAnumT$BS_number > 20] <- 20
+RNAnumT$BS_number[RNAnumT$BS_number > 10] <- 10
 
 # histogram
 numHist_RNA <- ggplot(RNAnumT, aes(x=BS_number)) + 
@@ -307,7 +307,7 @@ numHist_RNA
 RPFnum <- left_join(RPF, bsnum, by="gene_symbol")
 
 RPFnumT <- RPFnum[!is.na(RPFnum$BS_number),]
-RPFnumT$BS_number[RPFnumT$BS_number > 20] <- 20
+RPFnumT$BS_number[RPFnumT$BS_number > 10] <- 10
 # histogram
 numHist_RPF <- ggplot(RPFnumT, aes(x=BS_number)) + 
   geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
@@ -323,7 +323,7 @@ numHist_RPF
 MSnum <- left_join(MS, bsnum, by="gene_symbol")
 
 MSnumT <- MSnum[!is.na(MSnum$BS_number),]
-MSnumT$BS_number[MSnumT$BS_number > 20] <- 20
+MSnumT$BS_number[MSnumT$BS_number > 10] <- 10
 # histogram
 numHist_MS <- ggplot(MSnumT, aes(x=BS_number)) + 
   geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
@@ -339,7 +339,7 @@ numHist_MS
 TEnum <- left_join(TE, bsnum, by="gene_symbol")
 
 TEnumT <- TEnum[!is.na(TEnum$BS_number),]
-TEnumT$BS_number[TEnumT$BS_number > 20] <- 20
+TEnumT$BS_number[TEnumT$BS_number > 10] <- 10
 # histogram
 numHist_TE <- ggplot(TEnumT, aes(x=BS_number)) + 
   geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
@@ -352,22 +352,22 @@ numHist_TE <- ggplot(TEnumT, aes(x=BS_number)) +
 numHist_TE
 
 #export RPF
-pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_RPF.pdf", width=1.5, height = 2)
 numHist_RPF
 dev.off()
 
 #export RNA
-pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_RNA.pdf", width=1.5, height = 2)
 numHist_RNA
 dev.off()
 
 #export MS
-pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_MS.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_MS.pdf", width=1.5, height = 2)
 numHist_MS
 dev.off()
 
 #export TE
-pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_TE.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumHist_TE.pdf", width=1.5, height = 2)
 numHist_TE
 dev.off()
 
