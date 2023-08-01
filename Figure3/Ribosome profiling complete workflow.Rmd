@@ -38,6 +38,8 @@ library(ggrastr)
 library(grid)
 library(biomaRt)
 library(dplyr)
+library(Gviz)
+
 
 ```
 
@@ -431,6 +433,16 @@ save master DFs
 # write.csv(RPFexp, "RPF_masterframe.csv")
 
 ```
+
+
+# Make gviz plot for RPF vs RNAseq
+
+```{r gviz}
+
+
+
+```
+
 
 # Session info
 ```{r}

@@ -15,13 +15,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 dir
 ```{r dir}
-setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure4")
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4")
 ```
 
 
 ## Packages
 ```{r packages}
-source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
 library(ggplot2)
 library(rtracklayer)
 library(dplyr)
@@ -38,18 +38,22 @@ library(readxl)
 ## Data
 ```{r data}
 #Ribo profiling
-RNA <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
-RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
+RNA <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
+RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
 
 #load the gtf file to compare genes
-gff23 <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
-gff23path <- file.path("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
+gff23 <- import.gff3("C:/Users/nikit/Documents/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
+gff23path <- file.path("C:/Users/nikit/Documents/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
 
 #targets
-larget <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure4/mir181_bs_with_seeds_transcripts.rds")
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/mir181_bs_with_seeds_transcripts.rds")
 largetframe <- as.data.frame(larget)
 table(largetframe$set)
-largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
+# largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
+
+largetframe <- largetframe %>%
+  subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched"))
+
 
 # modify dataset to only include working targetsets
 
@@ -58,7 +62,7 @@ largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
 
 
 #ms
-MS <- as.data.frame(read_xlsx("D:/Krueger_Lab/Publications/miR181_paper/Figure3/MS_analysis.xlsx", 
+MS <- as.data.frame(read_xlsx("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/MS_analysis.xlsx", 
                               sheet = 2))
 #adjust upper case lower case of gene names of MS data:
 #function
@@ -74,16 +78,21 @@ names(MS)[names(MS) == 'Log2(FC)'] <- 'log2FoldChange'
 head(MS$gene_symbol)
 
 #Translational efficiency
-TE <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Supporting scipts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+TE <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/deltaTE/TE_m23_genesInRNAandRPF.csv")
 
 
 
 
 #MMsat4
-repeat_masker <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure2/MMsat4/repeat_masker.rds")
-MMSAT4 <- repeat_masker[repeat_masker$repName == "MMSAT4"]
-MurSatRep1 <- repeat_masker[repeat_masker$repName == "MurSatRep1"]
+# repeat_masker <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/MMsat4/repeat_masker.rds")
+# MMSAT4 <- repeat_masker[repeat_masker$repName == "MMSAT4"]
+# MurSatRep1 <- repeat_masker[repeat_masker$repName == "MurSatRep1"]
 
+
+#melina repeats
+melrep <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/rep_on_transcripts.rds")
+MMSAT4 <- melrep[melrep$repName == "MMSAT4"]
+MurSatRep1 <- melrep[melrep$repName == "MurSatRep1"]
 ```
 
 
@@ -271,34 +280,34 @@ wobbleecdfTEZ
 
 
 #export RNA
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RNA.pdf", width=2, height = 2)
 wobbleecdfRNA
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 wobbleecdfRNAZ
 dev.off()
 
 #export RPF
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RPF.pdf", width=2, height = 2)
 wobbleecdfRPF
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 wobbleecdfRPFZ
 dev.off()
 
 #export MS
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_MS.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_MS.pdf", width=2, height = 2)
 wobbleecdfMS
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 wobbleecdfMSZ
 dev.off()
 
 #export TE
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_TE.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_TE.pdf", width=2, height = 2)
 wobbleecdfTE
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 wobbleecdfTEZ
 dev.off()
 
@@ -469,34 +478,34 @@ typeECDFTEZ
 
 
 #export RNA
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RNA.pdf", width=2, height = 2)
 typeECDFRNA
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 typeECDFRNAZ
 dev.off()
 
 #export RPF
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RPF.pdf", width=2, height = 2)
 typeECDFRPF
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 typeECDFRPFZ
 dev.off()
 
 #export MS
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_MS.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_MS.pdf", width=2, height = 2)
 typeECDFMS
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_MS_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 typeECDFMSZ
 dev.off()
 
 #export TE
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_TE.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_TE.pdf", width=2, height = 2)
 typeECDFTE
 dev.off()
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_TE_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
 typeECDFTEZ
 dev.off()
 
@@ -508,34 +517,34 @@ table(RPF$MREtype)
 
 # mmsat4
 ```{r mmsat4}
-mmsat4frame <- as.data.frame(subsetByOverlaps(gff23, MMSAT4))
+mmsat4frame <- as.data.frame(MMSAT4)
 
 #RNA
 RNA$tvsmmsat4 <- "Non-target"
-RNA$tvsmmsat4[RNA$gene_symbol %in% mmsat4frame$gene_name] <- "MMsat4"
-RNA$tvsmmsat4[RNA$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
-RNA$tvsmmsat4[RNA$gene_symbol %in% largetframe$geneName & RNA$gene_symbol %in% mmsat4frame$gene_name] <- "both"
+RNA$tvsmmsat4[sub("\\..*", "", RNA$Gene) %in% mmsat4frame$gene_id.x] <- "MMsat4"
+RNA$tvsmmsat4[sub("\\..*", "", RNA$Gene) %in% largetframe$geneID] <- "miR-181 target"
+RNA$tvsmmsat4[sub("\\..*", "", RNA$Gene) %in% largetframe$geneID & sub("\\..*", "", RNA$Gene) %in% mmsat4frame$gene_id.x] <- "both"
 table(RNA$tvsmmsat4)
 
 #RPF
 RPF$tvsmmsat4 <- "Non-target"
-RPF$tvsmmsat4[RPF$gene_symbol %in% mmsat4frame$gene_name] <- "MMsat4"
-RPF$tvsmmsat4[RPF$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
-RPF$tvsmmsat4[RPF$gene_symbol %in% largetframe$geneName & RPF$gene_symbol %in% mmsat4frame$gene_name] <- "both"
+RPF$tvsmmsat4[sub("\\..*", "", RPF$Gene) %in% mmsat4frame$gene_id.x] <- "MMsat4"
+RPF$tvsmmsat4[sub("\\..*", "", RPF$Gene) %in% largetframe$geneID] <- "miR-181 target"
+RPF$tvsmmsat4[sub("\\..*", "", RPF$Gene) %in% largetframe$geneID & sub("\\..*", "", RPF$Gene) %in% mmsat4frame$gene_id.x] <- "both"
 table(RPF$tvsmmsat4)
 
 #MS
 MS$tvsmmsat4 <- "Non-target"
 MS$tvsmmsat4[MS$gene_symbol %in% mmsat4frame$gene_name] <- "MMsat4"
-MS$tvsmmsat4[MS$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
-MS$tvsmmsat4[MS$gene_symbol %in% largetframe$geneName & MS$gene_symbol %in% mmsat4frame$gene_name] <- "both"
+MS$tvsmmsat4[MS$gene_symbol %in% largetframe$geneID] <- "miR-181 target"
+MS$tvsmmsat4[MS$gene_symbol %in% largetframe$geneID & MS$gene_symbol %in% mmsat4frame$gene_name] <- "both"
 table(MS$tvsmmsat4)
 
 #TE
 TE$tvsmmsat4 <- "Non-target"
-TE$tvsmmsat4[TE$gene_symbol %in% mmsat4frame$gene_name] <- "MMsat4"
-TE$tvsmmsat4[TE$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
-TE$tvsmmsat4[TE$gene_symbol %in% largetframe$geneName & TE$gene_symbol %in% mmsat4frame$gene_name] <- "both"
+TE$tvsmmsat4[sub("\\..*", "", TE$Gene) %in% mmsat4frame$gene_id.x] <- "MMsat4"
+TE$tvsmmsat4[sub("\\..*", "", TE$Gene) %in% largetframe$geneID] <- "miR-181 target"
+TE$tvsmmsat4[sub("\\..*", "", TE$Gene) %in% largetframe$geneID & sub("\\..*", "", TE$Gene) %in% mmsat4frame$gene_id.x] <- "both"
 table(TE$tvsmmsat4)
 
 
@@ -590,23 +599,23 @@ tolECDFTE <- ggplot(TE, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat4,
 tolECDFTE
 
 #export RNA
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_RNA.pdf", width=2, height = 2)
 tolECDFRNA
 dev.off()
 
 
 #export RPF
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_RPF.pdf", width=2, height = 2)
 tolECDFRPF
 dev.off()
 
 #export MS
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_MS.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_MS.pdf", width=2, height = 2)
 tolECDFMS
 dev.off()
 
 #export TE
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_TE.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/MMSAT4ECDF_TE.pdf", width=2, height = 2)
 tolECDFTE
 dev.off()
 
@@ -616,34 +625,34 @@ table(RPF$tvsmmsat4)
 
 # MurSatRep1
 ```{r MurSatRep1}
-MurSatRep1frame <- as.data.frame(subsetByOverlaps(gff23, MurSatRep1))
+MurSatRep1frame <- as.data.frame(MurSatRep1)
 
 #RNA
 RNA$tvsMurSatRep1 <- "Non-target"
-RNA$tvsMurSatRep1[RNA$gene_symbol %in% MurSatRep1frame$gene_name] <- "MurSatRep1"
-RNA$tvsMurSatRep1[RNA$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
-RNA$tvsMurSatRep1[RNA$gene_symbol %in% largetframe$geneName & RNA$gene_symbol %in% MurSatRep1frame$gene_name] <- "both"
+RNA$tvsMurSatRep1[sub("\\..*", "", RNA$Gene) %in% MurSatRep1frame$gene_id.x] <- "MurSatRep1"
+RNA$tvsMurSatRep1[sub("\\..*", "", RNA$Gene) %in% largetframe$geneID] <- "miR-181 target"
+RNA$tvsMurSatRep1[sub("\\..*", "", RNA$Gene) %in% largetframe$geneID & sub("\\..*", "", RNA$Gene) %in% MurSatRep1frame$gene_id.x] <- "both"
 table(RNA$tvsMurSatRep1)
 
 #RPF
 RPF$tvsMurSatRep1 <- "Non-target"
-RPF$tvsMurSatRep1[RPF$gene_symbol %in% MurSatRep1frame$gene_name] <- "MurSatRep1"
-RPF$tvsMurSatRep1[RPF$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
-RPF$tvsMurSatRep1[RPF$gene_symbol %in% largetframe$geneName & RPF$gene_symbol %in% MurSatRep1frame$gene_name] <- "both"
+RPF$tvsMurSatRep1[sub("\\..*", "", RPF$Gene) %in% MurSatRep1frame$gene_id.x] <- "MurSatRep1"
+RPF$tvsMurSatRep1[sub("\\..*", "", RPF$Gene) %in% largetframe$geneID] <- "miR-181 target"
+RPF$tvsMurSatRep1[sub("\\..*", "", RPF$Gene) %in% largetframe$geneID & sub("\\..*", "", RPF$Gene) %in% MurSatRep1frame$gene_id.x] <- "both"
 table(RPF$tvsMurSatRep1)
 
 #MS
 MS$tvsMurSatRep1 <- "Non-target"
 MS$tvsMurSatRep1[MS$gene_symbol %in% MurSatRep1frame$gene_name] <- "MurSatRep1"
-MS$tvsMurSatRep1[MS$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
-MS$tvsMurSatRep1[MS$gene_symbol %in% largetframe$geneName & MS$gene_symbol %in% MurSatRep1frame$gene_name] <- "both"
+MS$tvsMurSatRep1[MS$gene_symbol %in% largetframe$geneID] <- "miR-181 target"
+MS$tvsMurSatRep1[MS$gene_symbol %in% largetframe$geneID & MS$gene_symbol %in% MurSatRep1frame$gene_name] <- "both"
 table(MS$tvsMurSatRep1)
 
 #TE
 TE$tvsMurSatRep1 <- "Non-target"
-TE$tvsMurSatRep1[TE$gene_symbol %in% MurSatRep1frame$gene_name] <- "MurSatRep1"
-TE$tvsMurSatRep1[TE$gene_symbol %in% largetframe$geneName] <- "miR-181 target"
-TE$tvsMurSatRep1[TE$gene_symbol %in% largetframe$geneName & TE$gene_symbol %in% MurSatRep1frame$gene_name] <- "both"
+TE$tvsMurSatRep1[sub("\\..*", "", TE$Gene) %in% MurSatRep1frame$gene_id.x] <- "MurSatRep1"
+TE$tvsMurSatRep1[sub("\\..*", "", TE$Gene) %in% largetframe$geneID] <- "miR-181 target"
+TE$tvsMurSatRep1[sub("\\..*", "", TE$Gene) %in% largetframe$geneID & sub("\\..*", "", TE$Gene) %in% MurSatRep1frame$gene_id.x] <- "both"
 table(TE$tvsMurSatRep1)
 
 
@@ -699,22 +708,22 @@ murECDFTE
 
 
 #export RNA
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_RNA.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_RNA.pdf", width=2, height = 2)
 murECDFRNA
 dev.off()
 
 #export RPF
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_RPF.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_RPF.pdf", width=2, height = 2)
 murECDFRPF
 dev.off()
 
 #export MS
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_MS.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_MS.pdf", width=2, height = 2)
 murECDFMS
 dev.off()
 
 #export TE
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_TE.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/mursatrep1ECDF_TE.pdf", width=2, height = 2)
 murECDFTE
 dev.off()
 
@@ -740,8 +749,26 @@ metamur
 metael
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/metagene_profile_both.pdf", width=2, height = 2)
-metael 
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/metagene_profile_both.pdf", width=2, height = 2)
+metael
+dev.off()
+
+
+# metagene plot that only contains genes that also have Mres 
+
+mmsat4MRE <- subsetByOverlaps(MMSAT4 , makeGRangesFromDataFrame(mmsat4frame))
+MurSatRep1MRE <- subsetByOverlaps(MurSatRep1 , makeGRangesFromDataFrame(MurSatRep1frame))
+
+mmsat4MRE$id <- "MMsat4"
+MurSatRep1MRE$id <- "MurSatRep1"
+
+metaob2 <- c(mmsat4MRE, MurSatRep1MRE)
+
+metael2 <- metaGeneProfile(object = metaob2, annotation = gff23path, group = "id")
+metael2
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/metagene_profile_both_onlywithMRE.pdf", width=2, height = 2)
+metael2
 dev.off()
 
 ```
@@ -750,16 +777,104 @@ dev.off()
 
 ## venn diagram
 ```{r vennmmsat4}
-vset <- list(mmsat4frame[!duplicated(mmsat4frame$gene_name),"gene_name"], MurSatRep1frame[!duplicated(MurSatRep1frame$gene_name),"gene_name"])
+
+vset <- list(mmsat4frame[!duplicated(mmsat4frame$gene_id.x) & mmsat4frame$gene_id.x %in% largetframe$geneID,"gene_id.x"], MurSatRep1frame[!duplicated(MurSatRep1frame$gene_id.x) & MurSatRep1frame$gene_id.x %in% largetframe$geneID,"gene_id.x"])
 names(vset) <- c("MMSAT4", "MurSatRep1")
 
 vplot <- plot(euler(vset, shape = "ellipse"), quantities = TRUE, main="Genes by contained motifes" , fills=c(farbe1, farbe2)) 
 
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/Venn_motifes.pdf", width=2, height = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/Venn_motifes.pdf", width=2, height = 2)
 vplot
 dev.off()
+
+
+vsetECDF <- list(mmsat4frame[!duplicated(mmsat4frame$gene_id.x) & mmsat4frame$gene_id.x %in% largetframe$geneID & mmsat4frame$gene_id.x %in% sub("\\..*", "", RNA$Gene) & mmsat4frame$gene_id.x %in% sub("\\..*", "", RPF$Gene) ,"gene_id.x"], MurSatRep1frame[!duplicated(MurSatRep1frame$gene_id.x) & MurSatRep1frame$gene_id.x %in% largetframe$geneID & MurSatRep1frame$gene_id.x %in% sub("\\..*", "", RNA$Gene) & MurSatRep1frame$gene_id.x %in% sub("\\..*", "", RPF$Gene),"gene_id.x"])
+names(vsetECDF) <- c("MMSAT4", "MurSatRep1")
+
+vplotecdf <- plot(euler(vsetECDF, shape = "ellipse"), quantities = TRUE, main="Genes by contained motifes" , fills=c(farbe1, farbe2)) 
+
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/Venn_motifes_likeECDF.pdf", width=2, height = 2)
+vplotecdf
+dev.off()
+
 ```
+
+
+# histogram MREs per gene with repeat
+```{r mresPerGeneRep}
+histmremmsat4 <- as.data.frame(table(largetframe[largetframe$geneID %in% mmsat4frame$gene_id.x, "geneID"]))
+dim(histmremmsat4)
+
+mmsat4GMRElist <- as.data.frame(table(largetframe[largetframe$geneID %in% mmsat4frame$gene_id.x, "geneName"]))
+colnames(mmsat4GMRElist) = c("Gene", "Number of MREs")
+write.csv(mmsat4GMRElist, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/genelist_MMsat4withMRE.csv")
+
+histmremmsat4P <- ggplot(histmremmsat4, aes(x=Freq)) + 
+  geom_histogram(binwidth = 1, colour="black", fill="#B4B4B4") +
+  theme_paper() +
+  scale_y_continuous(expand = c(0,0))
+
+histmremmsat4P
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/MRE_histogram_mres_per_MMSAT4.pdf", width=2, height = 2)
+histmremmsat4P
+dev.off()
+
+histmremursat <- as.data.frame(table(largetframe[largetframe$geneID %in% MurSatRep1frame$gene_id.x, "geneID"]))
+dim(histmremursat)
+
+mursatrep1GMRElist <- as.data.frame(table(largetframe[largetframe$geneID %in% MurSatRep1frame$gene_id.x, "geneName"]))
+colnames(mursatrep1GMRElist) = c("Gene", "Number of MREs")
+write.csv(mursatrep1GMRElist, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/genelist_MursatRep1withMRE.csv")
+
+histmremursatP<- ggplot(histmremursat, aes(x=Freq)) + 
+  geom_histogram(binwidth = 1, colour="black", fill="#B4B4B4") +
+  theme_paper() +
+  scale_y_continuous(expand = c(0,0))
+
+histmremursatP
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/MRE_histogram_mres_per_MurSatRep1.pdf", width=2, height = 2)
+histmremursatP
+dev.off()
+
+#like ecdf (occurs in RNA and RPF)
+histmremmsat4ECDF <- as.data.frame(table(largetframe[largetframe$geneID %in% mmsat4frame$gene_id.x & largetframe$geneID %in% sub("\\..*", "", RNA$Gene) & largetframe$geneID %in% sub("\\..*", "", RPF$Gene), "geneID"]))
+dim(histmremmsat4ECDF)
+
+histmremmsat4ECDFP <- ggplot(histmremmsat4ECDF, aes(x=Freq)) + 
+  geom_histogram(binwidth = 1, colour="black", fill="#B4B4B4") +
+  theme_paper() +
+  scale_y_continuous(expand = c(0,0))
+
+histmremmsat4ECDFP
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/MRE_histogram_mres_per_MMSAT4_likeECDF.pdf", width=2, height = 2)
+histmremmsat4ECDFP
+dev.off()
+
+histmremursatECDF <- as.data.frame(table(largetframe[largetframe$geneID %in% MurSatRep1frame$gene_id.x & largetframe$geneID %in% sub("\\..*", "", RNA$Gene) & largetframe$geneID %in% sub("\\..*", "", RPF$Gene), "geneID"]))
+dim(histmremursatECDF)
+
+
+histmremursatECDFP<- ggplot(histmremursatECDF, aes(x=Freq)) + 
+  geom_histogram(binwidth = 1, colour="black", fill="#B4B4B4") +
+  theme_paper() +
+  scale_y_continuous(expand = c(0,0))
+
+histmremursatECDFP
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/MRE_histogram_mres_per_MurSatRep1_likeECDF.pdf", width=2, height = 2)
+histmremursatECDFP
+dev.off()
+
+```
+
+
+
+
 
 ## Sequence overlap mmsat4 mursatrep1
 Just check to make sure these are not the same

@@ -312,14 +312,14 @@ table(viodat$set)
 
 
 p2n <- ggplot(viodat, aes(y = resBs.log2FoldChange, x = as.character(set), fill = as.character(set)))+
-  geom_half_violin()+
-  geom_half_boxplot(side = "r")+
+  geom_boxplot(outlier.shape = NA)+
   geom_hline(yintercept = 0, linetype="dashed") +
   theme_paper()+
   scale_fill_manual(values = c(farbe1, farbe14))+
   theme(legend.position = "top")+
   scale_x_discrete(guide = guide_axis(angle = 25)) +
-  stat_compare_means(comparisons = mycomp)
+  stat_compare_means(comparisons = mycomp, label.y = 2.5 ) + 
+  coord_cartesian(ylim = c(-3,3))
   
 p2n
 ggsave(p2n, filename =  paste0(out, "Figure_1J_violin_differntial_binding_vs_mir181BS_pvalues.pdf"), width = 3.5, height = 7, units = "cm")
