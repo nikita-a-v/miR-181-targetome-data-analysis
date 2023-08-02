@@ -151,7 +151,7 @@ RNAmalab <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x
   guides(color = guide_legend(override.aes = list(size = 3))) +
   geom_point(data=RNAdat[RNAdat$gene_symbol %in% Ogenes,], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill="#595959") +
   geom_point(data=RNAdat[RNAdat$gene_symbol %in% Ngenes,], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=farbe1) +
-  geom_text_repel(data=RNAdat[RNAdat$gene_symbol %in% Agenes,], aes(label = gene_symbol),size = 8)
+  geom_text_repel(data=RNAdat[RNAdat$gene_symbol %in% Agenes,], aes(label = gene_symbol),size = 3)
 
 RNAmalab
 
@@ -178,7 +178,7 @@ RPFmalab <- ggplot(RPFdat[!(RPFdat$xcutoff == "high"),], aes(y=log2FoldChange, x
   guides(color = guide_legend(override.aes = list(size = 3))) +
   geom_point(data=RPFdat[RPFdat$gene_symbol %in% Ogenes,], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill="#595959") +
   geom_point(data=RPFdat[RPFdat$gene_symbol %in% Ngenes,], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=farbe1) +
-  geom_text_repel(data=RPFdat[RPFdat$gene_symbol %in% Agenes,], aes(label = gene_symbol),size = 8)
+  geom_text_repel(data=RPFdat[RPFdat$gene_symbol %in% Agenes,], aes(label = gene_symbol),size = 3)
 
 RPFmalab
 
