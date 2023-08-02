@@ -29,7 +29,7 @@ library(Rtsne)
 library(cliProfiler)
 library(GenomicRanges)
 library(readxl)
-
+library(writexl)
 ```
 
 ## data
@@ -117,6 +117,19 @@ xlim <- 0.5
 zoomfac <- 0.45
 ```
 
+# export for andreas
+```{r exportandreas}
+#enriched eclip transcripts
+atargetframe <- as.data.frame(table(largetframe$geneName))
+colnames(atargetframe) <- c("Target gene names", "Number of MREs")
+
+write_xlsx(atargetframe, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/enriched_eCLIP_transcripts.xlsx")
+
+# upregulated RF
+aRFframe <- na.omit(RPF[RPF$log2FoldChange > 0 & RPF$padj <= 0.05 , c("gene_symbol", "log2FoldChange", "padj")])
+write_xlsx(aRFframe, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Significantly_upregulated_genes_RF.xlsx")
+
+```
 
 # venn diagram RPF vs targetsites
 ```{r venntarget}

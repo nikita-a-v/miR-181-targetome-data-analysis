@@ -283,6 +283,17 @@ RPFdat$baseMean[RPFdat$baseMean > xlim] <- xlim
 
 ## Plots
 
+### import targets
+```{r targets}
+#targets
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_afterFigure2B.rds")
+largetframe <- as.data.frame(larget)
+table(largetframe$set)
+largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
+
+```
+
+
 RNA MA plot
 ```{r RNAMA, fig.width=2.5, fig.height=2.5}
 RNAma <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 0.5, 

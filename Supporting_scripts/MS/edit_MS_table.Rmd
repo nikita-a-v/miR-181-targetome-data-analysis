@@ -1,0 +1,63 @@
+---
+title: "edit_MS_table"
+author: "Nikita Verheyden"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# setup
+
+path
+```{r path}
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/MS")
+
+```
+
+## packages
+```{r packages}
+library(readxl)
+library(stats)
+```
+
+## data
+```{r data}
+ms <- read_xlsx("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/MS/Massspec_new_mouse_raw.xlsx", sheet = 2)
+head(ms)
+```
+
+
+# calculate padj
+```{r padj}
+ms$padj <- p.adjust(ms$`P-value`, method = "fdr")
+
+head(ms)
+
+nrow(ms[ms$padj <= 0.05 & !is.na(ms$padj),])
+ms[order(ms$padj),]
+```
+
+# divide column with names
+```{r cols}
+ms$gene_symbol <- sub(".*GN=", "", ms$Description)
+ms$gene_symbol <- sub(" PE=.*", "", ms$gene_symbol)
+
+head(ms)
+```
+
+# export
+```{r export}
+write.csv(ms, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/MS_data_MMU_02082023.csv")
+```
+
+# Session info
+```{r sessioninfo}
+sessionInfo()
+```
+
+
+

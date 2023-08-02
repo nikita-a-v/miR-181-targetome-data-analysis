@@ -25,22 +25,13 @@ library(ggrastr)
 library(dplyr)
 library(MASS)
 library(ggpubr)
+library(ggrepel)
 ```
 
 ## data
 ```{r data}
 #ms
-ms <- as.data.frame(read_xlsx(path = "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/MS_analysis.xlsx", 
-                              sheet = "Analysis"))
-#adjust upper case lower case of gene names of MS data:
-#function
-capFirst <- function(s) {
-  paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")
-}
-ms$`Gene Symbol` <- tolower(ms$`Gene Symbol`)
-ms$`Gene Symbol` <- capFirst(ms$`Gene Symbol`)
-names(ms)[names(ms) == 'Gene Symbol'] <- 'GeneName'
-head(ms$GeneName)
+ms <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/MS_data_MMU_02082023.csv")
 
 #Ribo profiling
 RNA <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
@@ -50,7 +41,11 @@ RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/
 TEframe <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/deltaTE/TE_m23_genesInRNAandRPF.csv")
 head(TEframe)
 
-
+#targets
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_afterFigure2B.rds")
+largetframe <- as.data.frame(larget)
+table(largetframe$set)
+largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
 
 ```
 ## colours
@@ -81,37 +76,150 @@ RPFncol <- "#8d0391"
 ```
 
 
+# genelist
+```{r genelist}
+Agenes <- c("Cd69", "Dusp6", "Ptpn22", "Zfp36l1", "Zfp36l2")
+Ogenes <- c("Cd69", "Dusp6", "Ptpn22")
+Ngenes <- c("Zfp36l1", "Zfp36l2")
+```
+
+
+# MA plots with labels
+```{r plotslab}
+ylim <- 2
+xlim <- 10^6
+xmin <- 10
+
+lfcsig <- 0
+pvsig <- 0.05
+
+#RNA
+RNA$LFCandPADJSig <- "Not significant"
+RNA$LFCandPADJSig[RNA$padj <= pvsig & RNA$log2FoldChange >= lfcsig] <- "Significant up"
+RNA$LFCandPADJSig[RNA$padj <= pvsig & RNA$log2FoldChange <= -lfcsig] <- "Significant down"
+
+#make columns with identifiers
+RNAdat <- RNA[RNA$baseMean >= xmin,]
+RNAdat$ycutoff <- "in"
+RNAdat$ycutoff[RNAdat$log2FoldChange > ylim] <- "high"
+RNAdat$ycutoff[RNAdat$log2FoldChange < -ylim] <- "low"
+
+RNAdat$xcutoff <- "in"
+RNAdat$xcutoff[RNAdat$baseMean > xlim] <- "high"
+
+#implement cutoff
+RNAdat$log2FoldChange[RNAdat$log2FoldChange > ylim] <- ylim
+RNAdat$log2FoldChange[RNAdat$log2FoldChange < -ylim] <- -ylim
+RNAdat$baseMean[RNAdat$baseMean > xlim] <- xlim
+
+
+#RPF
+RPF$LFCandPADJSig <- "Not significant"
+RPF$LFCandPADJSig[RPF$padj <= pvsig & RPF$log2FoldChange >= lfcsig] <- "Significant up"
+RPF$LFCandPADJSig[RPF$padj <= pvsig & RPF$log2FoldChange <= -lfcsig] <- "Significant down"
+
+
+#make columns with identifiers
+RPFdat <- RPF[RPF$baseMean >= xmin,]
+RPFdat$ycutoff <- "in"
+RPFdat$ycutoff[RPFdat$log2FoldChange > ylim] <- "high"
+RPFdat$ycutoff[RPFdat$log2FoldChange < -ylim] <- "low"
+
+RPFdat$xcutoff <- "in"
+RPFdat$xcutoff[RPFdat$baseMean > xlim] <- "high"
+
+#implement cutoff
+RPFdat$log2FoldChange[RPFdat$log2FoldChange > ylim] <- ylim
+RPFdat$log2FoldChange[RPFdat$log2FoldChange < -ylim] <- -ylim
+RPFdat$baseMean[RPFdat$baseMean > xlim] <- xlim
+
+
+#RNA
+RNAmalab <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 0.5, 
+     aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
+  scale_fill_manual(values = c(farbeneg, RNAncol, RNApcol)) + scale_colour_manual(values = c(farbeneg, "black", "black")) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RNAncol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="high" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=24, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="low" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=25, size = 1, colour="black", fill=RNAncol) +
+  theme_paper() +
+  geom_point(data=RNAdat[RNAdat$xcutoff == "high",], aes(y=log2FoldChange, x=log10(baseMean)), shape="\u25BA", size = 3, colour=farbeneg) +
+  geom_hline(yintercept = 0, linetype="solid", colour="black") + 
+  geom_hline(yintercept = lfcsig, linetype="dashed", colour="black") + 
+  geom_hline(yintercept = -lfcsig, linetype="dashed", colour="black") + 
+  scale_y_continuous("Fold change miR-181a/b-1 KO/WT (log2)", limits = c(-ylim, ylim)) + scale_x_continuous("Base mean expression ratio (log10)", limits = c(log10(xmin), log10(xlim))) +
+  guides(color = guide_legend(override.aes = list(size = 3))) +
+  geom_point(data=RNAdat[RNAdat$gene_symbol %in% Ogenes,], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill="#595959") +
+  geom_point(data=RNAdat[RNAdat$gene_symbol %in% Ngenes,], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=farbe1) +
+  geom_text_repel(data=RNAdat[RNAdat$gene_symbol %in% Agenes,], aes(label = gene_symbol),size = 8)
+
+RNAmalab
+
+pdf("MAplot_RNA_lab.pdf", width = 1.8, height = 1.8)
+RNAmalab
+dev.off()
+
+
+
+#RPF
+RPFmalab <- ggplot(RPFdat[!(RPFdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 0.5, 
+     aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
+  scale_fill_manual(values = c(farbeneg, RNAncol, RNApcol)) + scale_colour_manual(values = c(farbeneg, "black", "black")) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RNAncol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="high" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=24, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="low" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=25, size = 1, colour="black", fill=RNAncol) +
+  theme_paper() +
+  geom_point(data=RPFdat[RPFdat$xcutoff == "high",], aes(y=log2FoldChange, x=log10(baseMean)), shape="\u25BA", size = 3, colour=farbeneg) +
+  geom_hline(yintercept = 0, linetype="solid", colour="black") + 
+  geom_hline(yintercept = lfcsig, linetype="dashed", colour="black") + 
+  geom_hline(yintercept = -lfcsig, linetype="dashed", colour="black") + 
+  scale_y_continuous("Fold change miR-181a/b-1 KO/WT (log2)", limits = c(-ylim, ylim)) + scale_x_continuous("Base mean expression ratio (log10)", limits = c(log10(xmin), log10(xlim))) +
+  guides(color = guide_legend(override.aes = list(size = 3))) +
+  geom_point(data=RPFdat[RPFdat$gene_symbol %in% Ogenes,], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill="#595959") +
+  geom_point(data=RPFdat[RPFdat$gene_symbol %in% Ngenes,], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=farbe1) +
+  geom_text_repel(data=RPFdat[RPFdat$gene_symbol %in% Agenes,], aes(label = gene_symbol),size = 8)
+
+RPFmalab
+
+pdf("MAplot_RPF_lab.pdf", width = 1.8, height = 1.8)
+RPFmalab
+dev.off()
+
+```
+
+
 # ms volcano
 ```{r msvol}
 pms <- 0.05
-lfccutoffmax <- 1.5
+lfccutoffmax <- 2.5
 
 # #make columns with identifiers
 msco <- ms
 # msco$lfccutoff <- "in"
-# msco$lfccutoff[msco$`Log2(FC)` > lfccutoffmax] <- "high"
-# msco$lfccutoff[msco$`Log2(FC)` < -lfccutoffmax] <- "low"
+# msco$lfccutoff[msco$log2FoldChange > lfccutoffmax] <- "high"
+# msco$lfccutoff[msco$log2FoldChange < -lfccutoffmax] <- "low"
 # 
 # #implement cutoff
-# msco$`Log2(FC)`[msco$`Log2(FC)` > lfccutoffmax] <- lfccutoffmax
-# msco$`Log2(FC)`[msco$`Log2(FC)` < -lfccutoffmax] <- -lfccutoffmax
+# msco$log2FoldChange[msco$log2FoldChange > lfccutoffmax] <- lfccutoffmax
+# msco$log2FoldChange[msco$log2FoldChange < -lfccutoffmax] <- -lfccutoffmax
 
 
 
 #add significance identifier
 msco$significance <- "Not significant"
-msco$significance[msco$`P-value` <= pms & msco$`Log2(FC)` > 0] <- "Significant up"
-msco$significance[msco$`P-value` <= pms & msco$`Log2(FC)` < 0] <- "Significant down"
+msco$significance[msco$padj <= pms & msco$log2FoldChange > 0] <- "Significant up"
+msco$significance[msco$padj <= pms & msco$log2FoldChange < 0] <- "Significant down"
 
-
+msco[order(msco$padj),]
 
 #plot
-mscovolcano <- ggplot(msco, aes(y=-log10(`P-value`), x=`Log2(FC)`,  fill=factor(significance, levels = c("Not significant", "Significant up","Significant down")))) + geom_point_rast(shape=21, size=0.5, colour=farbeneg) +
+mscovolcano <- ggplot(msco, aes(y=-log10(padj), x=log2FoldChange,  fill=factor(significance, levels = c("Not significant", "Significant up","Significant down")))) + geom_point_rast(shape=21, size=0.5, colour=farbeneg) +
   scale_fill_manual(values=c(farbeneg, RPFpcol, RPFncol)) +
   geom_point(data = msco[msco$significance == "Significant up",], shape=21, colour="black", fill=RPFpcol) +
   geom_point(data = msco[msco$significance == "Significant down",], shape=21, colour="black", fill=RPFncol) +
-  # geom_point(data=msco[msco$significance == "Significant up" & msco$lfccutoff =="high",], aes(y=-log10(`P-value`), x=`Log2(FC)`), shape=23, size = 2, colour="black", fill=RPFpcol) +
-  # geom_point(data=msco[msco$significance == "Significant down" & msco$lfccutoff =="low",], aes(y=-log10(`P-value`), x=`Log2(FC)`), shape=24, size = 2, colour="black", fill=RPFncol) +
+  # geom_point(data=msco[msco$significance == "Significant up" & msco$lfccutoff =="high",], aes(y=-log10(padj), x=log2FoldChange), shape=23, size = 2, colour="black", fill=RPFpcol) +
+  # geom_point(data=msco[msco$significance == "Significant down" & msco$lfccutoff =="low",], aes(y=-log10(padj), x=log2FoldChange), shape=24, size = 2, colour="black", fill=RPFncol) +
   geom_hline(yintercept = -log10(pms), linetype="dashed") +
   geom_vline(xintercept = 0, linetype="dashed") +
   coord_cartesian(xlim = c(-lfccutoffmax, lfccutoffmax))+
@@ -129,7 +237,7 @@ dev.off()
 ## MS Barplots
 ```{r MSbarplots}
 msbardat <- data.frame(c("Significantly_up", "Significantly_down"),
-                        c(length(ms[ms$`Log2(FC)` > 0 & ms$`P-value` <= 0.05,"GeneName"]), -length(ms[ms$`Log2(FC)` < 0 & ms$`P-value` <= 0.05,"GeneName"])))
+                        c(length(ms[ms$log2FoldChange > 0 & ms$padj <= 0.05 & !is.na(ms$padj),"gene_symbol"]), -length(ms[ms$log2FoldChange < 0 & ms$padj <= 0.05 & !is.na(ms$padj),"gene_symbol"])))
 colnames(msbardat)=c("ID", "Number_of_genes")
 
 
@@ -306,6 +414,7 @@ pdf("RNAbarplot.pdf", width=1, height = 2)
 RNAbar
 dev.off()
 
+table(RNAbardat)
 ```
 
 
@@ -328,6 +437,8 @@ RPFbar
 pdf("RPFbarplot.pdf", width=1, height = 2)
 RPFbar
 dev.off()
+
+table(RPFbardat)
 ```
 
 
