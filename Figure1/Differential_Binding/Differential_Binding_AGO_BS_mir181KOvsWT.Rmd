@@ -72,9 +72,9 @@ library(ggrepel) # nikita
 # source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/colorPalette.R")
 
 #nikita
-source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/CustomThemes.R")
-source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
-source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/colorPalette.R")
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/CustomThemes.R")
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/colorPalette.R")
 
 # ----------------------------------------
 # settings
@@ -82,7 +82,7 @@ source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/color
 
 # out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Differential_Binding/"
 #nikita out
-out <- "D:/Krueger_Lab/Publications/miR181_paper/Figure1/Differential_Binding/"
+out <- "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure1/Differential_Binding/"
 
 
 tpm_cut <- 50
@@ -102,8 +102,8 @@ tpm_cut <- 50
 # annoDb <- loadDb("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/annotation.db")
 # gns <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/gene_annotation.rds")
 #Nikita 
-annoDb <- loadDb("D:/Krueger_Lab/Publications/miR181_paper_nongithub/Figure1/annotation.db")
-gns <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/01_Annotation_preprocessing/gene_annotation.rds")
+annoDb <- loadDb("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper_nongithub/Figure1/annotation.db")
+gns <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Methods/01_Annotation_preprocessing/gene_annotation.rds")
 
 
 
@@ -118,9 +118,9 @@ gns <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/01_Annotation_p
 # bs_ko <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/03_KOmir181_AGO_binding_site_definition/2023-04-12-KOmir181_AGO_BS.rds")
 
 #nikita source
-bs_wt <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
+bs_wt <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
 
-bs_ko <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/03_KOmir181_AGO_binding_site_definition/2023-04-12-KOmir181_AGO_BS.rds")
+bs_ko <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Methods/03_KOmir181_AGO_binding_site_definition/2023-04-12-KOmir181_AGO_BS.rds")
 
 # ---------------------------------------- 
 # Load clip data
@@ -129,7 +129,7 @@ bs_ko <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/03_KOmir181_A
 # clipFiles = "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/pipe_output_22_02_14/non-chimeric/bw"
 
 #nikita source
-clipFiles = "D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw"
+clipFiles = "C:/Users/nikit/Documents/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw"
 
 clipFiles = list.files(clipFiles, pattern = ".bw$", full.names = TRUE)
 clipFiles = clipFiles[!grepl("Inp", clipFiles)]

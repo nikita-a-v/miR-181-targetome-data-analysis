@@ -50,20 +50,8 @@ largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
 
 
 #ms
-MS <- as.data.frame(read_xlsx("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/MS_analysis.xlsx", 
-                              sheet = 2))
-#adjust upper case lower case of gene names of MS data:
-#function
-capFirst <- function(s) {
-  paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")
-}
-MS$`Gene Symbol` <- tolower(MS$`Gene Symbol`)
-MS$`Gene Symbol` <- capFirst(MS$`Gene Symbol`)
-names(MS)[names(MS) == 'Gene Symbol'] <- 'gene_symbol'
-names(MS)[names(MS) == 'P-value'] <- 'pvalue'
-names(MS)[names(MS) == 'Log2(FC)'] <- 'log2FoldChange'
+MS <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/MS_data_MMU_02082023.csv" )
 
-head(MS$gene_symbol)
 
 #Translational efficiency
 TE <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/deltaTE/TE_m23_genesInRNAandRPF.csv")
@@ -289,8 +277,28 @@ pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3
 targetecdfTEZ
 dev.off()
 
+table(RNA$target)
 table(RPF$target) 
+table(TE$target) 
+
 length(RPF$target)
+```
+
+# Target density TE
+```{r tedensityTarget}
+TEdenstarget <- ggplot(TE, aes(x=log2FoldChange, colour=factor(target, levels = c("Target", "Non-target")))) + 
+  geom_density() +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c(farbe1, "black")) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1)) +
+  ggtitle("TE") 
+
+TEdenstarget
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/TargetDensity_TE.pdf", width=2, height = 2)
+TEdenstarget
+dev.off()
 ```
 
 
@@ -594,6 +602,24 @@ numecdfRPF2Z
 dev.off()
 
 table(RPFnum$BS_num_plot)
+```
+
+# TE density num
+```{R TEdensityNum}
+TEdensNum <- ggplot(TEnum, aes(x=log2FoldChange, colour=factor(BS_num_plot, levels = c("One MRE", "Two MREs", "More", "Non-target")))) + 
+  geom_density() +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c(farbe1, farbe2, farbe3, "black")) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1)) +
+  ggtitle("TE")
+
+TEdensNum
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/NumDensity_TE.pdf", width=2, height = 2)
+TEdensNum
+dev.off()
+
 ```
 
 
@@ -1011,6 +1037,25 @@ regMAJecdfTESZ
 dev.off()
 
 table(TEnumr$region_single)
+
+```
+
+
+# TE density position
+```{R TEdensitywobble}
+TEdensPos <- ggplot(TEnumr, aes(x=log2FoldChange, colour=factor(region_single, levels = c( "5'UTR", "CDS", "3'UTR", "Multiple", "Non-target")))) +
+  geom_density() +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c(farbe1, farbe2, farbe3, farbe4, "black")) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1)) +
+  ggtitle("TE")
+
+TEdensPos
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/PosDensity_TE.pdf", width=2, height = 2)
+TEdensPos
+dev.off()
 
 ```
 

@@ -151,11 +151,12 @@ RNAmalab <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x
   guides(color = guide_legend(override.aes = list(size = 3))) +
   geom_point(data=RNAdat[RNAdat$gene_symbol %in% Ogenes,], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill="#595959") +
   geom_point(data=RNAdat[RNAdat$gene_symbol %in% Ngenes,], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=farbe1) +
-  geom_text_repel(data=RNAdat[RNAdat$gene_symbol %in% Agenes,], aes(label = gene_symbol),size = 3)
+  geom_text_repel(data=RNAdat[RNAdat$gene_symbol %in% Agenes,], aes(label = gene_symbol),size = 3) + 
+  ggtitle("RNAseq")
 
 RNAmalab
 
-pdf("MAplot_RNA_lab.pdf", width = 1.8, height = 1.8)
+pdf("MAplot_RNA_lab.pdf", width = 1.5, height = 1.8)
 RNAmalab
 dev.off()
 
@@ -178,21 +179,66 @@ RPFmalab <- ggplot(RPFdat[!(RPFdat$xcutoff == "high"),], aes(y=log2FoldChange, x
   guides(color = guide_legend(override.aes = list(size = 3))) +
   geom_point(data=RPFdat[RPFdat$gene_symbol %in% Ogenes,], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill="#595959") +
   geom_point(data=RPFdat[RPFdat$gene_symbol %in% Ngenes,], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 2, colour="black", fill=farbe1) +
-  geom_text_repel(data=RPFdat[RPFdat$gene_symbol %in% Agenes,], aes(label = gene_symbol),size = 3)
+  geom_text_repel(data=RPFdat[RPFdat$gene_symbol %in% Agenes,], aes(label = gene_symbol),size = 3) +
+  ggtitle("RF")
 
 RPFmalab
 
-pdf("MAplot_RPF_lab.pdf", width = 1.8, height = 1.8)
+pdf("MAplot_RPF_lab.pdf", width = 1.5, height = 1.8)
 RPFmalab
 dev.off()
 
 ```
 
 
+# target bar
+```{r targetbar}
+#RNA
+RNAdat$target <- "Non-target"
+RNAdat$target[sub("\\..*", "", RNAdat$Gene) %in% largetframe$geneID] <- "Target"
+
+RNAtbaru <- as.data.frame(table(RNAdat[RNAdat$padj <= 0.05 & RNAdat$log2FoldChange > 0, "target"]))
+RNAtbaru$y <- "RNAseq up"
+RNAtbaru$Freq <- RNAtbaru$Freq/sum(RNAtbaru$Freq)
+
+RNAtbard <- as.data.frame(table(RNAdat[RNAdat$padj <= 0.05 & RNAdat$log2FoldChange < 0, "target"]))
+RNAtbard$y <- "RNAseq down"
+RNAtbard$Freq <- RNAtbard$Freq/sum(RNAtbard$Freq)
+
+#RPF
+RPFdat$target <- "Non-target"
+RPFdat$target[sub("\\..*", "", RPFdat$Gene) %in% largetframe$geneID] <- "Target"
+
+RPFtbaru <- as.data.frame(table(RPFdat[RPFdat$padj <= 0.05 & RPFdat$log2FoldChange > 0, "target"]))
+RPFtbaru$y <- "RPFseq up"
+RPFtbaru$Freq <- RPFtbaru$Freq/sum(RPFtbaru$Freq)
+
+RPFtbard <- as.data.frame(table(RPFdat[RPFdat$padj <= 0.05 & RPFdat$log2FoldChange < 0, "target"]))
+RPFtbard$y <- "RPFseq down"
+RPFtbard$Freq <- RPFtbard$Freq/sum(RPFtbard$Freq)
+
+#combine
+ribbar <- rbind(RNAtbaru,RNAtbard, RPFtbaru, RPFtbard)
+
+
+ribtbarp <- ggplot(ribbar, aes(x=y, y=Freq, fill=Var1)) + geom_bar(stat = "identity", position = "stack") +
+  theme_paper()
+
+ribtbarp
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/RPFandRNA_tbar.pdf", width = 1, height = 2)
+ribtbarp
+dev.off()
+
+```
+
+
+
 # ms volcano
 ```{r msvol}
 pms <- 0.05
-lfccutoffmax <- 2.5
+lfccutoffmax <- 2
 
 # #make columns with identifiers
 msco <- ms
@@ -232,6 +278,9 @@ mscovolcano
 pdf("Volcanoplot_MS.pdf", width = 2, height = 2)
 mscovolcano
 dev.off()
+
+table(msco$significance)
+
 ```
 
 ## MS Barplots
@@ -257,6 +306,36 @@ msbar
 dev.off()
 
 ```
+
+## MS targetplots
+```{r MStargets}
+#RNA
+msco$target <- "Non-target"
+msco$target[msco$gene_symbol %in% largetframe$geneName] <- "Target"
+
+MStbaru <- as.data.frame(table(msco[msco$padj <= 0.05 & msco$log2FoldChange > 0, "target"]))
+MStbaru$y <- "Up"
+MStbaru$Freq <- MStbaru$Freq/sum(MStbaru$Freq)
+
+MStbard <- as.data.frame(table(msco[msco$padj <= 0.05 & msco$log2FoldChange < 0, "target"]))
+MStbard$y <- "Down"
+MStbard$Freq <- MStbard$Freq/sum(MStbard$Freq)
+
+#combine
+MSbar <- rbind(MStbaru,MStbard)
+
+MStbarp <- ggplot(MSbar, aes(x=y, y=Freq, fill=Var1)) + geom_bar(stat = "identity", position = "stack") +
+  theme_paper()
+
+MStbarp
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/MS_tbar.pdf", width = 1, height = 2)
+MStbarp
+dev.off()
+
+```
+
 
 # TE crossover
 ```{r tecross}
@@ -313,28 +392,34 @@ telfccutoff <- 2.5
 #add significance identifier
 TEco <- TEframe
 TEco$significance <- "Not significant"
-TEco$significance[TEco$pvalue <= pms & TEco$log2FoldChange > 0] <- "Significant up"
-TEco$significance[TEco$pvalue <= pms & TEco$log2FoldChange < 0] <- "Significant down"
+TEco$significance[TEco$padj <= pms & TEco$log2FoldChange > 0] <- "Significant up"
+TEco$significance[TEco$padj <= pms & TEco$log2FoldChange < 0] <- "Significant down"
 
 
 
 #plot
-TEcovolcano <- ggplot(TEco, aes(y=-log10(pvalue), x=log2FoldChange,  fill=factor(significance, levels = c("Not significant", "Significant up","Significant down")))) + geom_point_rast(shape=21, size=0.5, colour=farbeneg) +
+TEcovolcano <- ggplot(TEco, aes(y=-log10(padj), x=log2FoldChange,  fill=factor(significance, levels = c("Not significant", "Significant up","Significant down")))) + geom_point_rast(shape=21, size=0.5, colour=farbeneg) +
   scale_fill_manual(values=c(farbeneg, "#CD534C", "#E3A09C")) +
   geom_point(data = TEco[TEco$significance == "Significant up",], shape=21, colour="black", fill="#CD534C") +
   geom_point(data = TEco[TEco$significance == "Significant down",], shape=21, colour="black", fill="#E3A09C") +
   geom_hline(yintercept = -log10(pms), linetype="dashed") +
   geom_vline(xintercept = 0, linetype="dashed") +
   coord_cartesian(xlim = c(-telfccutoff, telfccutoff))+
-  theme_paper()
+  theme_paper() +
+  geom_point(data = TEco[TEco$gene_symbol %in% Ngenes,], shape=21, colour="black", fill=farbe1, size=2) +
+  geom_point(data = TEco[TEco$gene_symbol %in% Ogenes,], shape=21, colour="black", fill="#595959", size=2) +
+  geom_text_repel(data=TEco[TEco$gene_symbol %in% Agenes,], aes(label = gene_symbol),size = 3) +
+  ggtitle("TE")
 
 TEcovolcano
 
 
 #export
-pdf("Volcanoplot_TE.pdf", width = 2, height = 2)
+pdf("Volcanoplot_TE.pdf", width = 1.7, height = 1.9)
 TEcovolcano
 dev.off()
+
+table(TEco$significance)
 ```
 
 
@@ -356,12 +441,41 @@ dev.off()
 ```
 
 
+## TE targetplots
+```{r tetargets}
+#RNA
+TEco$target <- "Non-target"
+TEco$target[sub("\\..*", "", TEco$Gene) %in% largetframe$geneID] <- "Target"
+
+TEtbaru <- as.data.frame(table(TEco[TEco$padj <= 0.05 & TEco$log2FoldChange > 0, "target"]))
+TEtbaru$y <- "Up"
+TEtbaru$Freq <- TEtbaru$Freq/sum(TEtbaru$Freq)
+
+TEtbard <- as.data.frame(table(TEco[TEco$padj <= 0.05 & TEco$log2FoldChange < 0, "target"]))
+TEtbard$y <- "Down"
+TEtbard$Freq <- TEtbard$Freq/sum(TEtbard$Freq)
+
+#combine
+TEbar <- rbind(TEtbaru,TEtbard)
+
+TEtbarp <- ggplot(TEbar, aes(x=y, y=Freq, fill=Var1)) + geom_bar(stat = "identity", position = "stack") +
+  theme_paper()
+
+TEtbarp
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/TE_tbar.pdf", width = 1, height = 2)
+TEtbarp
+dev.off()
+
+```
+
+
 # RPF vs MS
 ```{r RPFvsMS}
-names(ms)[40] <- "MS_log2FoldChange"
-names(ms)[24] <- "gene_symbol"
+names(ms)[13] <- "MS_log2FoldChange"
 
-msribo <- inner_join(RPF[!is.na(RPF$gene_symbol),], ms[!is.na(ms$gene_symbol),], by="gene_symbol")
+msribo <- inner_join(RPF[!is.na(RPF$RPF_log2FoldChange),], ms[!is.na(ms$MS_log2FoldChange),], by="gene_symbol")
 
 
 #implement density

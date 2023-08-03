@@ -32,6 +32,7 @@ library(GenomicRanges)
 library(cowplot)
 library(eulerr)
 library(readxl)
+library(biomaRt)
 
 ```
 
@@ -62,20 +63,8 @@ largetframe <- largetframe %>%
 
 
 #ms
-MS <- as.data.frame(read_xlsx("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/MS_analysis.xlsx", 
-                              sheet = 2))
-#adjust upper case lower case of gene names of MS data:
-#function
-capFirst <- function(s) {
-  paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")
-}
-MS$`Gene Symbol` <- tolower(MS$`Gene Symbol`)
-MS$`Gene Symbol` <- capFirst(MS$`Gene Symbol`)
-names(MS)[names(MS) == 'Gene Symbol'] <- 'gene_symbol'
-names(MS)[names(MS) == 'P-value'] <- 'pvalue'
-names(MS)[names(MS) == 'Log2(FC)'] <- 'log2FoldChange'
-
-head(MS$gene_symbol)
+#ms
+MS <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/MS_data_MMU_02082023.csv" )
 
 #Translational efficiency
 TE <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/deltaTE/TE_m23_genesInRNAandRPF.csv")
@@ -314,6 +303,24 @@ dev.off()
 
 table(RPF$wobble)
 ```
+# TE density wobble
+```{R TEdensitywobble}
+TEdenswob <- ggplot(TE, aes(x=log2FoldChange, colour=factor(wobble, levels = c("No seed", "Canonical", "Non-Canonical", "Multiple", "Non-target")))) +
+  geom_density() +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c( farbeneg, farbe1, farbe2, farbe3, "black")) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1)) +
+  ggtitle("TE")
+
+TEdenswob
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/WobbleDensity_TE.pdf", width=2, height = 2)
+TEdenswob
+dev.off()
+
+```
+
 
 ## wobble bar
 ```{r wobblebar}
@@ -528,7 +535,23 @@ dev.off()
 
 table(RPF$MREtype)
 ```
+# TE density type
+```{R TEdensitytype}
+TEdenstyp <- ggplot(TE, aes(x=log2FoldChange, colour=factor(MREtype, levels = c("No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple", "Non-target")))) +
+  geom_density() +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c( farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, "black")) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1)) +
+  ggtitle("TE")
 
+TEdenstyp
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/TypeDensity_TE.pdf", width=2, height = 2)
+TEdenstyp
+dev.off()
+
+```
 
 # 8mer wobble vs non wobble ecdf
 ```{r 8merwooblenonwobble}
@@ -627,11 +650,424 @@ dev.off()
 
 
 ```
+# 7merA1 wobble vs non wobble ecdf
+```{r 8merwooblenonwobble}
+#RNA
+RNA7A1w <- RNA
+RNA7A1w[RNA7A1w$MREtype == "seed_7mer_a1" & RNA7A1w$wobble == "Canonical", "MREtype"] <- "7mer_a1 AA"
+RNA7A1w[RNA7A1w$MREtype == "seed_7mer_a1" & RNA7A1w$wobble == "Non-Canonical", "MREtype"] <- "7mer_a1 AU"
+table(RNA7A1w$MREtype)
 
+typeECDFRNA7A1w <- ggplot(RNA7A1w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_8mer", "seed_7mer_m8", "7mer_a1 AA","7mer_a1 AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA type of 7mer_a1")
+
+typeECDFRNA7A1w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer_a1typeECDF_RNA.pdf", width=2, height = 2)
+typeECDFRNA7A1w
+dev.off()
+
+
+
+#RPF
+RPF7A1w <- RPF
+RPF7A1w[RPF7A1w$MREtype == "seed_7mer_a1" & RPF7A1w$wobble == "Canonical", "MREtype"] <- "7mer_a1 AA"
+RPF7A1w[RPF7A1w$MREtype == "seed_7mer_a1" & RPF7A1w$wobble == "Non-Canonical", "MREtype"] <- "7mer_a1 AU"
+table(RPF7A1w$MREtype)
+
+typeECDFRPF7A1w <- ggplot(RPF7A1w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_8mer", "seed_7mer_m8", "7mer_a1 AA","7mer_a1 AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF type of 7mer_a1")
+
+typeECDFRPF7A1w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer_a1typeECDF_RPF.pdf", width=2, height = 2)
+typeECDFRPF7A1w
+dev.off()
+
+
+
+#TE
+TE7A1w <- TE
+TE7A1w[TE7A1w$MREtype == "seed_7mer_a1" & TE7A1w$wobble == "Canonical", "MREtype"] <- "7mer_a1 AA"
+TE7A1w[TE7A1w$MREtype == "seed_7mer_a1" & TE7A1w$wobble == "Non-Canonical", "MREtype"] <- "7mer_a1 AU"
+table(TE7A1w$MREtype)
+
+typeECDFTE7A1w <- ggplot(TE7A1w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_8mer", "seed_7mer_m8", "7mer_a1 AA","7mer_a1 AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("TE type of 7mer_a1")
+
+typeECDFTE7A1w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer_a1typeECDF_TE.pdf", width=2, height = 2)
+typeECDFTE7A1w
+dev.off()
+
+
+#MS
+MS7A1w <- MS
+MS7A1w[MS7A1w$MREtype == "seed_7mer_a1" & MS7A1w$wobble == "Canonical", "MREtype"] <- "7mer_a1 AA"
+MS7A1w[MS7A1w$MREtype == "seed_7mer_a1" & MS7A1w$wobble == "Non-Canonical", "MREtype"] <- "7mer_a1 AU"
+table(MS7A1w$MREtype)
+
+typeECDFMS7A1w <- ggplot(MS7A1w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_8mer", "seed_7mer_m8", "7mer_a1 AA","7mer_a1 AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("MS type of 7mer_a1")
+
+typeECDFMS7A1w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer_a1typeECDF_MS.pdf", width=2, height = 2)
+typeECDFMS7A1w
+dev.off()
+
+
+```
+
+
+# 7mer_m8 wobble vs non wobble ecdf
+```{r 7mer_m8wooblenonwobble}
+#RNA
+RNA8w <- RNA
+RNA8w[RNA8w$MREtype == "seed_7mer_m8" & RNA8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
+RNA8w[RNA8w$MREtype == "seed_7mer_m8" & RNA8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
+table(RNA8w$MREtype)
+
+typeECDFRNA8w <- ggplot(RNA8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_8mer", "7mer_m8 AA","7mer_m8 AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA type of 7mer_m8")
+
+typeECDFRNA8w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer_m8typeECDF_RNA.pdf", width=2, height = 2)
+typeECDFRNA8w
+dev.off()
+
+
+
+#RPF
+RPF8w <- RPF
+RPF8w[RPF8w$MREtype == "seed_7mer_m8" & RPF8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
+RPF8w[RPF8w$MREtype == "seed_7mer_m8" & RPF8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
+table(RPF8w$MREtype)
+
+typeECDFRPF8w <- ggplot(RPF8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_8mer", "7mer_m8 AA","7mer_m8 AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF type of 7mer_m8")
+
+typeECDFRPF8w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer_m8typeECDF_RPF.pdf", width=2, height = 2)
+typeECDFRPF8w
+dev.off()
+
+
+
+#TE
+TE8w <- TE
+TE8w[TE8w$MREtype == "seed_7mer_m8" & TE8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
+TE8w[TE8w$MREtype == "seed_7mer_m8" & TE8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
+table(TE8w$MREtype)
+
+typeECDFTE8w <- ggplot(TE8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_8mer", "7mer_m8 AA","7mer_m8 AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("TE type of 7mer_m8")
+
+typeECDFTE8w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer_m8typeECDF_TE.pdf", width=2, height = 2)
+typeECDFTE8w
+dev.off()
+
+
+#MS
+MS8w <- MS
+MS8w[MS8w$MREtype == "seed_7mer_m8" & MS8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
+MS8w[MS8w$MREtype == "seed_7mer_m8" & MS8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
+table(MS8w$MREtype)
+
+typeECDFMS8w <- ggplot(MS8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_8mer", "7mer_m8 AA","7mer_m8 AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("MS type of 7mer_m8")
+
+typeECDFMS8w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer_m8typeECDF_MS.pdf", width=2, height = 2)
+typeECDFMS8w
+dev.off()
+
+
+```
+
+# 6mer wobble vs non wobble ecdf
+```{r 6merwooblenonwobble}
+#RNA
+RNA8w <- RNA
+RNA8w[RNA8w$MREtype == "seed_6mer" & RNA8w$wobble == "Canonical", "MREtype"] <- "6mer AA"
+RNA8w[RNA8w$MREtype == "seed_6mer" & RNA8w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
+table(RNA8w$MREtype)
+
+typeECDFRNA8w <- ggplot(RNA8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "6mer AA","6mer AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA type of 6mer")
+
+typeECDFRNA8w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/6mertypeECDF_RNA.pdf", width=2, height = 2)
+typeECDFRNA8w
+dev.off()
+
+
+
+#RPF
+RPF8w <- RPF
+RPF8w[RPF8w$MREtype == "seed_6mer" & RPF8w$wobble == "Canonical", "MREtype"] <- "6mer AA"
+RPF8w[RPF8w$MREtype == "seed_6mer" & RPF8w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
+table(RPF8w$MREtype)
+
+typeECDFRPF8w <- ggplot(RPF8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "6mer AA","6mer AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF type of 6mer")
+
+typeECDFRPF8w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/6mertypeECDF_RPF.pdf", width=2, height = 2)
+typeECDFRPF8w
+dev.off()
+
+
+
+#TE
+TE8w <- TE
+TE8w[TE8w$MREtype == "seed_6mer" & TE8w$wobble == "Canonical", "MREtype"] <- "6mer AA"
+TE8w[TE8w$MREtype == "seed_6mer" & TE8w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
+table(TE8w$MREtype)
+
+typeECDFTE8w <- ggplot(TE8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "6mer AA","6mer AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("TE type of 6mer")
+
+typeECDFTE8w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/6mertypeECDF_TE.pdf", width=2, height = 2)
+typeECDFTE8w
+dev.off()
+
+
+#MS
+MS8w <- MS
+MS8w[MS8w$MREtype == "seed_6mer" & MS8w$wobble == "Canonical", "MREtype"] <- "6mer AA"
+MS8w[MS8w$MREtype == "seed_6mer" & MS8w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
+table(MS8w$MREtype)
+
+typeECDFMS8w <- ggplot(MS8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "6mer AA","6mer AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("MS type of 6mer")
+
+typeECDFMS8w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/6mertypeECDF_MS.pdf", width=2, height = 2)
+typeECDFMS8w
+dev.off()
+
+
+```
+
+# alt_38 wobble vs non wobble ecdf
+```{r alt_38wooblenonwobble}
+#RNA
+RNA8w <- RNA
+RNA8w[RNA8w$MREtype == "seed_alt_38" & RNA8w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
+RNA8w[RNA8w$MREtype == "seed_alt_38" & RNA8w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
+table(RNA8w$MREtype)
+
+typeECDFRNA8w <- ggplot(RNA8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "alt_38 AA","alt_38 AU", "seed_8mer", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA type of alt_38")
+
+typeECDFRNA8w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/alt_38typeECDF_RNA.pdf", width=2, height = 2)
+typeECDFRNA8w
+dev.off()
+
+
+
+#RPF
+RPF8w <- RPF
+RPF8w[RPF8w$MREtype == "seed_alt_38" & RPF8w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
+RPF8w[RPF8w$MREtype == "seed_alt_38" & RPF8w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
+table(RPF8w$MREtype)
+
+typeECDFRPF8w <- ggplot(RPF8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "alt_38 AA","alt_38 AU", "seed_8mer", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF type of alt_38")
+
+typeECDFRPF8w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/alt_38typeECDF_RPF.pdf", width=2, height = 2)
+typeECDFRPF8w
+dev.off()
+
+
+
+#TE
+TE8w <- TE
+TE8w[TE8w$MREtype == "seed_alt_38" & TE8w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
+TE8w[TE8w$MREtype == "seed_alt_38" & TE8w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
+table(TE8w$MREtype)
+
+typeECDFTE8w <- ggplot(TE8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "alt_38 AA","alt_38 AU", "seed_8mer", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("TE type of alt_38")
+
+typeECDFTE8w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/alt_38typeECDF_TE.pdf", width=2, height = 2)
+typeECDFTE8w
+dev.off()
+
+
+#MS
+MS8w <- MS
+MS8w[MS8w$MREtype == "seed_alt_38" & MS8w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
+MS8w[MS8w$MREtype == "seed_alt_38" & MS8w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
+table(MS8w$MREtype)
+
+typeECDFMS8w <- ggplot(MS8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "alt_38 AA","alt_38 AU", "seed_8mer", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("MS type of alt_38")
+
+typeECDFMS8w
+
+#export
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/alt_38typeECDF_MS.pdf", width=2, height = 2)
+typeECDFMS8w
+dev.off()
+
+
+```
+
+
+
+
+## density 8mer TE
+```{R TEdensity8mer}
+TEdens8mer <- ggplot(TE, aes(x=log2FoldChange, colour=factor(MREtype, levels = c("No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "8mer AA","8mer AU", "seed_alt_38", "Multiple", "Non-target")))) +
+  geom_density() +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c( farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8, "black")) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1)) +
+  ggtitle("TE")
+
+TEdens8mer
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/8merDensity_TE.pdf", width=2, height = 2)
+TEdens8mer
+dev.off()
+
+```
 
 # mmsat4
 ```{r mmsat4}
 mmsat4frame <- as.data.frame(MMSAT4)
+
 
 #RNA
 RNA$tvsmmsat4 <- "Non-target"
@@ -736,6 +1172,24 @@ dev.off()
 
 table(RPF$tvsmmsat4)
 ```
+## density mmsat4 TE
+```{R TEdensityMMsat4}
+TEdensmmsat4 <- ggplot(TE, aes(x=log2FoldChange, colour=factor(tvsmmsat4, levels = c("MMsat4", "miR-181 target", "both", "Non-target")))) +
+  geom_density() +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c( farbe1, farbe3, RPFncol, "black")) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1)) +
+  ggtitle("TE")
+
+TEdensmmsat4
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/MMsat4Density_TE.pdf", width=2, height = 2)
+TEdensmmsat4
+dev.off()
+
+```
+
 
 # MurSatRep1
 ```{r MurSatRep1}
@@ -844,7 +1298,23 @@ dev.off()
 
 table(RPF$tvsMurSatRep1)
 ```
+## density mursatrep1 TE
+```{R TEdensitymursatrep1}
+TEdensmursatrep1 <- ggplot(TE, aes(x=log2FoldChange, colour=factor(tvsMurSatRep1, levels = c( "MurSatRep1", "miR-181 target", "both", "Non-target")))) +
+  geom_density() +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c(farbe1, farbe3, RPFncol, "black")) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1)) +
+  ggtitle("TE")
 
+TEdensmursatrep1
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/MurSatRep1Density_TE.pdf", width=2, height = 2)
+TEdensmursatrep1
+dev.off()
+
+```
 
 ## metagene plot
 ```{r metageneplot}
