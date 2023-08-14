@@ -33,6 +33,7 @@ library(cowplot)
 library(eulerr)
 library(readxl)
 library(biomaRt)
+library(writexl)
 
 ```
 
@@ -321,6 +322,60 @@ dev.off()
 
 ```
 
+## Significance
+```{r significanceWobble}
+RNAWobbleTTest1 <- t.test(RNA[RNA$wobble=="No seed", "log2FoldChange"], RNA[RNA$wobble=="Non-target", "log2FoldChange"])
+RNAWobbleTTest2 <- t.test(RNA[RNA$wobble=="Canonical", "log2FoldChange"], RNA[RNA$wobble=="Non-target", "log2FoldChange"])
+RNAWobbleTTest3 <- t.test(RNA[RNA$wobble=="Non-Canonical", "log2FoldChange"], RNA[RNA$wobble=="Non-target", "log2FoldChange"])
+
+RPFWobbleTTest1 <- t.test(RPF[RPF$wobble=="No seed", "log2FoldChange"], RPF[RPF$wobble=="Non-target", "log2FoldChange"])
+RPFWobbleTTest2 <- t.test(RPF[RPF$wobble=="Canonical", "log2FoldChange"], RPF[RPF$wobble=="Non-target", "log2FoldChange"])
+RPFWobbleTTest3 <- t.test(RPF[RPF$wobble=="Non-Canonical", "log2FoldChange"], RPF[RPF$wobble=="Non-target", "log2FoldChange"])
+
+TEWobbleTTest1 <- t.test(TE[TE$wobble=="No seed", "log2FoldChange"], TE[TE$wobble=="Non-target", "log2FoldChange"])
+TEWobbleTTest2 <- t.test(TE[TE$wobble=="Canonical", "log2FoldChange"], TE[TE$wobble=="Non-target", "log2FoldChange"])
+TEWobbleTTest3 <- t.test(TE[TE$wobble=="Non-Canonical", "log2FoldChange"], TE[TE$wobble=="Non-target", "log2FoldChange"])
+
+MSWobbleTTest1 <- t.test(MS[MS$wobble=="No seed", "log2FoldChange"], MS[MS$wobble=="Non-target", "log2FoldChange"])
+MSWobbleTTest2 <- t.test(MS[MS$wobble=="Canonical", "log2FoldChange"], MS[MS$wobble=="Non-target", "log2FoldChange"])
+MSWobbleTTest3 <- t.test(MS[MS$wobble=="Non-Canonical", "log2FoldChange"], MS[MS$wobble=="Non-target", "log2FoldChange"])
+
+#kolmogorov-smirnov
+RNAWobbleksTest1 <- ks.test(RNA[RNA$wobble=="No seed", "log2FoldChange"], RNA[RNA$wobble=="Non-target", "log2FoldChange"])
+RNAWobbleksTest2 <- ks.test(RNA[RNA$wobble=="Canonical", "log2FoldChange"], RNA[RNA$wobble=="Non-target", "log2FoldChange"])
+RNAWobbleksTest3 <- ks.test(RNA[RNA$wobble=="Non-Canonical", "log2FoldChange"], RNA[RNA$wobble=="Non-target", "log2FoldChange"])
+
+RPFWobbleksTest1 <- ks.test(RPF[RPF$wobble=="No seed", "log2FoldChange"], RPF[RPF$wobble=="Non-target", "log2FoldChange"])
+RPFWobbleksTest2 <- ks.test(RPF[RPF$wobble=="Canonical", "log2FoldChange"], RPF[RPF$wobble=="Non-target", "log2FoldChange"])
+RPFWobbleksTest3 <- ks.test(RPF[RPF$wobble=="Non-Canonical", "log2FoldChange"], RPF[RPF$wobble=="Non-target", "log2FoldChange"])
+
+TEWobbleksTest1 <- ks.test(TE[TE$wobble=="No seed", "log2FoldChange"], TE[TE$wobble=="Non-target", "log2FoldChange"])
+TEWobbleksTest2 <- ks.test(TE[TE$wobble=="Canonical", "log2FoldChange"], TE[TE$wobble=="Non-target", "log2FoldChange"])
+TEWobbleksTest3 <- ks.test(TE[TE$wobble=="Non-Canonical", "log2FoldChange"], TE[TE$wobble=="Non-target", "log2FoldChange"])
+
+MSWobbleksTest1 <- ks.test(MS[MS$wobble=="No seed", "log2FoldChange"], MS[MS$wobble=="Non-target", "log2FoldChange"])
+MSWobbleksTest2 <- ks.test(MS[MS$wobble=="Canonical", "log2FoldChange"], MS[MS$wobble=="Non-target", "log2FoldChange"])
+MSWobbleksTest3 <- ks.test(MS[MS$wobble=="Non-Canonical", "log2FoldChange"], MS[MS$wobble=="Non-target", "log2FoldChange"])
+
+
+Wobblesig <- data.frame(c("RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "TE", "TE", "TE", "MS", "MS", "MS"),
+                        c("No seed", "Canonical", "Non-Canonical", "No seed", "Canonical", "Non-Canonical",
+                          "No seed", "Canonical", "Non-Canonical","No seed", "Canonical", "Non-Canonical"),
+                        c(RNAWobbleTTest1$p.value, RNAWobbleTTest2$p.value, RNAWobbleTTest3$p.value,
+                          RPFWobbleTTest1$p.value, RPFWobbleTTest2$p.value, RPFWobbleTTest3$p.value,
+                          TEWobbleTTest1$p.value, TEWobbleTTest2$p.value, TEWobbleTTest3$p.value, 
+                          MSWobbleTTest1$p.value, MSWobbleTTest2$p.value, MSWobbleTTest3$p.value),
+                        c(RNAWobbleksTest1$p.value, RNAWobbleksTest2$p.value, RNAWobbleksTest3$p.value,
+                          RPFWobbleksTest1$p.value, RPFWobbleksTest2$p.value, RPFWobbleksTest3$p.value, 
+                          TEWobbleksTest1$p.value, TEWobbleksTest2$p.value, TEWobbleksTest3$p.value,
+                          MSWobbleksTest1$p.value, MSWobbleksTest2$p.value, MSWobbleksTest3$p.value))
+colnames(Wobblesig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Wobblesig
+
+#export
+write_xlsx(Wobblesig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/Wobblesignificance.xlsx")
+```
+
 
 ## wobble bar
 ```{r wobblebar}
@@ -553,6 +608,80 @@ dev.off()
 
 ```
 
+## Significance
+```{r significanceType}
+RNATypeTTest1 <- t.test(RNA[RNA$MREtype=="seed_6mer", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeTTest2 <- t.test(RNA[RNA$MREtype=="seed_7mer_a1", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeTTest3 <- t.test(RNA[RNA$MREtype=="seed_7mer_m8", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeTTest4 <- t.test(RNA[RNA$MREtype=="seed_8mer", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeTTest5 <- t.test(RNA[RNA$MREtype=="seed_alt_38", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+
+RPFTypeTTest1 <- t.test(RPF[RPF$MREtype=="seed_6mer", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeTTest2 <- t.test(RPF[RPF$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeTTest3 <- t.test(RPF[RPF$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeTTest4 <- t.test(RPF[RPF$MREtype=="seed_8mer", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeTTest5 <- t.test(RPF[RPF$MREtype=="seed_alt_38", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+
+TETypeTTest1 <- t.test(TE[TE$MREtype=="seed_6mer", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeTTest2 <- t.test(TE[TE$MREtype=="seed_7mer_a1", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeTTest3 <- t.test(TE[TE$MREtype=="seed_7mer_m8", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeTTest4 <- t.test(TE[TE$MREtype=="seed_8mer", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeTTest5 <- t.test(TE[TE$MREtype=="seed_alt_38", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+
+MSTypeTTest1 <- t.test(MS[MS$MREtype=="seed_6mer", "log2FoldChange"], MS[MS$MREtype=="Non-target", "log2FoldChange"])
+MSTypeTTest2 <- t.test(MS[MS$MREtype=="seed_7mer_a1", "log2FoldChange"], MS[MS$MREtype=="Non-target", "log2FoldChange"])
+MSTypeTTest3 <- t.test(MS[MS$MREtype=="seed_7mer_m8", "log2FoldChange"], MS[MS$MREtype=="Non-target", "log2FoldChange"])
+MSTypeTTest4 <- t.test(MS[MS$MREtype=="seed_8mer", "log2FoldChange"], MS[MS$MREtype=="Non-target", "log2FoldChange"])
+MSTypeTTest5 <- t.test(MS[MS$MREtype=="seed_alt_38", "log2FoldChange"], MS[MS$MREtype=="Non-target", "log2FoldChange"])
+
+#kolmogorov-smirnov
+RNATypeksTest1 <- ks.test(RNA[RNA$MREtype=="seed_6mer", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeksTest2 <- ks.test(RNA[RNA$MREtype=="seed_7mer_a1", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeksTest3 <- ks.test(RNA[RNA$MREtype=="seed_7mer_m8", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeksTest4 <- ks.test(RNA[RNA$MREtype=="seed_8mer", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeksTest5 <- ks.test(RNA[RNA$MREtype=="seed_alt_38", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+
+RPFTypeksTest1 <- ks.test(RPF[RPF$MREtype=="seed_6mer", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeksTest2 <- ks.test(RPF[RPF$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeksTest3 <- ks.test(RPF[RPF$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeksTest4 <- ks.test(RPF[RPF$MREtype=="seed_8mer", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeksTest5 <- ks.test(RPF[RPF$MREtype=="seed_alt_38", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+
+TETypeksTest1 <- ks.test(TE[TE$MREtype=="seed_6mer", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeksTest2 <- ks.test(TE[TE$MREtype=="seed_7mer_a1", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeksTest3 <- ks.test(TE[TE$MREtype=="seed_7mer_m8", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeksTest4 <- ks.test(TE[TE$MREtype=="seed_8mer", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeksTest5 <- ks.test(TE[TE$MREtype=="seed_alt_38", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+
+MSTypeksTest1 <- ks.test(MS[MS$MREtype=="seed_6mer", "log2FoldChange"], MS[MS$MREtype=="Non-target", "log2FoldChange"])
+MSTypeksTest2 <- ks.test(MS[MS$MREtype=="seed_7mer_a1", "log2FoldChange"], MS[MS$MREtype=="Non-target", "log2FoldChange"])
+MSTypeksTest3 <- ks.test(MS[MS$MREtype=="seed_7mer_m8", "log2FoldChange"], MS[MS$MREtype=="Non-target", "log2FoldChange"])
+MSTypeksTest4 <- ks.test(MS[MS$MREtype=="seed_8mer", "log2FoldChange"], MS[MS$MREtype=="Non-target", "log2FoldChange"])
+MSTypeksTest5 <- ks.test(MS[MS$MREtype=="seed_alt_38", "log2FoldChange"], MS[MS$MREtype=="Non-target", "log2FoldChange"])
+
+
+Typesig <- data.frame(c("RNA", "RNA", "RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "RPF", "RPF",
+                        "TE", "TE", "TE", "TE", "TE", "MS", "MS", "MS", "MS", "MS"),
+                        c("seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", 
+                          "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38",
+                          "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", 
+                          "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38"),
+                        c(RNATypeTTest1$p.value, RNATypeTTest2$p.value, RNATypeTTest3$p.value, RNATypeTTest4$p.value, RNATypeTTest5$p.value,
+                          RPFTypeTTest1$p.value, RPFTypeTTest2$p.value, RPFTypeTTest3$p.value, RPFTypeTTest4$p.value, RPFTypeTTest5$p.value,
+                          TETypeTTest1$p.value, TETypeTTest2$p.value, TETypeTTest3$p.value, TETypeTTest4$p.value, TETypeTTest5$p.value, 
+                          MSTypeTTest1$p.value, MSTypeTTest2$p.value, MSTypeTTest3$p.value, MSTypeTTest4$p.value, MSTypeTTest5$p.value),
+                        c(RNATypeksTest1$p.value, RNATypeksTest2$p.value, RNATypeksTest3$p.value, RNATypeksTest4$p.value, RNATypeksTest5$p.value,
+                          RPFTypeksTest1$p.value, RPFTypeksTest2$p.value, RPFTypeksTest3$p.value, RPFTypeksTest4$p.value, RPFTypeksTest5$p.value, 
+                          TETypeksTest1$p.value, TETypeksTest2$p.value, TETypeksTest3$p.value, TETypeksTest4$p.value, TETypeksTest5$p.value,
+                          MSTypeksTest1$p.value, MSTypeksTest2$p.value, MSTypeksTest3$p.value, MSTypeksTest4$p.value, MSTypeksTest5$p.value))
+colnames(Typesig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Typesig
+
+#export
+write_xlsx(Typesig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/Typesignificance.xlsx")
+```
+
+
 # 8mer wobble vs non wobble ecdf
 ```{r 8merwooblenonwobble}
 #RNA
@@ -650,8 +779,91 @@ dev.off()
 
 
 ```
+
+## Significance
+```{r significance8wobble}
+RNA8wTTest1 <- t.test(RNA8w[RNA8w$MREtype=="seed_6mer", "log2FoldChange"], RNA8w[RNA8w$MREtype=="Non-target", "log2FoldChange"])
+RNA8wTTest2 <- t.test(RNA8w[RNA8w$MREtype=="seed_7mer_a1", "log2FoldChange"], RNA8w[RNA8w$MREtype=="Non-target", "log2FoldChange"])
+RNA8wTTest3 <- t.test(RNA8w[RNA8w$MREtype=="seed_7mer_m8", "log2FoldChange"], RNA8w[RNA8w$MREtype=="Non-target", "log2FoldChange"])
+RNA8wTTest4 <- t.test(RNA8w[RNA8w$MREtype=="seed_alt_38", "log2FoldChange"], RNA8w[RNA8w$MREtype=="Non-target", "log2FoldChange"])
+RNA8wTTest5 <- t.test(RNA8w[RNA8w$MREtype=="8mer AA", "log2FoldChange"], RNA8w[RNA8w$MREtype=="Non-target", "log2FoldChange"])
+RNA8wTTest6 <- t.test(RNA8w[RNA8w$MREtype=="8mer AU", "log2FoldChange"], RNA8w[RNA8w$MREtype=="Non-target", "log2FoldChange"])
+
+RPF8wTTest1 <- t.test(RPF8w[RPF8w$MREtype=="seed_6mer", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wTTest2 <- t.test(RPF8w[RPF8w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wTTest3 <- t.test(RPF8w[RPF8w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wTTest4 <- t.test(RPF8w[RPF8w$MREtype=="seed_alt_38", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wTTest5 <- t.test(RPF8w[RPF8w$MREtype=="8mer AA", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wTTest6 <- t.test(RPF8w[RPF8w$MREtype=="8mer AU", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+
+TE8wTTest1 <- t.test(TE8w[TE8w$MREtype=="seed_6mer", "log2FoldChange"], TE8w[TE8w$MREtype=="Non-target", "log2FoldChange"])
+TE8wTTest2 <- t.test(TE8w[TE8w$MREtype=="seed_7mer_a1", "log2FoldChange"], TE8w[TE8w$MREtype=="Non-target", "log2FoldChange"])
+TE8wTTest3 <- t.test(TE8w[TE8w$MREtype=="seed_7mer_m8", "log2FoldChange"], TE8w[TE8w$MREtype=="Non-target", "log2FoldChange"])
+TE8wTTest4 <- t.test(TE8w[TE8w$MREtype=="seed_alt_38", "log2FoldChange"], TE8w[TE8w$MREtype=="Non-target", "log2FoldChange"])
+TE8wTTest5 <- t.test(TE8w[TE8w$MREtype=="8mer AA", "log2FoldChange"], TE8w[TE8w$MREtype=="Non-target", "log2FoldChange"])
+TE8wTTest6 <- t.test(TE8w[TE8w$MREtype=="8mer AU", "log2FoldChange"], TE8w[TE8w$MREtype=="Non-target", "log2FoldChange"])
+
+MS8wTTest1 <- t.test(MS8w[MS8w$MREtype=="seed_6mer", "log2FoldChange"], MS8w[MS8w$MREtype=="Non-target", "log2FoldChange"])
+MS8wTTest2 <- t.test(MS8w[MS8w$MREtype=="seed_7mer_a1", "log2FoldChange"], MS8w[MS8w$MREtype=="Non-target", "log2FoldChange"])
+MS8wTTest3 <- t.test(MS8w[MS8w$MREtype=="seed_7mer_m8", "log2FoldChange"], MS8w[MS8w$MREtype=="Non-target", "log2FoldChange"])
+MS8wTTest4 <- t.test(MS8w[MS8w$MREtype=="seed_alt_38", "log2FoldChange"], MS8w[MS8w$MREtype=="Non-target", "log2FoldChange"])
+MS8wTTest5 <- t.test(MS8w[MS8w$MREtype=="8mer AA", "log2FoldChange"], MS8w[MS8w$MREtype=="Non-target", "log2FoldChange"])
+MS8wTTest6 <- t.test(MS8w[MS8w$MREtype=="8mer AU", "log2FoldChange"], MS8w[MS8w$MREtype=="Non-target", "log2FoldChange"])
+
+#kolmogorov-smirnov
+RNA8wksTest1 <- ks.test(RNA8w[RNA8w$MREtype=="seed_6mer", "log2FoldChange"], RNA8w[RNA8w$MREtype=="Non-target", "log2FoldChange"])
+RNA8wksTest2 <- ks.test(RNA8w[RNA8w$MREtype=="seed_7mer_a1", "log2FoldChange"], RNA8w[RNA8w$MREtype=="Non-target", "log2FoldChange"])
+RNA8wksTest3 <- ks.test(RNA8w[RNA8w$MREtype=="seed_7mer_m8", "log2FoldChange"], RNA8w[RNA8w$MREtype=="Non-target", "log2FoldChange"])
+RNA8wksTest4 <- ks.test(RNA8w[RNA8w$MREtype=="seed_alt_38", "log2FoldChange"], RNA8w[RNA8w$MREtype=="Non-target", "log2FoldChange"])
+RNA8wksTest5 <- ks.test(RNA8w[RNA8w$MREtype=="8mer AA", "log2FoldChange"], RNA8w[RNA8w$MREtype=="Non-target", "log2FoldChange"])
+RNA8wksTest6 <- ks.test(RNA8w[RNA8w$MREtype=="8mer AU", "log2FoldChange"], RNA8w[RNA8w$MREtype=="Non-target", "log2FoldChange"])
+
+RPF8wksTest1 <- ks.test(RPF8w[RPF8w$MREtype=="seed_6mer", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wksTest2 <- ks.test(RPF8w[RPF8w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wksTest3 <- ks.test(RPF8w[RPF8w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wksTest4 <- ks.test(RPF8w[RPF8w$MREtype=="seed_alt_38", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wksTest5 <- ks.test(RPF8w[RPF8w$MREtype=="8mer AA", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wksTest6 <- ks.test(RPF8w[RPF8w$MREtype=="8mer AU", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+
+TE8wksTest1 <- ks.test(TE8w[TE8w$MREtype=="seed_6mer", "log2FoldChange"], TE8w[TE8w$MREtype=="Non-target", "log2FoldChange"])
+TE8wksTest2 <- ks.test(TE8w[TE8w$MREtype=="seed_7mer_a1", "log2FoldChange"], TE8w[TE8w$MREtype=="Non-target", "log2FoldChange"])
+TE8wksTest3 <- ks.test(TE8w[TE8w$MREtype=="seed_7mer_m8", "log2FoldChange"], TE8w[TE8w$MREtype=="Non-target", "log2FoldChange"])
+TE8wksTest4 <- ks.test(TE8w[TE8w$MREtype=="seed_alt_38", "log2FoldChange"], TE8w[TE8w$MREtype=="Non-target", "log2FoldChange"])
+TE8wksTest5 <- ks.test(TE8w[TE8w$MREtype=="8mer AA", "log2FoldChange"], TE8w[TE8w$MREtype=="Non-target", "log2FoldChange"])
+TE8wksTest6 <- ks.test(TE8w[TE8w$MREtype=="8mer AU", "log2FoldChange"], TE8w[TE8w$MREtype=="Non-target", "log2FoldChange"])
+
+MS8wksTest1 <- ks.test(MS8w[MS8w$MREtype=="seed_6mer", "log2FoldChange"], MS8w[MS8w$MREtype=="Non-target", "log2FoldChange"])
+MS8wksTest2 <- ks.test(MS8w[MS8w$MREtype=="seed_7mer_a1", "log2FoldChange"], MS8w[MS8w$MREtype=="Non-target", "log2FoldChange"])
+MS8wksTest3 <- ks.test(MS8w[MS8w$MREtype=="seed_7mer_m8", "log2FoldChange"], MS8w[MS8w$MREtype=="Non-target", "log2FoldChange"])
+MS8wksTest4 <- ks.test(MS8w[MS8w$MREtype=="seed_alt_38", "log2FoldChange"], MS8w[MS8w$MREtype=="Non-target", "log2FoldChange"])
+MS8wksTest5 <- ks.test(MS8w[MS8w$MREtype=="8mer AA", "log2FoldChange"], MS8w[MS8w$MREtype=="Non-target", "log2FoldChange"])
+MS8wksTest6 <- ks.test(MS8w[MS8w$MREtype=="8mer AU", "log2FoldChange"], MS8w[MS8w$MREtype=="Non-target", "log2FoldChange"])
+
+
+Type8wsig <- data.frame(c("RNA", "RNA", "RNA", "RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "RPF", "RPF", "RPF",
+                        "TE", "TE", "TE", "TE", "TE", "TE", "MS", "MS", "MS", "MS", "MS", "MS"),
+                        c("seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_alt_38", "8mer AA", "8mer AU",
+                          "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_alt_38", "8mer AA", "8mer AU",
+                          "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_alt_38", "8mer AA", "8mer AU", 
+                          "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_alt_38", "8mer AA", "8mer AU"),
+                        c(RNA8wTTest1$p.value, RNA8wTTest2$p.value, RNA8wTTest3$p.value, RNA8wTTest4$p.value, RNA8wTTest5$p.value, RNA8wTTest6$p.value,
+                          RPF8wTTest1$p.value, RPF8wTTest2$p.value, RPF8wTTest3$p.value, RPF8wTTest4$p.value, RPF8wTTest5$p.value, RPF8wTTest6$p.value,
+                          TE8wTTest1$p.value, TE8wTTest2$p.value, TE8wTTest3$p.value, TE8wTTest4$p.value, TE8wTTest5$p.value, TE8wTTest6$p.value,
+                          MS8wTTest1$p.value, MS8wTTest2$p.value, MS8wTTest3$p.value, MS8wTTest4$p.value, MS8wTTest5$p.value, MS8wTTest6$p.value),
+                        c(RNA8wksTest1$p.value, RNA8wksTest2$p.value, RNA8wksTest3$p.value, RNA8wksTest4$p.value, RNA8wksTest5$p.value, RNA8wksTest6$p.value,
+                          RPF8wksTest1$p.value, RPF8wksTest2$p.value, RPF8wksTest3$p.value, RPF8wksTest4$p.value, RPF8wksTest5$p.value, RPF8wksTest6$p.value, 
+                          TE8wksTest1$p.value, TE8wksTest2$p.value, TE8wksTest3$p.value, TE8wksTest4$p.value, TE8wksTest5$p.value, TE8wksTest6$p.value,
+                          MS8wksTest1$p.value, MS8wksTest2$p.value, MS8wksTest3$p.value, MS8wksTest4$p.value, MS8wksTest5$p.value, MS8wksTest6$p.value))
+colnames(Type8wsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Type8wsig
+
+#export
+write_xlsx(Type8wsig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/8wsignificance.xlsx")
+```
+
+
 # 7merA1 wobble vs non wobble ecdf
-```{r 8merwooblenonwobble}
+```{r 7merA1wooblenonwobble}
 #RNA
 RNA7A1w <- RNA
 RNA7A1w[RNA7A1w$MREtype == "seed_7mer_a1" & RNA7A1w$wobble == "Canonical", "MREtype"] <- "7mer_a1 AA"
@@ -748,16 +960,99 @@ dev.off()
 
 ```
 
+## Significance
+```{r significance7merA1}
+RNA7A1wTTest1 <- t.test(RNA7A1w[RNA7A1w$MREtype=="seed_6mer", "log2FoldChange"], RNA7A1w[RNA7A1w$MREtype=="Non-target", "log2FoldChange"])
+RNA7A1wTTest2 <- t.test(RNA7A1w[RNA7A1w$MREtype=="seed_8mer", "log2FoldChange"], RNA7A1w[RNA7A1w$MREtype=="Non-target", "log2FoldChange"])
+RNA7A1wTTest3 <- t.test(RNA7A1w[RNA7A1w$MREtype=="seed_7mer_m8", "log2FoldChange"], RNA7A1w[RNA7A1w$MREtype=="Non-target", "log2FoldChange"])
+RNA7A1wTTest4 <- t.test(RNA7A1w[RNA7A1w$MREtype=="seed_alt_38", "log2FoldChange"], RNA7A1w[RNA7A1w$MREtype=="Non-target", "log2FoldChange"])
+RNA7A1wTTest5 <- t.test(RNA7A1w[RNA7A1w$MREtype=="7mer_a1 AA", "log2FoldChange"], RNA7A1w[RNA7A1w$MREtype=="Non-target", "log2FoldChange"])
+RNA7A1wTTest6 <- t.test(RNA7A1w[RNA7A1w$MREtype=="7mer_a1 AU", "log2FoldChange"], RNA7A1w[RNA7A1w$MREtype=="Non-target", "log2FoldChange"])
+
+RPF7A1wTTest1 <- t.test(RPF7A1w[RPF7A1w$MREtype=="seed_6mer", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wTTest2 <- t.test(RPF7A1w[RPF7A1w$MREtype=="seed_8mer", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wTTest3 <- t.test(RPF7A1w[RPF7A1w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wTTest4 <- t.test(RPF7A1w[RPF7A1w$MREtype=="seed_alt_38", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wTTest5 <- t.test(RPF7A1w[RPF7A1w$MREtype=="7mer_a1 AA", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wTTest6 <- t.test(RPF7A1w[RPF7A1w$MREtype=="7mer_a1 AU", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+
+TE7A1wTTest1 <- t.test(TE7A1w[TE7A1w$MREtype=="seed_6mer", "log2FoldChange"], TE7A1w[TE7A1w$MREtype=="Non-target", "log2FoldChange"])
+TE7A1wTTest2 <- t.test(TE7A1w[TE7A1w$MREtype=="seed_8mer", "log2FoldChange"], TE7A1w[TE7A1w$MREtype=="Non-target", "log2FoldChange"])
+TE7A1wTTest3 <- t.test(TE7A1w[TE7A1w$MREtype=="seed_7mer_m8", "log2FoldChange"], TE7A1w[TE7A1w$MREtype=="Non-target", "log2FoldChange"])
+TE7A1wTTest4 <- t.test(TE7A1w[TE7A1w$MREtype=="seed_alt_38", "log2FoldChange"], TE7A1w[TE7A1w$MREtype=="Non-target", "log2FoldChange"])
+TE7A1wTTest5 <- t.test(TE7A1w[TE7A1w$MREtype=="7mer_a1 AA", "log2FoldChange"], TE7A1w[TE7A1w$MREtype=="Non-target", "log2FoldChange"])
+TE7A1wTTest6 <- t.test(TE7A1w[TE7A1w$MREtype=="7mer_a1 AU", "log2FoldChange"], TE7A1w[TE7A1w$MREtype=="Non-target", "log2FoldChange"])
+
+MS7A1wTTest1 <- t.test(MS7A1w[MS7A1w$MREtype=="seed_6mer", "log2FoldChange"], MS7A1w[MS7A1w$MREtype=="Non-target", "log2FoldChange"])
+MS7A1wTTest2 <- t.test(MS7A1w[MS7A1w$MREtype=="seed_8mer", "log2FoldChange"], MS7A1w[MS7A1w$MREtype=="Non-target", "log2FoldChange"])
+MS7A1wTTest3 <- t.test(MS7A1w[MS7A1w$MREtype=="seed_7mer_m8", "log2FoldChange"], MS7A1w[MS7A1w$MREtype=="Non-target", "log2FoldChange"])
+MS7A1wTTest4 <- t.test(MS7A1w[MS7A1w$MREtype=="seed_alt_38", "log2FoldChange"], MS7A1w[MS7A1w$MREtype=="Non-target", "log2FoldChange"])
+MS7A1wTTest5 <- t.test(MS7A1w[MS7A1w$MREtype=="7mer_a1 AA", "log2FoldChange"], MS7A1w[MS7A1w$MREtype=="Non-target", "log2FoldChange"])
+MS7A1wTTest6 <- t.test(MS7A1w[MS7A1w$MREtype=="7mer_a1 AU", "log2FoldChange"], MS7A1w[MS7A1w$MREtype=="Non-target", "log2FoldChange"])
+
+#kolmogorov-smirnov
+RNA7A1wksTest1 <- ks.test(RNA7A1w[RNA7A1w$MREtype=="seed_6mer", "log2FoldChange"], RNA7A1w[RNA7A1w$MREtype=="Non-target", "log2FoldChange"])
+RNA7A1wksTest2 <- ks.test(RNA7A1w[RNA7A1w$MREtype=="seed_8mer", "log2FoldChange"], RNA7A1w[RNA7A1w$MREtype=="Non-target", "log2FoldChange"])
+RNA7A1wksTest3 <- ks.test(RNA7A1w[RNA7A1w$MREtype=="seed_7mer_m8", "log2FoldChange"], RNA7A1w[RNA7A1w$MREtype=="Non-target", "log2FoldChange"])
+RNA7A1wksTest4 <- ks.test(RNA7A1w[RNA7A1w$MREtype=="seed_alt_38", "log2FoldChange"], RNA7A1w[RNA7A1w$MREtype=="Non-target", "log2FoldChange"])
+RNA7A1wksTest5 <- ks.test(RNA7A1w[RNA7A1w$MREtype=="7mer_a1 AA", "log2FoldChange"], RNA7A1w[RNA7A1w$MREtype=="Non-target", "log2FoldChange"])
+RNA7A1wksTest6 <- ks.test(RNA7A1w[RNA7A1w$MREtype=="7mer_a1 AU", "log2FoldChange"], RNA7A1w[RNA7A1w$MREtype=="Non-target", "log2FoldChange"])
+
+RPF7A1wksTest1 <- ks.test(RPF7A1w[RPF7A1w$MREtype=="seed_6mer", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wksTest2 <- ks.test(RPF7A1w[RPF7A1w$MREtype=="seed_8mer", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wksTest3 <- ks.test(RPF7A1w[RPF7A1w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wksTest4 <- ks.test(RPF7A1w[RPF7A1w$MREtype=="seed_alt_38", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wksTest5 <- ks.test(RPF7A1w[RPF7A1w$MREtype=="7mer_a1 AA", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wksTest6 <- ks.test(RPF7A1w[RPF7A1w$MREtype=="7mer_a1 AU", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+
+TE7A1wksTest1 <- ks.test(TE7A1w[TE7A1w$MREtype=="seed_6mer", "log2FoldChange"], TE7A1w[TE7A1w$MREtype=="Non-target", "log2FoldChange"])
+TE7A1wksTest2 <- ks.test(TE7A1w[TE7A1w$MREtype=="seed_8mer", "log2FoldChange"], TE7A1w[TE7A1w$MREtype=="Non-target", "log2FoldChange"])
+TE7A1wksTest3 <- ks.test(TE7A1w[TE7A1w$MREtype=="seed_7mer_m8", "log2FoldChange"], TE7A1w[TE7A1w$MREtype=="Non-target", "log2FoldChange"])
+TE7A1wksTest4 <- ks.test(TE7A1w[TE7A1w$MREtype=="seed_alt_38", "log2FoldChange"], TE7A1w[TE7A1w$MREtype=="Non-target", "log2FoldChange"])
+TE7A1wksTest5 <- ks.test(TE7A1w[TE7A1w$MREtype=="7mer_a1 AA", "log2FoldChange"], TE7A1w[TE7A1w$MREtype=="Non-target", "log2FoldChange"])
+TE7A1wksTest6 <- ks.test(TE7A1w[TE7A1w$MREtype=="7mer_a1 AU", "log2FoldChange"], TE7A1w[TE7A1w$MREtype=="Non-target", "log2FoldChange"])
+
+MS7A1wksTest1 <- ks.test(MS7A1w[MS7A1w$MREtype=="seed_6mer", "log2FoldChange"], MS7A1w[MS7A1w$MREtype=="Non-target", "log2FoldChange"])
+MS7A1wksTest2 <- ks.test(MS7A1w[MS7A1w$MREtype=="seed_8mer", "log2FoldChange"], MS7A1w[MS7A1w$MREtype=="Non-target", "log2FoldChange"])
+MS7A1wksTest3 <- ks.test(MS7A1w[MS7A1w$MREtype=="seed_7mer_m8", "log2FoldChange"], MS7A1w[MS7A1w$MREtype=="Non-target", "log2FoldChange"])
+MS7A1wksTest4 <- ks.test(MS7A1w[MS7A1w$MREtype=="seed_alt_38", "log2FoldChange"], MS7A1w[MS7A1w$MREtype=="Non-target", "log2FoldChange"])
+MS7A1wksTest5 <- ks.test(MS7A1w[MS7A1w$MREtype=="7mer_a1 AA", "log2FoldChange"], MS7A1w[MS7A1w$MREtype=="Non-target", "log2FoldChange"])
+MS7A1wksTest6 <- ks.test(MS7A1w[MS7A1w$MREtype=="7mer_a1 AU", "log2FoldChange"], MS7A1w[MS7A1w$MREtype=="Non-target", "log2FoldChange"])
+
+
+Type7A1wsig <- data.frame(c("RNA", "RNA", "RNA", "RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "RPF", "RPF", "RPF",
+                        "TE", "TE", "TE", "TE", "TE", "TE", "MS", "MS", "MS", "MS", "MS", "MS"),
+                        c("seed_6mer", "seed_8mer", "seed_7mer_m8", "seed_alt_38", "7mer_a1 AA", "7mer_a1 AU",
+                          "seed_6mer", "seed_8mer", "seed_7mer_m8", "seed_alt_38", "7mer_a1 AA", "7mer_a1 AU",
+                          "seed_6mer", "seed_8mer", "seed_7mer_m8", "seed_alt_38", "7mer_a1 AA", "7mer_a1 AU", 
+                          "seed_6mer", "seed_8mer", "seed_7mer_m8", "seed_alt_38", "7mer_a1 AA", "7mer_a1 AU"),
+                        c(RNA7A1wTTest1$p.value, RNA7A1wTTest2$p.value, RNA7A1wTTest3$p.value, RNA7A1wTTest4$p.value, RNA7A1wTTest5$p.value, RNA7A1wTTest6$p.value,
+                          RPF7A1wTTest1$p.value, RPF7A1wTTest2$p.value, RPF7A1wTTest3$p.value, RPF7A1wTTest4$p.value, RPF7A1wTTest5$p.value, RPF7A1wTTest6$p.value,
+                          TE7A1wTTest1$p.value, TE7A1wTTest2$p.value, TE7A1wTTest3$p.value, TE7A1wTTest4$p.value, TE7A1wTTest5$p.value, TE7A1wTTest6$p.value,
+                          MS7A1wTTest1$p.value, MS7A1wTTest2$p.value, MS7A1wTTest3$p.value, MS7A1wTTest4$p.value, MS7A1wTTest5$p.value, MS7A1wTTest6$p.value),
+                        c(RNA7A1wksTest1$p.value, RNA7A1wksTest2$p.value, RNA7A1wksTest3$p.value, RNA7A1wksTest4$p.value, RNA7A1wksTest5$p.value, RNA7A1wksTest6$p.value,
+                          RPF7A1wksTest1$p.value, RPF7A1wksTest2$p.value, RPF7A1wksTest3$p.value, RPF7A1wksTest4$p.value, RPF7A1wksTest5$p.value, RPF7A1wksTest6$p.value, 
+                          TE7A1wksTest1$p.value, TE7A1wksTest2$p.value, TE7A1wksTest3$p.value, TE7A1wksTest4$p.value, TE7A1wksTest5$p.value, TE7A1wksTest6$p.value,
+                          MS7A1wksTest1$p.value, MS7A1wksTest2$p.value, MS7A1wksTest3$p.value, MS7A1wksTest4$p.value, MS7A1wksTest5$p.value, MS7A1wksTest6$p.value))
+colnames(Type7A1wsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Type7A1wsig
+
+#export
+write_xlsx(Type7A1wsig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7A1wsignificance.xlsx")
+```
+
+
+
 
 # 7mer_m8 wobble vs non wobble ecdf
 ```{r 7mer_m8wooblenonwobble}
 #RNA
-RNA8w <- RNA
-RNA8w[RNA8w$MREtype == "seed_7mer_m8" & RNA8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
-RNA8w[RNA8w$MREtype == "seed_7mer_m8" & RNA8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
-table(RNA8w$MREtype)
+RNA7m8w <- RNA
+RNA7m8w[RNA7m8w$MREtype == "seed_7mer_m8" & RNA7m8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
+RNA7m8w[RNA7m8w$MREtype == "seed_7mer_m8" & RNA7m8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
+table(RNA7m8w$MREtype)
 
-typeECDFRNA8w <- ggplot(RNA8w, aes(as.numeric(log2FoldChange), 
+typeECDFRNA7m8w <- ggplot(RNA7m8w, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_8mer", "7mer_m8 AA","7mer_m8 AU", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
@@ -766,22 +1061,22 @@ typeECDFRNA8w <- ggplot(RNA8w, aes(as.numeric(log2FoldChange),
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("RNA type of 7mer_m8")
 
-typeECDFRNA8w
+typeECDFRNA7m8w
 
 #export
 pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer_m8typeECDF_RNA.pdf", width=2, height = 2)
-typeECDFRNA8w
+typeECDFRNA7m8w
 dev.off()
 
 
 
 #RPF
-RPF8w <- RPF
-RPF8w[RPF8w$MREtype == "seed_7mer_m8" & RPF8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
-RPF8w[RPF8w$MREtype == "seed_7mer_m8" & RPF8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
-table(RPF8w$MREtype)
+RPF7m8w <- RPF
+RPF7m8w[RPF7m8w$MREtype == "seed_7mer_m8" & RPF7m8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
+RPF7m8w[RPF7m8w$MREtype == "seed_7mer_m8" & RPF7m8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
+table(RPF7m8w$MREtype)
 
-typeECDFRPF8w <- ggplot(RPF8w, aes(as.numeric(log2FoldChange), 
+typeECDFRPF7m8w <- ggplot(RPF7m8w, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_8mer", "7mer_m8 AA","7mer_m8 AU", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
@@ -790,22 +1085,22 @@ typeECDFRPF8w <- ggplot(RPF8w, aes(as.numeric(log2FoldChange),
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("RPF type of 7mer_m8")
 
-typeECDFRPF8w
+typeECDFRPF7m8w
 
 #export
 pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer_m8typeECDF_RPF.pdf", width=2, height = 2)
-typeECDFRPF8w
+typeECDFRPF7m8w
 dev.off()
 
 
 
 #TE
-TE8w <- TE
-TE8w[TE8w$MREtype == "seed_7mer_m8" & TE8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
-TE8w[TE8w$MREtype == "seed_7mer_m8" & TE8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
-table(TE8w$MREtype)
+TE7m8w <- TE
+TE7m8w[TE7m8w$MREtype == "seed_7mer_m8" & TE7m8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
+TE7m8w[TE7m8w$MREtype == "seed_7mer_m8" & TE7m8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
+table(TE7m8w$MREtype)
 
-typeECDFTE8w <- ggplot(TE8w, aes(as.numeric(log2FoldChange), 
+typeECDFTE7m8w <- ggplot(TE7m8w, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_8mer", "7mer_m8 AA","7mer_m8 AU", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
@@ -814,21 +1109,21 @@ typeECDFTE8w <- ggplot(TE8w, aes(as.numeric(log2FoldChange),
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("TE type of 7mer_m8")
 
-typeECDFTE8w
+typeECDFTE7m8w
 
 #export
 pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer_m8typeECDF_TE.pdf", width=2, height = 2)
-typeECDFTE8w
+typeECDFTE7m8w
 dev.off()
 
 
 #MS
-MS8w <- MS
-MS8w[MS8w$MREtype == "seed_7mer_m8" & MS8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
-MS8w[MS8w$MREtype == "seed_7mer_m8" & MS8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
-table(MS8w$MREtype)
+MS7m8w <- MS
+MS7m8w[MS7m8w$MREtype == "seed_7mer_m8" & MS7m8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
+MS7m8w[MS7m8w$MREtype == "seed_7mer_m8" & MS7m8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
+table(MS7m8w$MREtype)
 
-typeECDFMS8w <- ggplot(MS8w, aes(as.numeric(log2FoldChange), 
+typeECDFMS7m8w <- ggplot(MS7m8w, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_8mer", "7mer_m8 AA","7mer_m8 AU", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
@@ -837,25 +1132,109 @@ typeECDFMS8w <- ggplot(MS8w, aes(as.numeric(log2FoldChange),
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("MS type of 7mer_m8")
 
-typeECDFMS8w
+typeECDFMS7m8w
 
 #export
 pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer_m8typeECDF_MS.pdf", width=2, height = 2)
-typeECDFMS8w
+typeECDFMS7m8w
 dev.off()
 
 
 ```
 
+
+## Significance
+```{r significance7mer_m8}
+RNA7m8wTTest1 <- t.test(RNA7m8w[RNA7m8w$MREtype=="seed_6mer", "log2FoldChange"], RNA7m8w[RNA7m8w$MREtype=="Non-target", "log2FoldChange"])
+RNA7m8wTTest2 <- t.test(RNA7m8w[RNA7m8w$MREtype=="seed_7mer_a1", "log2FoldChange"], RNA7m8w[RNA7m8w$MREtype=="Non-target", "log2FoldChange"])
+RNA7m8wTTest3 <- t.test(RNA7m8w[RNA7m8w$MREtype=="seed_8mer", "log2FoldChange"], RNA7m8w[RNA7m8w$MREtype=="Non-target", "log2FoldChange"])
+RNA7m8wTTest4 <- t.test(RNA7m8w[RNA7m8w$MREtype=="seed_alt_38", "log2FoldChange"], RNA7m8w[RNA7m8w$MREtype=="Non-target", "log2FoldChange"])
+RNA7m8wTTest5 <- t.test(RNA7m8w[RNA7m8w$MREtype=="7mer_m8 AA", "log2FoldChange"], RNA7m8w[RNA7m8w$MREtype=="Non-target", "log2FoldChange"])
+RNA7m8wTTest6 <- t.test(RNA7m8w[RNA7m8w$MREtype=="7mer_m8 AU", "log2FoldChange"], RNA7m8w[RNA7m8w$MREtype=="Non-target", "log2FoldChange"])
+
+RPF7m8wTTest1 <- t.test(RPF7m8w[RPF7m8w$MREtype=="seed_6mer", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wTTest2 <- t.test(RPF7m8w[RPF7m8w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wTTest3 <- t.test(RPF7m8w[RPF7m8w$MREtype=="seed_8mer", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wTTest4 <- t.test(RPF7m8w[RPF7m8w$MREtype=="seed_alt_38", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wTTest5 <- t.test(RPF7m8w[RPF7m8w$MREtype=="7mer_m8 AA", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wTTest6 <- t.test(RPF7m8w[RPF7m8w$MREtype=="7mer_m8 AU", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+
+TE7m8wTTest1 <- t.test(TE7m8w[TE7m8w$MREtype=="seed_6mer", "log2FoldChange"], TE7m8w[TE7m8w$MREtype=="Non-target", "log2FoldChange"])
+TE7m8wTTest2 <- t.test(TE7m8w[TE7m8w$MREtype=="seed_7mer_a1", "log2FoldChange"], TE7m8w[TE7m8w$MREtype=="Non-target", "log2FoldChange"])
+TE7m8wTTest3 <- t.test(TE7m8w[TE7m8w$MREtype=="seed_8mer", "log2FoldChange"], TE7m8w[TE7m8w$MREtype=="Non-target", "log2FoldChange"])
+TE7m8wTTest4 <- t.test(TE7m8w[TE7m8w$MREtype=="seed_alt_38", "log2FoldChange"], TE7m8w[TE7m8w$MREtype=="Non-target", "log2FoldChange"])
+TE7m8wTTest5 <- t.test(TE7m8w[TE7m8w$MREtype=="7mer_m8 AA", "log2FoldChange"], TE7m8w[TE7m8w$MREtype=="Non-target", "log2FoldChange"])
+TE7m8wTTest6 <- t.test(TE7m8w[TE7m8w$MREtype=="7mer_m8 AU", "log2FoldChange"], TE7m8w[TE7m8w$MREtype=="Non-target", "log2FoldChange"])
+
+MS7m8wTTest1 <- t.test(MS7m8w[MS7m8w$MREtype=="seed_6mer", "log2FoldChange"], MS7m8w[MS7m8w$MREtype=="Non-target", "log2FoldChange"])
+MS7m8wTTest2 <- t.test(MS7m8w[MS7m8w$MREtype=="seed_7mer_a1", "log2FoldChange"], MS7m8w[MS7m8w$MREtype=="Non-target", "log2FoldChange"])
+MS7m8wTTest3 <- t.test(MS7m8w[MS7m8w$MREtype=="seed_8mer", "log2FoldChange"], MS7m8w[MS7m8w$MREtype=="Non-target", "log2FoldChange"])
+MS7m8wTTest4 <- t.test(MS7m8w[MS7m8w$MREtype=="seed_alt_38", "log2FoldChange"], MS7m8w[MS7m8w$MREtype=="Non-target", "log2FoldChange"])
+MS7m8wTTest5 <- t.test(MS7m8w[MS7m8w$MREtype=="7mer_m8 AA", "log2FoldChange"], MS7m8w[MS7m8w$MREtype=="Non-target", "log2FoldChange"])
+MS7m8wTTest6 <- t.test(MS7m8w[MS7m8w$MREtype=="7mer_m8 AU", "log2FoldChange"], MS7m8w[MS7m8w$MREtype=="Non-target", "log2FoldChange"])
+
+#kolmogorov-smirnov
+RNA7m8wksTest1 <- ks.test(RNA7m8w[RNA7m8w$MREtype=="seed_6mer", "log2FoldChange"], RNA7m8w[RNA7m8w$MREtype=="Non-target", "log2FoldChange"])
+RNA7m8wksTest2 <- ks.test(RNA7m8w[RNA7m8w$MREtype=="seed_7mer_a1", "log2FoldChange"], RNA7m8w[RNA7m8w$MREtype=="Non-target", "log2FoldChange"])
+RNA7m8wksTest3 <- ks.test(RNA7m8w[RNA7m8w$MREtype=="seed_8mer", "log2FoldChange"], RNA7m8w[RNA7m8w$MREtype=="Non-target", "log2FoldChange"])
+RNA7m8wksTest4 <- ks.test(RNA7m8w[RNA7m8w$MREtype=="seed_alt_38", "log2FoldChange"], RNA7m8w[RNA7m8w$MREtype=="Non-target", "log2FoldChange"])
+RNA7m8wksTest5 <- ks.test(RNA7m8w[RNA7m8w$MREtype=="7mer_m8 AA", "log2FoldChange"], RNA7m8w[RNA7m8w$MREtype=="Non-target", "log2FoldChange"])
+RNA7m8wksTest6 <- ks.test(RNA7m8w[RNA7m8w$MREtype=="7mer_m8 AU", "log2FoldChange"], RNA7m8w[RNA7m8w$MREtype=="Non-target", "log2FoldChange"])
+
+RPF7m8wksTest1 <- ks.test(RPF7m8w[RPF7m8w$MREtype=="seed_6mer", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wksTest2 <- ks.test(RPF7m8w[RPF7m8w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wksTest3 <- ks.test(RPF7m8w[RPF7m8w$MREtype=="seed_8mer", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wksTest4 <- ks.test(RPF7m8w[RPF7m8w$MREtype=="seed_alt_38", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wksTest5 <- ks.test(RPF7m8w[RPF7m8w$MREtype=="7mer_m8 AA", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wksTest6 <- ks.test(RPF7m8w[RPF7m8w$MREtype=="7mer_m8 AU", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+
+TE7m8wksTest1 <- ks.test(TE7m8w[TE7m8w$MREtype=="seed_6mer", "log2FoldChange"], TE7m8w[TE7m8w$MREtype=="Non-target", "log2FoldChange"])
+TE7m8wksTest2 <- ks.test(TE7m8w[TE7m8w$MREtype=="seed_7mer_a1", "log2FoldChange"], TE7m8w[TE7m8w$MREtype=="Non-target", "log2FoldChange"])
+TE7m8wksTest3 <- ks.test(TE7m8w[TE7m8w$MREtype=="seed_8mer", "log2FoldChange"], TE7m8w[TE7m8w$MREtype=="Non-target", "log2FoldChange"])
+TE7m8wksTest4 <- ks.test(TE7m8w[TE7m8w$MREtype=="seed_alt_38", "log2FoldChange"], TE7m8w[TE7m8w$MREtype=="Non-target", "log2FoldChange"])
+TE7m8wksTest5 <- ks.test(TE7m8w[TE7m8w$MREtype=="7mer_m8 AA", "log2FoldChange"], TE7m8w[TE7m8w$MREtype=="Non-target", "log2FoldChange"])
+TE7m8wksTest6 <- ks.test(TE7m8w[TE7m8w$MREtype=="7mer_m8 AU", "log2FoldChange"], TE7m8w[TE7m8w$MREtype=="Non-target", "log2FoldChange"])
+
+MS7m8wksTest1 <- ks.test(MS7m8w[MS7m8w$MREtype=="seed_6mer", "log2FoldChange"], MS7m8w[MS7m8w$MREtype=="Non-target", "log2FoldChange"])
+MS7m8wksTest2 <- ks.test(MS7m8w[MS7m8w$MREtype=="seed_7mer_a1", "log2FoldChange"], MS7m8w[MS7m8w$MREtype=="Non-target", "log2FoldChange"])
+MS7m8wksTest3 <- ks.test(MS7m8w[MS7m8w$MREtype=="seed_8mer", "log2FoldChange"], MS7m8w[MS7m8w$MREtype=="Non-target", "log2FoldChange"])
+MS7m8wksTest4 <- ks.test(MS7m8w[MS7m8w$MREtype=="seed_alt_38", "log2FoldChange"], MS7m8w[MS7m8w$MREtype=="Non-target", "log2FoldChange"])
+MS7m8wksTest5 <- ks.test(MS7m8w[MS7m8w$MREtype=="7mer_m8 AA", "log2FoldChange"], MS7m8w[MS7m8w$MREtype=="Non-target", "log2FoldChange"])
+MS7m8wksTest6 <- ks.test(MS7m8w[MS7m8w$MREtype=="7mer_m8 AU", "log2FoldChange"], MS7m8w[MS7m8w$MREtype=="Non-target", "log2FoldChange"])
+
+
+Type7m8wsig <- data.frame(c("RNA", "RNA", "RNA", "RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "RPF", "RPF", "RPF",
+                        "TE", "TE", "TE", "TE", "TE", "TE", "MS", "MS", "MS", "MS", "MS", "MS"),
+                        c("seed_6mer", "seed_7mer_a1", "seed_8mer", "seed_alt_38", "7mer_m8 AA", "7mer_m8 AU",
+                          "seed_6mer", "seed_7mer_a1", "seed_8mer", "seed_alt_38", "7mer_m8 AA", "7mer_m8 AU",
+                          "seed_6mer", "seed_7mer_a1", "seed_8mer", "seed_alt_38", "7mer_m8 AA", "7mer_m8 AU", 
+                          "seed_6mer", "seed_7mer_a1", "seed_8mer", "seed_alt_38", "7mer_m8 AA", "7mer_m8 AU"),
+                        c(RNA7m8wTTest1$p.value, RNA7m8wTTest2$p.value, RNA7m8wTTest3$p.value, RNA7m8wTTest4$p.value, RNA7m8wTTest5$p.value, RNA7m8wTTest6$p.value,
+                          RPF7m8wTTest1$p.value, RPF7m8wTTest2$p.value, RPF7m8wTTest3$p.value, RPF7m8wTTest4$p.value, RPF7m8wTTest5$p.value, RPF7m8wTTest6$p.value,
+                          TE7m8wTTest1$p.value, TE7m8wTTest2$p.value, TE7m8wTTest3$p.value, TE7m8wTTest4$p.value, TE7m8wTTest5$p.value, TE7m8wTTest6$p.value,
+                          MS7m8wTTest1$p.value, MS7m8wTTest2$p.value, MS7m8wTTest3$p.value, MS7m8wTTest4$p.value, MS7m8wTTest5$p.value, MS7m8wTTest6$p.value),
+                        c(RNA7m8wksTest1$p.value, RNA7m8wksTest2$p.value, RNA7m8wksTest3$p.value, RNA7m8wksTest4$p.value, RNA7m8wksTest5$p.value, RNA7m8wksTest6$p.value,
+                          RPF7m8wksTest1$p.value, RPF7m8wksTest2$p.value, RPF7m8wksTest3$p.value, RPF7m8wksTest4$p.value, RPF7m8wksTest5$p.value, RPF7m8wksTest6$p.value, 
+                          TE7m8wksTest1$p.value, TE7m8wksTest2$p.value, TE7m8wksTest3$p.value, TE7m8wksTest4$p.value, TE7m8wksTest5$p.value, TE7m8wksTest6$p.value,
+                          MS7m8wksTest1$p.value, MS7m8wksTest2$p.value, MS7m8wksTest3$p.value, MS7m8wksTest4$p.value, MS7m8wksTest5$p.value, MS7m8wksTest6$p.value))
+colnames(Type7m8wsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Type7m8wsig
+
+#export
+write_xlsx(Type7m8wsig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7m8wsignificance.xlsx")
+```
+
+
+
 # 6mer wobble vs non wobble ecdf
 ```{r 6merwooblenonwobble}
 #RNA
-RNA8w <- RNA
-RNA8w[RNA8w$MREtype == "seed_6mer" & RNA8w$wobble == "Canonical", "MREtype"] <- "6mer AA"
-RNA8w[RNA8w$MREtype == "seed_6mer" & RNA8w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
-table(RNA8w$MREtype)
+RNA6w <- RNA
+RNA6w[RNA6w$MREtype == "seed_6mer" & RNA6w$wobble == "Canonical", "MREtype"] <- "6mer AA"
+RNA6w[RNA6w$MREtype == "seed_6mer" & RNA6w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
+table(RNA6w$MREtype)
 
-typeECDFRNA8w <- ggplot(RNA8w, aes(as.numeric(log2FoldChange), 
+typeECDFRNA6w <- ggplot(RNA6w, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "6mer AA","6mer AU", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
@@ -864,22 +1243,22 @@ typeECDFRNA8w <- ggplot(RNA8w, aes(as.numeric(log2FoldChange),
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("RNA type of 6mer")
 
-typeECDFRNA8w
+typeECDFRNA6w
 
 #export
 pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/6mertypeECDF_RNA.pdf", width=2, height = 2)
-typeECDFRNA8w
+typeECDFRNA6w
 dev.off()
 
 
 
 #RPF
-RPF8w <- RPF
-RPF8w[RPF8w$MREtype == "seed_6mer" & RPF8w$wobble == "Canonical", "MREtype"] <- "6mer AA"
-RPF8w[RPF8w$MREtype == "seed_6mer" & RPF8w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
-table(RPF8w$MREtype)
+RPF6w <- RPF
+RPF6w[RPF6w$MREtype == "seed_6mer" & RPF6w$wobble == "Canonical", "MREtype"] <- "6mer AA"
+RPF6w[RPF6w$MREtype == "seed_6mer" & RPF6w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
+table(RPF6w$MREtype)
 
-typeECDFRPF8w <- ggplot(RPF8w, aes(as.numeric(log2FoldChange), 
+typeECDFRPF6w <- ggplot(RPF6w, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "6mer AA","6mer AU", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
@@ -888,22 +1267,22 @@ typeECDFRPF8w <- ggplot(RPF8w, aes(as.numeric(log2FoldChange),
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("RPF type of 6mer")
 
-typeECDFRPF8w
+typeECDFRPF6w
 
 #export
 pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/6mertypeECDF_RPF.pdf", width=2, height = 2)
-typeECDFRPF8w
+typeECDFRPF6w
 dev.off()
 
 
 
 #TE
-TE8w <- TE
-TE8w[TE8w$MREtype == "seed_6mer" & TE8w$wobble == "Canonical", "MREtype"] <- "6mer AA"
-TE8w[TE8w$MREtype == "seed_6mer" & TE8w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
-table(TE8w$MREtype)
+TE6w <- TE
+TE6w[TE6w$MREtype == "seed_6mer" & TE6w$wobble == "Canonical", "MREtype"] <- "6mer AA"
+TE6w[TE6w$MREtype == "seed_6mer" & TE6w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
+table(TE6w$MREtype)
 
-typeECDFTE8w <- ggplot(TE8w, aes(as.numeric(log2FoldChange), 
+typeECDFTE6w <- ggplot(TE6w, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "6mer AA","6mer AU", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
@@ -912,21 +1291,21 @@ typeECDFTE8w <- ggplot(TE8w, aes(as.numeric(log2FoldChange),
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("TE type of 6mer")
 
-typeECDFTE8w
+typeECDFTE6w
 
 #export
 pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/6mertypeECDF_TE.pdf", width=2, height = 2)
-typeECDFTE8w
+typeECDFTE6w
 dev.off()
 
 
 #MS
-MS8w <- MS
-MS8w[MS8w$MREtype == "seed_6mer" & MS8w$wobble == "Canonical", "MREtype"] <- "6mer AA"
-MS8w[MS8w$MREtype == "seed_6mer" & MS8w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
-table(MS8w$MREtype)
+MS6w <- MS
+MS6w[MS6w$MREtype == "seed_6mer" & MS6w$wobble == "Canonical", "MREtype"] <- "6mer AA"
+MS6w[MS6w$MREtype == "seed_6mer" & MS6w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
+table(MS6w$MREtype)
 
-typeECDFMS8w <- ggplot(MS8w, aes(as.numeric(log2FoldChange), 
+typeECDFMS6w <- ggplot(MS6w, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "6mer AA","6mer AU", "seed_alt_38", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
@@ -935,25 +1314,108 @@ typeECDFMS8w <- ggplot(MS8w, aes(as.numeric(log2FoldChange),
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("MS type of 6mer")
 
-typeECDFMS8w
+typeECDFMS6w
 
 #export
 pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/6mertypeECDF_MS.pdf", width=2, height = 2)
-typeECDFMS8w
+typeECDFMS6w
 dev.off()
 
 
 ```
 
+## Significance
+```{r significance6mer}
+RNA6wTTest1 <- t.test(RNA6w[RNA6w$MREtype=="seed_8mer", "log2FoldChange"], RNA6w[RNA6w$MREtype=="Non-target", "log2FoldChange"])
+RNA6wTTest2 <- t.test(RNA6w[RNA6w$MREtype=="seed_7mer_a1", "log2FoldChange"], RNA6w[RNA6w$MREtype=="Non-target", "log2FoldChange"])
+RNA6wTTest3 <- t.test(RNA6w[RNA6w$MREtype=="seed_7mer_m8", "log2FoldChange"], RNA6w[RNA6w$MREtype=="Non-target", "log2FoldChange"])
+RNA6wTTest4 <- t.test(RNA6w[RNA6w$MREtype=="seed_alt_38", "log2FoldChange"], RNA6w[RNA6w$MREtype=="Non-target", "log2FoldChange"])
+RNA6wTTest5 <- t.test(RNA6w[RNA6w$MREtype=="6mer AA", "log2FoldChange"], RNA6w[RNA6w$MREtype=="Non-target", "log2FoldChange"])
+RNA6wTTest6 <- t.test(RNA6w[RNA6w$MREtype=="6mer AU", "log2FoldChange"], RNA6w[RNA6w$MREtype=="Non-target", "log2FoldChange"])
+
+RPF6wTTest1 <- t.test(RPF6w[RPF6w$MREtype=="seed_8mer", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wTTest2 <- t.test(RPF6w[RPF6w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wTTest3 <- t.test(RPF6w[RPF6w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wTTest4 <- t.test(RPF6w[RPF6w$MREtype=="seed_alt_38", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wTTest5 <- t.test(RPF6w[RPF6w$MREtype=="6mer AA", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wTTest6 <- t.test(RPF6w[RPF6w$MREtype=="6mer AU", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+
+TE6wTTest1 <- t.test(TE6w[TE6w$MREtype=="seed_8mer", "log2FoldChange"], TE6w[TE6w$MREtype=="Non-target", "log2FoldChange"])
+TE6wTTest2 <- t.test(TE6w[TE6w$MREtype=="seed_7mer_a1", "log2FoldChange"], TE6w[TE6w$MREtype=="Non-target", "log2FoldChange"])
+TE6wTTest3 <- t.test(TE6w[TE6w$MREtype=="seed_7mer_m8", "log2FoldChange"], TE6w[TE6w$MREtype=="Non-target", "log2FoldChange"])
+TE6wTTest4 <- t.test(TE6w[TE6w$MREtype=="seed_alt_38", "log2FoldChange"], TE6w[TE6w$MREtype=="Non-target", "log2FoldChange"])
+TE6wTTest5 <- t.test(TE6w[TE6w$MREtype=="6mer AA", "log2FoldChange"], TE6w[TE6w$MREtype=="Non-target", "log2FoldChange"])
+TE6wTTest6 <- t.test(TE6w[TE6w$MREtype=="6mer AU", "log2FoldChange"], TE6w[TE6w$MREtype=="Non-target", "log2FoldChange"])
+
+MS6wTTest1 <- t.test(MS6w[MS6w$MREtype=="seed_8mer", "log2FoldChange"], MS6w[MS6w$MREtype=="Non-target", "log2FoldChange"])
+MS6wTTest2 <- t.test(MS6w[MS6w$MREtype=="seed_7mer_a1", "log2FoldChange"], MS6w[MS6w$MREtype=="Non-target", "log2FoldChange"])
+MS6wTTest3 <- t.test(MS6w[MS6w$MREtype=="seed_7mer_m8", "log2FoldChange"], MS6w[MS6w$MREtype=="Non-target", "log2FoldChange"])
+MS6wTTest4 <- t.test(MS6w[MS6w$MREtype=="seed_alt_38", "log2FoldChange"], MS6w[MS6w$MREtype=="Non-target", "log2FoldChange"])
+MS6wTTest5 <- t.test(MS6w[MS6w$MREtype=="6mer AA", "log2FoldChange"], MS6w[MS6w$MREtype=="Non-target", "log2FoldChange"])
+MS6wTTest6 <- t.test(MS6w[MS6w$MREtype=="6mer AU", "log2FoldChange"], MS6w[MS6w$MREtype=="Non-target", "log2FoldChange"])
+
+#kolmogorov-smirnov
+RNA6wksTest1 <- ks.test(RNA6w[RNA6w$MREtype=="seed_8mer", "log2FoldChange"], RNA6w[RNA6w$MREtype=="Non-target", "log2FoldChange"])
+RNA6wksTest2 <- ks.test(RNA6w[RNA6w$MREtype=="seed_7mer_a1", "log2FoldChange"], RNA6w[RNA6w$MREtype=="Non-target", "log2FoldChange"])
+RNA6wksTest3 <- ks.test(RNA6w[RNA6w$MREtype=="seed_7mer_m8", "log2FoldChange"], RNA6w[RNA6w$MREtype=="Non-target", "log2FoldChange"])
+RNA6wksTest4 <- ks.test(RNA6w[RNA6w$MREtype=="seed_alt_38", "log2FoldChange"], RNA6w[RNA6w$MREtype=="Non-target", "log2FoldChange"])
+RNA6wksTest5 <- ks.test(RNA6w[RNA6w$MREtype=="6mer AA", "log2FoldChange"], RNA6w[RNA6w$MREtype=="Non-target", "log2FoldChange"])
+RNA6wksTest6 <- ks.test(RNA6w[RNA6w$MREtype=="6mer AU", "log2FoldChange"], RNA6w[RNA6w$MREtype=="Non-target", "log2FoldChange"])
+
+RPF6wksTest1 <- ks.test(RPF6w[RPF6w$MREtype=="seed_8mer", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wksTest2 <- ks.test(RPF6w[RPF6w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wksTest3 <- ks.test(RPF6w[RPF6w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wksTest4 <- ks.test(RPF6w[RPF6w$MREtype=="seed_alt_38", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wksTest5 <- ks.test(RPF6w[RPF6w$MREtype=="6mer AA", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wksTest6 <- ks.test(RPF6w[RPF6w$MREtype=="6mer AU", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+
+TE6wksTest1 <- ks.test(TE6w[TE6w$MREtype=="seed_8mer", "log2FoldChange"], TE6w[TE6w$MREtype=="Non-target", "log2FoldChange"])
+TE6wksTest2 <- ks.test(TE6w[TE6w$MREtype=="seed_7mer_a1", "log2FoldChange"], TE6w[TE6w$MREtype=="Non-target", "log2FoldChange"])
+TE6wksTest3 <- ks.test(TE6w[TE6w$MREtype=="seed_7mer_m8", "log2FoldChange"], TE6w[TE6w$MREtype=="Non-target", "log2FoldChange"])
+TE6wksTest4 <- ks.test(TE6w[TE6w$MREtype=="seed_alt_38", "log2FoldChange"], TE6w[TE6w$MREtype=="Non-target", "log2FoldChange"])
+TE6wksTest5 <- ks.test(TE6w[TE6w$MREtype=="6mer AA", "log2FoldChange"], TE6w[TE6w$MREtype=="Non-target", "log2FoldChange"])
+TE6wksTest6 <- ks.test(TE6w[TE6w$MREtype=="6mer AU", "log2FoldChange"], TE6w[TE6w$MREtype=="Non-target", "log2FoldChange"])
+
+MS6wksTest1 <- ks.test(MS6w[MS6w$MREtype=="seed_8mer", "log2FoldChange"], MS6w[MS6w$MREtype=="Non-target", "log2FoldChange"])
+MS6wksTest2 <- ks.test(MS6w[MS6w$MREtype=="seed_7mer_a1", "log2FoldChange"], MS6w[MS6w$MREtype=="Non-target", "log2FoldChange"])
+MS6wksTest3 <- ks.test(MS6w[MS6w$MREtype=="seed_7mer_m8", "log2FoldChange"], MS6w[MS6w$MREtype=="Non-target", "log2FoldChange"])
+MS6wksTest4 <- ks.test(MS6w[MS6w$MREtype=="seed_alt_38", "log2FoldChange"], MS6w[MS6w$MREtype=="Non-target", "log2FoldChange"])
+MS6wksTest5 <- ks.test(MS6w[MS6w$MREtype=="6mer AA", "log2FoldChange"], MS6w[MS6w$MREtype=="Non-target", "log2FoldChange"])
+MS6wksTest6 <- ks.test(MS6w[MS6w$MREtype=="6mer AU", "log2FoldChange"], MS6w[MS6w$MREtype=="Non-target", "log2FoldChange"])
+
+
+Type6wsig <- data.frame(c("RNA", "RNA", "RNA", "RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "RPF", "RPF", "RPF",
+                        "TE", "TE", "TE", "TE", "TE", "TE", "MS", "MS", "MS", "MS", "MS", "MS"),
+                        c("seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "seed_alt_38", "6mer AA", "6mer AU",
+                          "seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "seed_alt_38", "6mer AA", "6mer AU",
+                          "seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "seed_alt_38", "6mer AA", "6mer AU", 
+                          "seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "seed_alt_38", "6mer AA", "6mer AU"),
+                        c(RNA6wTTest1$p.value, RNA6wTTest2$p.value, RNA6wTTest3$p.value, RNA6wTTest4$p.value, RNA6wTTest5$p.value, RNA6wTTest6$p.value,
+                          RPF6wTTest1$p.value, RPF6wTTest2$p.value, RPF6wTTest3$p.value, RPF6wTTest4$p.value, RPF6wTTest5$p.value, RPF6wTTest6$p.value,
+                          TE6wTTest1$p.value, TE6wTTest2$p.value, TE6wTTest3$p.value, TE6wTTest4$p.value, TE6wTTest5$p.value, TE6wTTest6$p.value,
+                          MS6wTTest1$p.value, MS6wTTest2$p.value, MS6wTTest3$p.value, MS6wTTest4$p.value, MS6wTTest5$p.value, MS6wTTest6$p.value),
+                        c(RNA6wksTest1$p.value, RNA6wksTest2$p.value, RNA6wksTest3$p.value, RNA6wksTest4$p.value, RNA6wksTest5$p.value, RNA6wksTest6$p.value,
+                          RPF6wksTest1$p.value, RPF6wksTest2$p.value, RPF6wksTest3$p.value, RPF6wksTest4$p.value, RPF6wksTest5$p.value, RPF6wksTest6$p.value, 
+                          TE6wksTest1$p.value, TE6wksTest2$p.value, TE6wksTest3$p.value, TE6wksTest4$p.value, TE6wksTest5$p.value, TE6wksTest6$p.value,
+                          MS6wksTest1$p.value, MS6wksTest2$p.value, MS6wksTest3$p.value, MS6wksTest4$p.value, MS6wksTest5$p.value, MS6wksTest6$p.value))
+colnames(Type6wsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Type6wsig
+
+#export
+write_xlsx(Type6wsig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/6wsignificance.xlsx")
+```
+
+
+
 # alt_38 wobble vs non wobble ecdf
 ```{r alt_38wooblenonwobble}
 #RNA
-RNA8w <- RNA
-RNA8w[RNA8w$MREtype == "seed_alt_38" & RNA8w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
-RNA8w[RNA8w$MREtype == "seed_alt_38" & RNA8w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
-table(RNA8w$MREtype)
+RNAa38w <- RNA
+RNAa38w[RNAa38w$MREtype == "seed_alt_38" & RNAa38w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
+RNAa38w[RNAa38w$MREtype == "seed_alt_38" & RNAa38w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
+table(RNAa38w$MREtype)
 
-typeECDFRNA8w <- ggplot(RNA8w, aes(as.numeric(log2FoldChange), 
+typeECDFRNAa38w <- ggplot(RNAa38w, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "alt_38 AA","alt_38 AU", "seed_8mer", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
@@ -962,22 +1424,22 @@ typeECDFRNA8w <- ggplot(RNA8w, aes(as.numeric(log2FoldChange),
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("RNA type of alt_38")
 
-typeECDFRNA8w
+typeECDFRNAa38w
 
 #export
 pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/alt_38typeECDF_RNA.pdf", width=2, height = 2)
-typeECDFRNA8w
+typeECDFRNAa38w
 dev.off()
 
 
 
 #RPF
-RPF8w <- RPF
-RPF8w[RPF8w$MREtype == "seed_alt_38" & RPF8w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
-RPF8w[RPF8w$MREtype == "seed_alt_38" & RPF8w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
-table(RPF8w$MREtype)
+RPFa38w <- RPF
+RPFa38w[RPFa38w$MREtype == "seed_alt_38" & RPFa38w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
+RPFa38w[RPFa38w$MREtype == "seed_alt_38" & RPFa38w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
+table(RPFa38w$MREtype)
 
-typeECDFRPF8w <- ggplot(RPF8w, aes(as.numeric(log2FoldChange), 
+typeECDFRPFa38w <- ggplot(RPFa38w, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "alt_38 AA","alt_38 AU", "seed_8mer", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
@@ -986,22 +1448,22 @@ typeECDFRPF8w <- ggplot(RPF8w, aes(as.numeric(log2FoldChange),
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("RPF type of alt_38")
 
-typeECDFRPF8w
+typeECDFRPFa38w
 
 #export
 pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/alt_38typeECDF_RPF.pdf", width=2, height = 2)
-typeECDFRPF8w
+typeECDFRPFa38w
 dev.off()
 
 
 
 #TE
-TE8w <- TE
-TE8w[TE8w$MREtype == "seed_alt_38" & TE8w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
-TE8w[TE8w$MREtype == "seed_alt_38" & TE8w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
-table(TE8w$MREtype)
+TEa38w <- TE
+TEa38w[TEa38w$MREtype == "seed_alt_38" & TEa38w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
+TEa38w[TEa38w$MREtype == "seed_alt_38" & TEa38w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
+table(TEa38w$MREtype)
 
-typeECDFTE8w <- ggplot(TE8w, aes(as.numeric(log2FoldChange), 
+typeECDFTEa38w <- ggplot(TEa38w, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "alt_38 AA","alt_38 AU", "seed_8mer", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
@@ -1010,21 +1472,21 @@ typeECDFTE8w <- ggplot(TE8w, aes(as.numeric(log2FoldChange),
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("TE type of alt_38")
 
-typeECDFTE8w
+typeECDFTEa38w
 
 #export
 pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/alt_38typeECDF_TE.pdf", width=2, height = 2)
-typeECDFTE8w
+typeECDFTEa38w
 dev.off()
 
 
 #MS
-MS8w <- MS
-MS8w[MS8w$MREtype == "seed_alt_38" & MS8w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
-MS8w[MS8w$MREtype == "seed_alt_38" & MS8w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
-table(MS8w$MREtype)
+MSa38w <- MS
+MSa38w[MSa38w$MREtype == "seed_alt_38" & MSa38w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
+MSa38w[MSa38w$MREtype == "seed_alt_38" & MSa38w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
+table(MSa38w$MREtype)
 
-typeECDFMS8w <- ggplot(MS8w, aes(as.numeric(log2FoldChange), 
+typeECDFMSa38w <- ggplot(MSa38w, aes(as.numeric(log2FoldChange), 
                               colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "alt_38 AA","alt_38 AU", "seed_8mer", "Multiple")))) + 
   stat_ecdf(geom="step", linewidth=2) +
   scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
@@ -1033,17 +1495,98 @@ typeECDFMS8w <- ggplot(MS8w, aes(as.numeric(log2FoldChange),
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
   ggtitle("MS type of alt_38")
 
-typeECDFMS8w
+typeECDFMSa38w
 
 #export
 pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/alt_38typeECDF_MS.pdf", width=2, height = 2)
-typeECDFMS8w
+typeECDFMSa38w
 dev.off()
 
 
 ```
 
 
+
+## Significance
+```{r significancealt_38}
+RNAa38wTTest1 <- t.test(RNAa38w[RNAa38w$MREtype=="seed_6mer", "log2FoldChange"], RNAa38w[RNAa38w$MREtype=="Non-target", "log2FoldChange"])
+RNAa38wTTest2 <- t.test(RNAa38w[RNAa38w$MREtype=="seed_7mer_a1", "log2FoldChange"], RNAa38w[RNAa38w$MREtype=="Non-target", "log2FoldChange"])
+RNAa38wTTest3 <- t.test(RNAa38w[RNAa38w$MREtype=="seed_7mer_m8", "log2FoldChange"], RNAa38w[RNAa38w$MREtype=="Non-target", "log2FoldChange"])
+RNAa38wTTest4 <- t.test(RNAa38w[RNAa38w$MREtype=="seed_8mer", "log2FoldChange"], RNAa38w[RNAa38w$MREtype=="Non-target", "log2FoldChange"])
+RNAa38wTTest5 <- t.test(RNAa38w[RNAa38w$MREtype=="alt_38 AA", "log2FoldChange"], RNAa38w[RNAa38w$MREtype=="Non-target", "log2FoldChange"])
+RNAa38wTTest6 <- t.test(RNAa38w[RNAa38w$MREtype=="alt_38 AU", "log2FoldChange"], RNAa38w[RNAa38w$MREtype=="Non-target", "log2FoldChange"])
+
+RPFa38wTTest1 <- t.test(RPFa38w[RPFa38w$MREtype=="seed_6mer", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wTTest2 <- t.test(RPFa38w[RPFa38w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wTTest3 <- t.test(RPFa38w[RPFa38w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wTTest4 <- t.test(RPFa38w[RPFa38w$MREtype=="seed_8mer", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wTTest5 <- t.test(RPFa38w[RPFa38w$MREtype=="alt_38 AA", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wTTest6 <- t.test(RPFa38w[RPFa38w$MREtype=="alt_38 AU", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+
+TEa38wTTest1 <- t.test(TEa38w[TEa38w$MREtype=="seed_6mer", "log2FoldChange"], TEa38w[TEa38w$MREtype=="Non-target", "log2FoldChange"])
+TEa38wTTest2 <- t.test(TEa38w[TEa38w$MREtype=="seed_7mer_a1", "log2FoldChange"], TEa38w[TEa38w$MREtype=="Non-target", "log2FoldChange"])
+TEa38wTTest3 <- t.test(TEa38w[TEa38w$MREtype=="seed_7mer_m8", "log2FoldChange"], TEa38w[TEa38w$MREtype=="Non-target", "log2FoldChange"])
+TEa38wTTest4 <- t.test(TEa38w[TEa38w$MREtype=="seed_8mer", "log2FoldChange"], TEa38w[TEa38w$MREtype=="Non-target", "log2FoldChange"])
+TEa38wTTest5 <- t.test(TEa38w[TEa38w$MREtype=="alt_38 AA", "log2FoldChange"], TEa38w[TEa38w$MREtype=="Non-target", "log2FoldChange"])
+TEa38wTTest6 <- t.test(TEa38w[TEa38w$MREtype=="alt_38 AU", "log2FoldChange"], TEa38w[TEa38w$MREtype=="Non-target", "log2FoldChange"])
+
+MSa38wTTest1 <- t.test(MSa38w[MSa38w$MREtype=="seed_6mer", "log2FoldChange"], MSa38w[MSa38w$MREtype=="Non-target", "log2FoldChange"])
+MSa38wTTest2 <- t.test(MSa38w[MSa38w$MREtype=="seed_7mer_a1", "log2FoldChange"], MSa38w[MSa38w$MREtype=="Non-target", "log2FoldChange"])
+MSa38wTTest3 <- t.test(MSa38w[MSa38w$MREtype=="seed_7mer_m8", "log2FoldChange"], MSa38w[MSa38w$MREtype=="Non-target", "log2FoldChange"])
+MSa38wTTest4 <- t.test(MSa38w[MSa38w$MREtype=="seed_8mer", "log2FoldChange"], MSa38w[MSa38w$MREtype=="Non-target", "log2FoldChange"])
+MSa38wTTest5 <- t.test(MSa38w[MSa38w$MREtype=="alt_38 AA", "log2FoldChange"], MSa38w[MSa38w$MREtype=="Non-target", "log2FoldChange"])
+MSa38wTTest6 <- t.test(MSa38w[MSa38w$MREtype=="alt_38 AU", "log2FoldChange"], MSa38w[MSa38w$MREtype=="Non-target", "log2FoldChange"])
+
+#kolmogorov-smirnov
+RNAa38wksTest1 <- ks.test(RNAa38w[RNAa38w$MREtype=="seed_6mer", "log2FoldChange"], RNAa38w[RNAa38w$MREtype=="Non-target", "log2FoldChange"])
+RNAa38wksTest2 <- ks.test(RNAa38w[RNAa38w$MREtype=="seed_7mer_a1", "log2FoldChange"], RNAa38w[RNAa38w$MREtype=="Non-target", "log2FoldChange"])
+RNAa38wksTest3 <- ks.test(RNAa38w[RNAa38w$MREtype=="seed_7mer_m8", "log2FoldChange"], RNAa38w[RNAa38w$MREtype=="Non-target", "log2FoldChange"])
+RNAa38wksTest4 <- ks.test(RNAa38w[RNAa38w$MREtype=="seed_8mer", "log2FoldChange"], RNAa38w[RNAa38w$MREtype=="Non-target", "log2FoldChange"])
+RNAa38wksTest5 <- ks.test(RNAa38w[RNAa38w$MREtype=="alt_38 AA", "log2FoldChange"], RNAa38w[RNAa38w$MREtype=="Non-target", "log2FoldChange"])
+RNAa38wksTest6 <- ks.test(RNAa38w[RNAa38w$MREtype=="alt_38 AU", "log2FoldChange"], RNAa38w[RNAa38w$MREtype=="Non-target", "log2FoldChange"])
+
+RPFa38wksTest1 <- ks.test(RPFa38w[RPFa38w$MREtype=="seed_6mer", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wksTest2 <- ks.test(RPFa38w[RPFa38w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wksTest3 <- ks.test(RPFa38w[RPFa38w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wksTest4 <- ks.test(RPFa38w[RPFa38w$MREtype=="seed_8mer", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wksTest5 <- ks.test(RPFa38w[RPFa38w$MREtype=="alt_38 AA", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wksTest6 <- ks.test(RPFa38w[RPFa38w$MREtype=="alt_38 AU", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+
+TEa38wksTest1 <- ks.test(TEa38w[TEa38w$MREtype=="seed_6mer", "log2FoldChange"], TEa38w[TEa38w$MREtype=="Non-target", "log2FoldChange"])
+TEa38wksTest2 <- ks.test(TEa38w[TEa38w$MREtype=="seed_7mer_a1", "log2FoldChange"], TEa38w[TEa38w$MREtype=="Non-target", "log2FoldChange"])
+TEa38wksTest3 <- ks.test(TEa38w[TEa38w$MREtype=="seed_7mer_m8", "log2FoldChange"], TEa38w[TEa38w$MREtype=="Non-target", "log2FoldChange"])
+TEa38wksTest4 <- ks.test(TEa38w[TEa38w$MREtype=="seed_8mer", "log2FoldChange"], TEa38w[TEa38w$MREtype=="Non-target", "log2FoldChange"])
+TEa38wksTest5 <- ks.test(TEa38w[TEa38w$MREtype=="alt_38 AA", "log2FoldChange"], TEa38w[TEa38w$MREtype=="Non-target", "log2FoldChange"])
+TEa38wksTest6 <- ks.test(TEa38w[TEa38w$MREtype=="alt_38 AU", "log2FoldChange"], TEa38w[TEa38w$MREtype=="Non-target", "log2FoldChange"])
+
+MSa38wksTest1 <- ks.test(MSa38w[MSa38w$MREtype=="seed_6mer", "log2FoldChange"], MSa38w[MSa38w$MREtype=="Non-target", "log2FoldChange"])
+MSa38wksTest2 <- ks.test(MSa38w[MSa38w$MREtype=="seed_7mer_a1", "log2FoldChange"], MSa38w[MSa38w$MREtype=="Non-target", "log2FoldChange"])
+MSa38wksTest3 <- ks.test(MSa38w[MSa38w$MREtype=="seed_7mer_m8", "log2FoldChange"], MSa38w[MSa38w$MREtype=="Non-target", "log2FoldChange"])
+MSa38wksTest4 <- ks.test(MSa38w[MSa38w$MREtype=="seed_8mer", "log2FoldChange"], MSa38w[MSa38w$MREtype=="Non-target", "log2FoldChange"])
+MSa38wksTest5 <- ks.test(MSa38w[MSa38w$MREtype=="alt_38 AA", "log2FoldChange"], MSa38w[MSa38w$MREtype=="Non-target", "log2FoldChange"])
+MSa38wksTest6 <- ks.test(MSa38w[MSa38w$MREtype=="alt_38 AU", "log2FoldChange"], MSa38w[MSa38w$MREtype=="Non-target", "log2FoldChange"])
+
+
+Typea38wsig <- data.frame(c("RNA", "RNA", "RNA", "RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "RPF", "RPF", "RPF",
+                        "TE", "TE", "TE", "TE", "TE", "TE", "MS", "MS", "MS", "MS", "MS", "MS"),
+                        c("seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "alt_38 AA", "alt_38 AU",
+                          "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "alt_38 AA", "alt_38 AU",
+                          "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "alt_38 AA", "alt_38 AU", 
+                          "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "alt_38 AA", "alt_38 AU"),
+                        c(RNAa38wTTest1$p.value, RNAa38wTTest2$p.value, RNAa38wTTest3$p.value, RNAa38wTTest4$p.value, RNAa38wTTest5$p.value, RNAa38wTTest6$p.value,
+                          RPFa38wTTest1$p.value, RPFa38wTTest2$p.value, RPFa38wTTest3$p.value, RPFa38wTTest4$p.value, RPFa38wTTest5$p.value, RPFa38wTTest6$p.value,
+                          TEa38wTTest1$p.value, TEa38wTTest2$p.value, TEa38wTTest3$p.value, TEa38wTTest4$p.value, TEa38wTTest5$p.value, TEa38wTTest6$p.value,
+                          MSa38wTTest1$p.value, MSa38wTTest2$p.value, MSa38wTTest3$p.value, MSa38wTTest4$p.value, MSa38wTTest5$p.value, MSa38wTTest6$p.value),
+                        c(RNAa38wksTest1$p.value, RNAa38wksTest2$p.value, RNAa38wksTest3$p.value, RNAa38wksTest4$p.value, RNAa38wksTest5$p.value, RNAa38wksTest6$p.value,
+                          RPFa38wksTest1$p.value, RPFa38wksTest2$p.value, RPFa38wksTest3$p.value, RPFa38wksTest4$p.value, RPFa38wksTest5$p.value, RPFa38wksTest6$p.value, 
+                          TEa38wksTest1$p.value, TEa38wksTest2$p.value, TEa38wksTest3$p.value, TEa38wksTest4$p.value, TEa38wksTest5$p.value, TEa38wksTest6$p.value,
+                          MSa38wksTest1$p.value, MSa38wksTest2$p.value, MSa38wksTest3$p.value, MSa38wksTest4$p.value, MSa38wksTest5$p.value, MSa38wksTest6$p.value))
+colnames(Typea38wsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Typea38wsig
+
+#export
+write_xlsx(Typea38wsig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/a38wsignificance.xlsx")
+```
 
 
 ## density 8mer TE
@@ -1172,6 +1715,8 @@ dev.off()
 
 table(RPF$tvsmmsat4)
 ```
+
+
 ## density mmsat4 TE
 ```{R TEdensityMMsat4}
 TEdensmmsat4 <- ggplot(TE, aes(x=log2FoldChange, colour=factor(tvsmmsat4, levels = c("MMsat4", "miR-181 target", "both", "Non-target")))) +
@@ -1189,6 +1734,65 @@ TEdensmmsat4
 dev.off()
 
 ```
+
+## Significance
+```{r significancemmsat4}
+RNAtvsmmsat4TTest1 <- t.test(RNA[RNA$tvsmmsat4=="MMsat4", "log2FoldChange"], RNA[RNA$tvsmmsat4=="Non-target", "log2FoldChange"])
+RNAtvsmmsat4TTest2 <- t.test(RNA[RNA$tvsmmsat4=="both", "log2FoldChange"], RNA[RNA$tvsmmsat4=="Non-target", "log2FoldChange"])
+RNAtvsmmsat4TTest3 <- t.test(RNA[RNA$tvsmmsat4=="miR-181 target", "log2FoldChange"], RNA[RNA$tvsmmsat4=="Non-target", "log2FoldChange"])
+
+RPFtvsmmsat4TTest1 <- t.test(RPF[RPF$tvsmmsat4=="MMsat4", "log2FoldChange"], RPF[RPF$tvsmmsat4=="Non-target", "log2FoldChange"])
+RPFtvsmmsat4TTest2 <- t.test(RPF[RPF$tvsmmsat4=="both", "log2FoldChange"], RPF[RPF$tvsmmsat4=="Non-target", "log2FoldChange"])
+RPFtvsmmsat4TTest3 <- t.test(RPF[RPF$tvsmmsat4=="miR-181 target", "log2FoldChange"], RPF[RPF$tvsmmsat4=="Non-target", "log2FoldChange"])
+
+TEtvsmmsat4TTest1 <- t.test(TE[TE$tvsmmsat4=="MMsat4", "log2FoldChange"], TE[TE$tvsmmsat4=="Non-target", "log2FoldChange"])
+TEtvsmmsat4TTest2 <- t.test(TE[TE$tvsmmsat4=="both", "log2FoldChange"], TE[TE$tvsmmsat4=="Non-target", "log2FoldChange"])
+TEtvsmmsat4TTest3 <- t.test(TE[TE$tvsmmsat4=="miR-181 target", "log2FoldChange"], TE[TE$tvsmmsat4=="Non-target", "log2FoldChange"])
+
+# MStvsmmsat4TTest1 <- t.test(MS[MS$tvsmmsat4=="MMsat4", "log2FoldChange"], MS[MS$tvsmmsat4=="Non-target", "log2FoldChange"])
+# MStvsmmsat4TTest2 <- t.test(MS[MS$tvsmmsat4=="both", "log2FoldChange"], MS[MS$tvsmmsat4=="Non-target", "log2FoldChange"])
+# MStvsmmsat4TTest3 <- t.test(MS[MS$tvsmmsat4=="miR-181 target", "log2FoldChange"], MS[MS$tvsmmsat4=="Non-target", "log2FoldChange"])
+
+#kolmogorov-smirnov
+RNAtvsmmsat4ksTest1 <- ks.test(RNA[RNA$tvsmmsat4=="MMsat4", "log2FoldChange"], RNA[RNA$tvsmmsat4=="Non-target", "log2FoldChange"])
+RNAtvsmmsat4ksTest2 <- ks.test(RNA[RNA$tvsmmsat4=="both", "log2FoldChange"], RNA[RNA$tvsmmsat4=="Non-target", "log2FoldChange"])
+RNAtvsmmsat4ksTest3 <- ks.test(RNA[RNA$tvsmmsat4=="miR-181 target", "log2FoldChange"], RNA[RNA$tvsmmsat4=="Non-target", "log2FoldChange"])
+
+RPFtvsmmsat4ksTest1 <- ks.test(RPF[RPF$tvsmmsat4=="MMsat4", "log2FoldChange"], RPF[RPF$tvsmmsat4=="Non-target", "log2FoldChange"])
+RPFtvsmmsat4ksTest2 <- ks.test(RPF[RPF$tvsmmsat4=="both", "log2FoldChange"], RPF[RPF$tvsmmsat4=="Non-target", "log2FoldChange"])
+RPFtvsmmsat4ksTest3 <- ks.test(RPF[RPF$tvsmmsat4=="miR-181 target", "log2FoldChange"], RPF[RPF$tvsmmsat4=="Non-target", "log2FoldChange"])
+
+TEtvsmmsat4ksTest1 <- ks.test(TE[TE$tvsmmsat4=="MMsat4", "log2FoldChange"], TE[TE$tvsmmsat4=="Non-target", "log2FoldChange"])
+TEtvsmmsat4ksTest2 <- ks.test(TE[TE$tvsmmsat4=="both", "log2FoldChange"], TE[TE$tvsmmsat4=="Non-target", "log2FoldChange"])
+TEtvsmmsat4ksTest3 <- ks.test(TE[TE$tvsmmsat4=="miR-181 target", "log2FoldChange"], TE[TE$tvsmmsat4=="Non-target", "log2FoldChange"])
+
+# MStvsmmsat4ksTest1 <- ks.test(MS[MS$tvsmmsat4=="MMsat4", "log2FoldChange"], MS[MS$tvsmmsat4=="Non-target", "log2FoldChange"])
+# MStvsmmsat4ksTest2 <- ks.test(MS[MS$tvsmmsat4=="both", "log2FoldChange"], MS[MS$tvsmmsat4=="Non-target", "log2FoldChange"])
+# MStvsmmsat4ksTest3 <- ks.test(MS[MS$tvsmmsat4=="miR-181 target", "log2FoldChange"], MS[MS$tvsmmsat4=="Non-target", "log2FoldChange"])
+
+
+tvsmmsat4sig <- data.frame(c("RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "TE", "TE", "TE" #,"MS", "MS", "MS"
+                             ),
+                        c("MMsat4", "both", "miR-181 target", "MMsat4", "both", "miR-181 target",
+                          "MMsat4", "both", "miR-181 target"#,"MMsat4", "both", "miR-181 target"
+                          ),
+                        c(RNAtvsmmsat4TTest1$p.value, RNAtvsmmsat4TTest2$p.value, RNAtvsmmsat4TTest3$p.value,
+                          RPFtvsmmsat4TTest1$p.value, RPFtvsmmsat4TTest2$p.value, RPFtvsmmsat4TTest3$p.value,
+                          TEtvsmmsat4TTest1$p.value, TEtvsmmsat4TTest2$p.value, TEtvsmmsat4TTest3$p.value#, 
+                          #MStvsmmsat4TTest1$p.value, MStvsmmsat4TTest2$p.value, MStvsmmsat4TTest3$p.value
+                          ),
+                        c(RNAtvsmmsat4ksTest1$p.value, RNAtvsmmsat4ksTest2$p.value, RNAtvsmmsat4ksTest3$p.value,
+                          RPFtvsmmsat4ksTest1$p.value, RPFtvsmmsat4ksTest2$p.value, RPFtvsmmsat4ksTest3$p.value, 
+                          TEtvsmmsat4ksTest1$p.value, TEtvsmmsat4ksTest2$p.value, TEtvsmmsat4ksTest3$p.value#,
+                          #MStvsmmsat4ksTest1$p.value, MStvsmmsat4ksTest2$p.value, MStvsmmsat4ksTest3$p.value
+                          ))
+colnames(tvsmmsat4sig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+tvsmmsat4sig
+
+#export
+write_xlsx(tvsmmsat4sig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/tvsmmsat4significance.xlsx")
+```
+
 
 
 # MurSatRep1
@@ -1315,6 +1919,66 @@ TEdensmursatrep1
 dev.off()
 
 ```
+
+
+## Significance
+```{r significanceMurSatRep1}
+RNAtvsMurSatRep1TTest1 <- t.test(RNA[RNA$tvsMurSatRep1=="MurSatRep1", "log2FoldChange"], RNA[RNA$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+RNAtvsMurSatRep1TTest2 <- t.test(RNA[RNA$tvsMurSatRep1=="both", "log2FoldChange"], RNA[RNA$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+RNAtvsMurSatRep1TTest3 <- t.test(RNA[RNA$tvsMurSatRep1=="miR-181 target", "log2FoldChange"], RNA[RNA$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+
+RPFtvsMurSatRep1TTest1 <- t.test(RPF[RPF$tvsMurSatRep1=="MurSatRep1", "log2FoldChange"], RPF[RPF$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+RPFtvsMurSatRep1TTest2 <- t.test(RPF[RPF$tvsMurSatRep1=="both", "log2FoldChange"], RPF[RPF$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+RPFtvsMurSatRep1TTest3 <- t.test(RPF[RPF$tvsMurSatRep1=="miR-181 target", "log2FoldChange"], RPF[RPF$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+
+TEtvsMurSatRep1TTest1 <- t.test(TE[TE$tvsMurSatRep1=="MurSatRep1", "log2FoldChange"], TE[TE$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+TEtvsMurSatRep1TTest2 <- t.test(TE[TE$tvsMurSatRep1=="both", "log2FoldChange"], TE[TE$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+TEtvsMurSatRep1TTest3 <- t.test(TE[TE$tvsMurSatRep1=="miR-181 target", "log2FoldChange"], TE[TE$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+
+# MStvsMurSatRep1TTest1 <- t.test(MS[MS$tvsMurSatRep1=="MurSatRep1", "log2FoldChange"], MS[MS$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+# MStvsMurSatRep1TTest2 <- t.test(MS[MS$tvsMurSatRep1=="both", "log2FoldChange"], MS[MS$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+# MStvsMurSatRep1TTest3 <- t.test(MS[MS$tvsMurSatRep1=="miR-181 target", "log2FoldChange"], MS[MS$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+
+#kolmogorov-smirnov
+RNAtvsMurSatRep1ksTest1 <- ks.test(RNA[RNA$tvsMurSatRep1=="MurSatRep1", "log2FoldChange"], RNA[RNA$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+RNAtvsMurSatRep1ksTest2 <- ks.test(RNA[RNA$tvsMurSatRep1=="both", "log2FoldChange"], RNA[RNA$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+RNAtvsMurSatRep1ksTest3 <- ks.test(RNA[RNA$tvsMurSatRep1=="miR-181 target", "log2FoldChange"], RNA[RNA$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+
+RPFtvsMurSatRep1ksTest1 <- ks.test(RPF[RPF$tvsMurSatRep1=="MurSatRep1", "log2FoldChange"], RPF[RPF$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+RPFtvsMurSatRep1ksTest2 <- ks.test(RPF[RPF$tvsMurSatRep1=="both", "log2FoldChange"], RPF[RPF$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+RPFtvsMurSatRep1ksTest3 <- ks.test(RPF[RPF$tvsMurSatRep1=="miR-181 target", "log2FoldChange"], RPF[RPF$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+
+TEtvsMurSatRep1ksTest1 <- ks.test(TE[TE$tvsMurSatRep1=="MurSatRep1", "log2FoldChange"], TE[TE$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+TEtvsMurSatRep1ksTest2 <- ks.test(TE[TE$tvsMurSatRep1=="both", "log2FoldChange"], TE[TE$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+TEtvsMurSatRep1ksTest3 <- ks.test(TE[TE$tvsMurSatRep1=="miR-181 target", "log2FoldChange"], TE[TE$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+
+# MStvsMurSatRep1ksTest1 <- ks.test(MS[MS$tvsMurSatRep1=="MurSatRep1", "log2FoldChange"], MS[MS$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+# MStvsMurSatRep1ksTest2 <- ks.test(MS[MS$tvsMurSatRep1=="both", "log2FoldChange"], MS[MS$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+# MStvsMurSatRep1ksTest3 <- ks.test(MS[MS$tvsMurSatRep1=="miR-181 target", "log2FoldChange"], MS[MS$tvsMurSatRep1=="Non-target", "log2FoldChange"])
+
+
+tvsMurSatRep1sig <- data.frame(c("RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "TE", "TE", "TE" #,"MS", "MS", "MS"
+                             ),
+                        c("MurSatRep1", "both", "miR-181 target", "MurSatRep1", "both", "miR-181 target",
+                          "MurSatRep1", "both", "miR-181 target"#,"MurSatRep1", "both", "miR-181 target"
+                          ),
+                        c(RNAtvsMurSatRep1TTest1$p.value, RNAtvsMurSatRep1TTest2$p.value, RNAtvsMurSatRep1TTest3$p.value,
+                          RPFtvsMurSatRep1TTest1$p.value, RPFtvsMurSatRep1TTest2$p.value, RPFtvsMurSatRep1TTest3$p.value,
+                          TEtvsMurSatRep1TTest1$p.value, TEtvsMurSatRep1TTest2$p.value, TEtvsMurSatRep1TTest3$p.value#, 
+                          #MStvsMurSatRep1TTest1$p.value, MStvsMurSatRep1TTest2$p.value, MStvsMurSatRep1TTest3$p.value
+                          ),
+                        c(RNAtvsMurSatRep1ksTest1$p.value, RNAtvsMurSatRep1ksTest2$p.value, RNAtvsMurSatRep1ksTest3$p.value,
+                          RPFtvsMurSatRep1ksTest1$p.value, RPFtvsMurSatRep1ksTest2$p.value, RPFtvsMurSatRep1ksTest3$p.value, 
+                          TEtvsMurSatRep1ksTest1$p.value, TEtvsMurSatRep1ksTest2$p.value, TEtvsMurSatRep1ksTest3$p.value#,
+                          #MStvsMurSatRep1ksTest1$p.value, MStvsMurSatRep1ksTest2$p.value, MStvsMurSatRep1ksTest3$p.value
+                          ))
+colnames(tvsMurSatRep1sig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+tvsMurSatRep1sig
+
+#export
+write_xlsx(tvsMurSatRep1sig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/tvsMurSatRep1significance.xlsx")
+```
+
 
 ## metagene plot
 ```{r metageneplot}

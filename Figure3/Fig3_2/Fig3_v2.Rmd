@@ -301,6 +301,37 @@ TEdenstarget
 dev.off()
 ```
 
+## Significance
+```{r significanceTarget}
+RNATargetTTest <- t.test(RNA[RNA$target=="Target", "log2FoldChange"], RNA[RNA$target=="Non-target", "log2FoldChange"])
+
+RPFTargetTTest <- t.test(RPF[RPF$target=="Target", "log2FoldChange"], RPF[RPF$target=="Non-target", "log2FoldChange"])
+
+TETargetTTest <- t.test(TE[TE$target=="Target", "log2FoldChange"], TE[TE$target=="Non-target", "log2FoldChange"])
+
+MSTargetTTest <- t.test(MS[MS$target=="Target", "log2FoldChange"], MS[MS$target=="Non-target", "log2FoldChange"])
+
+#kolmogorov-smirnov
+RNATargetksTest <- ks.test(RNA[RNA$target=="Target", "log2FoldChange"], RNA[RNA$target=="Non-target", "log2FoldChange"])
+
+RPFTargetksTest <- ks.test(RPF[RPF$target=="Target", "log2FoldChange"], RPF[RPF$target=="Non-target", "log2FoldChange"])
+
+TETargetksTest <- ks.test(TE[TE$target=="Target", "log2FoldChange"], TE[TE$target=="Non-target", "log2FoldChange"])
+
+MSTargetksTest <- ks.test(MS[MS$target=="Target", "log2FoldChange"], MS[MS$target=="Non-target", "log2FoldChange"])
+
+
+Targetsig <- data.frame(c("RNA", "RPF", "TE", "MS"),
+                        c("Target", "Target", "Target", "Target"),
+                        c(RNATargetTTest$p.value, RPFTargetTTest$p.value, TETargetTTest$p.value, MSTargetTTest$p.value),
+                        c(RNATargetksTest$p.value, RPFTargetksTest$p.value, TETargetksTest$p.value, MSTargetksTest$p.value))
+colnames(Targetsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Targetsig
+
+#export
+write_xlsx(Targetsig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Targetsignificance.xlsx")
+```
+
 
 # number of binding sites histogram
 ```{r numHist}
@@ -621,7 +652,59 @@ TEdensNum
 dev.off()
 
 ```
+## Significance
+```{r significanceNum}
+RNANumTTest1 <- t.test(RNAnum[RNAnum$BS_num_plot=="One MRE", "log2FoldChange"], RNAnum[RNAnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RNANumTTest2 <- t.test(RNAnum[RNAnum$BS_num_plot=="Two MREs", "log2FoldChange"], RNAnum[RNAnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RNANumTTest3 <- t.test(RNAnum[RNAnum$BS_num_plot=="More", "log2FoldChange"], RNAnum[RNAnum$BS_num_plot=="Non-target", "log2FoldChange"])
 
+RPFNumTTest1 <- t.test(RPFnum[RPFnum$BS_num_plot=="One MRE", "log2FoldChange"], RPFnum[RPFnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RPFNumTTest2 <- t.test(RPFnum[RPFnum$BS_num_plot=="Two MREs", "log2FoldChange"], RPFnum[RPFnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RPFNumTTest3 <- t.test(RPFnum[RPFnum$BS_num_plot=="More", "log2FoldChange"], RPFnum[RPFnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+TENumTTest1 <- t.test(TEnum[TEnum$BS_num_plot=="One MRE", "log2FoldChange"], TEnum[TEnum$BS_num_plot=="Non-target", "log2FoldChange"])
+TENumTTest2 <- t.test(TEnum[TEnum$BS_num_plot=="Two MREs", "log2FoldChange"], TEnum[TEnum$BS_num_plot=="Non-target", "log2FoldChange"])
+TENumTTest3 <- t.test(TEnum[TEnum$BS_num_plot=="More", "log2FoldChange"], TEnum[TEnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+MSNumTTest1 <- t.test(MSnum[MSnum$BS_num_plot=="One MRE", "log2FoldChange"], MSnum[MSnum$BS_num_plot=="Non-target", "log2FoldChange"])
+MSNumTTest2 <- t.test(MSnum[MSnum$BS_num_plot=="Two MREs", "log2FoldChange"], MSnum[MSnum$BS_num_plot=="Non-target", "log2FoldChange"])
+MSNumTTest3 <- t.test(MSnum[MSnum$BS_num_plot=="More", "log2FoldChange"], MSnum[MSnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+#kolmogorov-smirnov
+RNANumksTest1 <- ks.test(RNAnum[RNAnum$BS_num_plot=="One MRE", "log2FoldChange"], RNAnum[RNAnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RNANumksTest2 <- ks.test(RNAnum[RNAnum$BS_num_plot=="Two MREs", "log2FoldChange"], RNAnum[RNAnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RNANumksTest3 <- ks.test(RNAnum[RNAnum$BS_num_plot=="More", "log2FoldChange"], RNAnum[RNAnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+RPFNumksTest1 <- ks.test(RPFnum[RPFnum$BS_num_plot=="One MRE", "log2FoldChange"], RPFnum[RPFnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RPFNumksTest2 <- ks.test(RPFnum[RPFnum$BS_num_plot=="Two MREs", "log2FoldChange"], RPFnum[RPFnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RPFNumksTest3 <- ks.test(RPFnum[RPFnum$BS_num_plot=="More", "log2FoldChange"], RPFnum[RPFnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+TENumksTest1 <- ks.test(TEnum[TEnum$BS_num_plot=="One MRE", "log2FoldChange"], TEnum[TEnum$BS_num_plot=="Non-target", "log2FoldChange"])
+TENumksTest2 <- ks.test(TEnum[TEnum$BS_num_plot=="Two MREs", "log2FoldChange"], TEnum[TEnum$BS_num_plot=="Non-target", "log2FoldChange"])
+TENumksTest3 <- ks.test(TEnum[TEnum$BS_num_plot=="More", "log2FoldChange"], TEnum[TEnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+MSNumksTest1 <- ks.test(MSnum[MSnum$BS_num_plot=="One MRE", "log2FoldChange"], MSnum[MSnum$BS_num_plot=="Non-target", "log2FoldChange"])
+MSNumksTest2 <- ks.test(MSnum[MSnum$BS_num_plot=="Two MREs", "log2FoldChange"], MSnum[MSnum$BS_num_plot=="Non-target", "log2FoldChange"])
+MSNumksTest3 <- ks.test(MSnum[MSnum$BS_num_plot=="More", "log2FoldChange"], MSnum[MSnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+
+Numsig <- data.frame(c("RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "TE", "TE", "TE", "MS", "MS", "MS"),
+                        c("One MRE", "Two MREs", "More", "One MRE", "Two MREs", "More",
+                          "One MRE", "Two MREs", "More","One MRE", "Two MREs", "More"),
+                        c(RNANumTTest1$p.value, RNANumTTest2$p.value, RNANumTTest3$p.value,
+                          RPFNumTTest1$p.value, RPFNumTTest2$p.value, RPFNumTTest3$p.value,
+                          TENumTTest1$p.value, TENumTTest2$p.value, TENumTTest3$p.value, 
+                          MSNumTTest1$p.value, MSNumTTest2$p.value, MSNumTTest3$p.value),
+                        c(RNANumksTest1$p.value, RNANumksTest2$p.value, RNANumksTest3$p.value,
+                          RPFNumksTest1$p.value, RPFNumksTest2$p.value, RPFNumksTest3$p.value, 
+                          TENumksTest1$p.value, TENumksTest2$p.value, TENumksTest3$p.value,
+                          MSNumksTest1$p.value, MSNumksTest2$p.value, MSNumksTest3$p.value))
+colnames(Numsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Numsig
+
+#export
+write_xlsx(Numsig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Numsignificance.xlsx")
+```
 
 #  metaGeneProfile
 
@@ -1042,7 +1125,7 @@ table(TEnumr$region_single)
 
 
 # TE density position
-```{R TEdensitywobble}
+```{R TEdensityregion}
 TEdensPos <- ggplot(TEnumr, aes(x=log2FoldChange, colour=factor(region_single, levels = c( "5'UTR", "CDS", "3'UTR", "Multiple", "Non-target")))) +
   geom_density() +
   geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
@@ -1058,6 +1141,63 @@ TEdensPos
 dev.off()
 
 ```
+
+
+## Significance
+```{r significanceRegion}
+RNARegTTest1 <- t.test(RNAnumr[RNAnumr$region_single=="5'UTR", "log2FoldChange"], RNAnumr[RNAnumr$region_single=="Non-target", "log2FoldChange"])
+RNARegTTest2 <- t.test(RNAnumr[RNAnumr$region_single=="CDS", "log2FoldChange"], RNAnumr[RNAnumr$region_single=="Non-target", "log2FoldChange"])
+RNARegTTest3 <- t.test(RNAnumr[RNAnumr$region_single=="3'UTR", "log2FoldChange"], RNAnumr[RNAnumr$region_single=="Non-target", "log2FoldChange"])
+
+RPFRegTTest1 <- t.test(RPFnumr[RPFnumr$region_single=="5'UTR", "log2FoldChange"], RPFnumr[RPFnumr$region_single=="Non-target", "log2FoldChange"])
+RPFRegTTest2 <- t.test(RPFnumr[RPFnumr$region_single=="CDS", "log2FoldChange"], RPFnumr[RPFnumr$region_single=="Non-target", "log2FoldChange"])
+RPFRegTTest3 <- t.test(RPFnumr[RPFnumr$region_single=="3'UTR", "log2FoldChange"], RPFnumr[RPFnumr$region_single=="Non-target", "log2FoldChange"])
+
+TERegTTest1 <- t.test(TEnumr[TEnumr$region_single=="5'UTR", "log2FoldChange"], TEnumr[TEnumr$region_single=="Non-target", "log2FoldChange"])
+TERegTTest2 <- t.test(TEnumr[TEnumr$region_single=="CDS", "log2FoldChange"], TEnumr[TEnumr$region_single=="Non-target", "log2FoldChange"])
+TERegTTest3 <- t.test(TEnumr[TEnumr$region_single=="3'UTR", "log2FoldChange"], TEnumr[TEnumr$region_single=="Non-target", "log2FoldChange"])
+
+MSRegTTest1 <- t.test(MSnumr[MSnumr$region_single=="5'UTR", "log2FoldChange"], MSnumr[MSnumr$region_single=="Non-target", "log2FoldChange"])
+MSRegTTest2 <- t.test(MSnumr[MSnumr$region_single=="CDS", "log2FoldChange"], MSnumr[MSnumr$region_single=="Non-target", "log2FoldChange"])
+MSRegTTest3 <- t.test(MSnumr[MSnumr$region_single=="3'UTR", "log2FoldChange"], MSnumr[MSnumr$region_single=="Non-target", "log2FoldChange"])
+
+#kolmogorov-smirnov
+RNARegksTest1 <- ks.test(RNAnumr[RNAnumr$region_single=="5'UTR", "log2FoldChange"], RNAnumr[RNAnumr$region_single=="Non-target", "log2FoldChange"])
+RNARegksTest2 <- ks.test(RNAnumr[RNAnumr$region_single=="CDS", "log2FoldChange"], RNAnumr[RNAnumr$region_single=="Non-target", "log2FoldChange"])
+RNARegksTest3 <- ks.test(RNAnumr[RNAnumr$region_single=="3'UTR", "log2FoldChange"], RNAnumr[RNAnumr$region_single=="Non-target", "log2FoldChange"])
+
+RPFRegksTest1 <- ks.test(RPFnumr[RPFnumr$region_single=="5'UTR", "log2FoldChange"], RPFnumr[RPFnumr$region_single=="Non-target", "log2FoldChange"])
+RPFRegksTest2 <- ks.test(RPFnumr[RPFnumr$region_single=="CDS", "log2FoldChange"], RPFnumr[RPFnumr$region_single=="Non-target", "log2FoldChange"])
+RPFRegksTest3 <- ks.test(RPFnumr[RPFnumr$region_single=="3'UTR", "log2FoldChange"], RPFnumr[RPFnumr$region_single=="Non-target", "log2FoldChange"])
+
+TERegksTest1 <- ks.test(TEnumr[TEnumr$region_single=="5'UTR", "log2FoldChange"], TEnumr[TEnumr$region_single=="Non-target", "log2FoldChange"])
+TERegksTest2 <- ks.test(TEnumr[TEnumr$region_single=="CDS", "log2FoldChange"], TEnumr[TEnumr$region_single=="Non-target", "log2FoldChange"])
+TERegksTest3 <- ks.test(TEnumr[TEnumr$region_single=="3'UTR", "log2FoldChange"], TEnumr[TEnumr$region_single=="Non-target", "log2FoldChange"])
+
+MSRegksTest1 <- ks.test(MSnumr[MSnumr$region_single=="5'UTR", "log2FoldChange"], MSnumr[MSnumr$region_single=="Non-target", "log2FoldChange"])
+MSRegksTest2 <- ks.test(MSnumr[MSnumr$region_single=="CDS", "log2FoldChange"], MSnumr[MSnumr$region_single=="Non-target", "log2FoldChange"])
+MSRegksTest3 <- ks.test(MSnumr[MSnumr$region_single=="3'UTR", "log2FoldChange"], MSnumr[MSnumr$region_single=="Non-target", "log2FoldChange"])
+
+
+Regsig <- data.frame(c("RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "TE", "TE", "TE", "MS", "MS", "MS"),
+                        c("5'UTR", "CDS", "3'UTR", "5'UTR", "CDS", "3'UTR",
+                          "5'UTR", "CDS", "3'UTR","5'UTR", "CDS", "3'UTR"),
+                        c(RNARegTTest1$p.value, RNARegTTest2$p.value, RNARegTTest3$p.value,
+                          RPFRegTTest1$p.value, RPFRegTTest2$p.value, RPFRegTTest3$p.value,
+                          TERegTTest1$p.value, TERegTTest2$p.value, TERegTTest3$p.value, 
+                          MSRegTTest1$p.value, MSRegTTest2$p.value, MSRegTTest3$p.value),
+                        c(RNARegksTest1$p.value, RNARegksTest2$p.value, RNARegksTest3$p.value,
+                          RPFRegksTest1$p.value, RPFRegksTest2$p.value, RPFRegksTest3$p.value, 
+                          TERegksTest1$p.value, TERegksTest2$p.value, TERegksTest3$p.value,
+                          MSRegksTest1$p.value, MSRegksTest2$p.value, MSRegksTest3$p.value))
+colnames(Regsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Regsig
+
+#export
+write_xlsx(Regsig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Regsignificance.xlsx")
+```
+
+# only until here is in the paper------------------------------------------------------------------
 
 
 
@@ -1895,6 +2035,12 @@ dev.off()
 
 ```
 
+
+# GO plots and enrichment analysis
+
+```{r goplots}
+
+```
 
 
 # session info
