@@ -30,6 +30,7 @@ library(cliProfiler)
 library(GenomicRanges)
 library(readxl)
 library(writexl)
+library(clusterProfiler)
 ```
 
 ## data
@@ -1197,6 +1198,43 @@ Regsig
 write_xlsx(Regsig, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Regsignificance.xlsx")
 ```
 
+
+
+# GO plots and enrichment analysis
+
+```{r goplots}
+
+largetframe
+
+largetframe[is.na(largetframe$mir181BS_ID),]
+
+
+
+
+
+library(DOSE)
+data(geneList)
+de <- names(geneList)[abs(geneList) > 2]
+
+edo <- enrichDGN(de)
+
+library(enrichplot)
+barplot(edo, showCategory=20) 
+
+mutate(edo, qscore = -log(p.adjust, base=10)) %>% 
+    barplot(x="qscore")
+
+
+edo2 <- gseDO(geneList)
+dotplot(edo, showCategory=30) + ggtitle("dotplot for ORA")
+dotplot(edo2, showCategory=30) + ggtitle("dotplot for GSEA")
+
+str(geneList)
+```
+
+
+
+
 # only until here is in the paper------------------------------------------------------------------
 
 
@@ -2036,11 +2074,6 @@ dev.off()
 ```
 
 
-# GO plots and enrichment analysis
-
-```{r goplots}
-
-```
 
 
 # session info
