@@ -1,8 +1,18 @@
 ---
 title: "fig3 TE and MS plots"
-author: "Nikita Verheyden"
-date: "2023-05-23"
-output: pdf_document
+author:
+- name: Nikita Verheyden
+  affiliation: JLU Giessen
+  date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+      toc: TRUE
+      toc_float: TRUE
+      code_folding: hide
+
+header-includes:
+- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+- \usepackage{placeins}
 ---
 
 ```{r setup, include=FALSE}
@@ -257,7 +267,7 @@ msco$significance <- "Not significant"
 msco$significance[msco$padj <= pms & msco$log2FoldChange > 0] <- "Significant up"
 msco$significance[msco$padj <= pms & msco$log2FoldChange < 0] <- "Significant down"
 
-msco[order(msco$padj),]
+head(msco[order(msco$padj),])
 
 #plot
 mscovolcano <- ggplot(msco, aes(y=-log10(padj), x=log2FoldChange,  fill=factor(significance, levels = c("Not significant", "Significant up","Significant down")))) + geom_point_rast(shape=21, size=0.5, colour=farbeneg) +
@@ -285,12 +295,12 @@ table(msco$significance)
 
 ## MS Barplots
 ```{r MSbarplots}
-msbardat <- data.frame(c("Significantly_up", "Significantly_down"),
-                        c(length(ms[ms$log2FoldChange > 0 & ms$padj <= 0.05 & !is.na(ms$padj),"gene_symbol"]), -length(ms[ms$log2FoldChange < 0 & ms$padj <= 0.05 & !is.na(ms$padj),"gene_symbol"])))
-colnames(msbardat)=c("ID", "Number_of_genes")
+mscobardat <- data.frame(c("Significantly_up", "Significantly_down"),
+                        c(length(msco[msco$log2FoldChange > 0 & msco$padj <= 0.05 & !is.na(msco$padj),"gene_symbol"]), -length(msco[msco$log2FoldChange < 0 & msco$padj <= 0.05 & !is.na(msco$padj),"gene_symbol"])))
+colnames(mscobardat)=c("ID", "Number_of_genes")
 
 
-msbar <- ggplot(data=msbardat, aes(x=ID, y=Number_of_genes, fill=ID)) +
+mscobar <- ggplot(data=mscobardat, aes(x=ID, y=Number_of_genes, fill=ID)) +
   geom_bar(stat = "identity") +
   geom_hline(yintercept = 0) +
   scale_fill_manual(values = c(RPFncol, RPFpcol)) +
@@ -298,11 +308,11 @@ msbar <- ggplot(data=msbardat, aes(x=ID, y=Number_of_genes, fill=ID)) +
   theme(legend.position = "None")
   
 
-msbar
+mscobar
 
 # export
 pdf("MSbarplot.pdf", width=1, height = 2)
-msbar
+mscobar
 dev.off()
 
 ```
@@ -473,7 +483,7 @@ dev.off()
 
 # RPF vs MS
 ```{r RPFvsMS}
-names(ms)[13] <- "MS_log2FoldChange"
+names(ms)[2] <- "MS_log2FoldChange"
 
 msribo <- inner_join(RPF[!is.na(RPF$RPF_log2FoldChange),], ms[!is.na(ms$MS_log2FoldChange),], by="gene_symbol")
 

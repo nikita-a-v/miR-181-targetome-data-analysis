@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 directory
 ```{r dir}
-setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Genome_tracks")
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure1/Genome_tracks")
 ```
 
 ## packages
@@ -22,29 +22,7 @@ library(rtracklayer)
 library(dplyr)
 library(plyranges)
 library(BSgenome.Mmusculus.UCSC.mm10)
-```
-
-
-## Import data
-
-```{r data}
-# diferential results
-diffres <- rtracklayer::import(con = "D:/Krueger_Lab/miReCLIP/Mirco/DifferentialBinding/BsDifferentialResult.bed", format = "BED")
-
-# non enriched non chimeric
-IPKOminus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_KO.minus.bw")
-IPKOplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_KO.plus.bw")
-IPWTminus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT.minus.bw")
-IPWTplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT.plus.bw")
-
-IP181WTminus  <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT_miR181.minus.bw")
-IP181WTplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT_miR181.plus.bw")
-
-
-
-# enriched chimeric
-IP181chimWTminus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks_merged/chimeric_IP_WT_miR181.minus.bw")
-IP181chimWTplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks_merged/chimeric_IP_WT_miR181.plus.bw")
+library(chromstaR)
 
 ```
 
@@ -66,6 +44,43 @@ elmo1: chr13:20405350-20406237
 srsf11: chr3:158,010,824-158,012,135
 Aebp2: chr6:140652591-140652785
 Zfp36L1: total: chr12:80108008-80108895    181bs:chr12:80108023-80108,242    otherbs: chr12:80108634-80108853
+
+
+
+## Import data
+
+```{r data}
+# diferential results
+diffres <- rtracklayer::import(con = "C:/Users/nikit/Documents/Krueger_Lab/miR-eCLIP/Mirco/DifferentialBinding/BsDifferentialResult.bed", format = "BED")
+
+# non enriched non chimeric
+IPKOminus <- import.bw("C:/Users/nikit/Documents/Krueger_Lab/miR-eCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_KO.minus.bw")
+IPKOplus <- import.bw("C:/Users/nikit/Documents/Krueger_Lab/miR-eCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_KO.plus.bw")
+IPWTminus <- import.bw("C:/Users/nikit/Documents/Krueger_Lab/miR-eCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT.minus.bw")
+IPWTplus <- import.bw("C:/Users/nikit/Documents/Krueger_Lab/miR-eCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT.plus.bw")
+
+IP181WTminus  <- import.bw("C:/Users/nikit/Documents/Krueger_Lab/miR-eCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT_miR181.minus.bw")
+IP181WTplus <- import.bw("C:/Users/nikit/Documents/Krueger_Lab/miR-eCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT_miR181.plus.bw")
+
+
+
+# enriched chimeric
+IP181chimWTminus <- import.bw("C:/Users/nikit/Documents/Krueger_Lab/miR-eCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks_merged/chimeric_IP_WT_miR181.minus.bw")
+IP181chimWTplus <- import.bw("C:/Users/nikit/Documents/Krueger_Lab/miR-eCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks_merged/chimeric_IP_WT_miR181.plus.bw")
+
+
+#Ribo profiling
+
+ribobam <- DataTrack(range="C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/samtools/clean_FBWTRFP1411_S10_R1_001Aligned.out_sorted.bam", genome="mm10", name="Coverage", chromosome=tchr,type = "histogram", col.histogram= "#377EB8", fill="#377EB8")
+rnabam <- DataTrack(range="C:/Users/nikit/Documents/Krueger_Lab/Ribo_profiling/run15112022M23/samtools/clean_FBWTtotal1411_S11_R1_001Aligned.out_sorted.bam", genome="mm10", name="Coverage", chromosome=tchr,type = "histogram", col.histogram= "#377EB8", fill="#377EB8")
+
+
+#gff
+gff23 <- import.gff3("C:/Users/nikit/Documents/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
+
+```
+
+
 
 # Tracks
 
@@ -210,10 +225,46 @@ plotTracks(list(WTmT, KOmT,WT181mT, diffresT,  gatrack), from = scoord, to= ecoo
 
 
 
-# make seperate plots for different binding sites
+# Ribo Profiling plot
+
+```{r ribopro}
+# #ylim
+# ribolim <- 400
+# 
+# #RPF 
+# RPFm <- as.data.frame(ribobam)
+# RPFm <- RPFm[RPFm$seqnames == tchr & RPFm$start >= scoord -1000 & RPFm$end <= ecoord + 1000,]
+# RPFm$seqnames <- as.character(RPFm$seqnames)
+# RPFm <- makeGRangesFromDataFrame(RPFm, keep.extra.columns = T)
+# 
+# RPFmT <- DataTrack(RPFm, name="RPF", ylim = c(0,ribolim))
+# 
+# 
+# #RNA 
+# RNAm <- as.data.frame(rnabam)
+# RNAm <- RNAm[RNAm$seqnames == tchr & RNAm$start >= scoord -1000 & RNAm$end <= ecoord + 1000,]
+# RNAm$seqnames <- as.character(RNAm$seqnames)
+# RNAm <- makeGRangesFromDataFrame(RNAm, keep.extra.columns = T)
+# 
+# RNAmT <- DataTrack(RNAm, name="RNA", ylim = c(0,ribolim))
+# 
 
 
+```
 
+## plot tracks
+```{r plotribo}
+data(geneModels)
+str(geneModels)
+gffframe <- as.data.frame(gff23)
+gffframe <- gffframe[gffframe$seqnames == tchr,]
+grtrack <- GeneRegionTrack(gffframe, genome = "Mmu", chromosome = tchr, name = "Gene",  transcript = "transcript_type", symbol = "gene_name", showId=TRUE, geneSymbol=TRUE, background.title = "brown")
+
+
+plotTracks(list(rnabam, ribobam,  gatrack, grtrack), from = scoord-3000, to= ecoord+6000, type="histogram", featureAnnotation = "id", 
+           fontsize.feature=10, fontcolor.feature = "black")
+
+```
 
 
 # session info

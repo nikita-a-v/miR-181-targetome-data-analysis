@@ -108,7 +108,7 @@
 
 \title{edit\_MS\_table}
 \author{Nikita Verheyden}
-\date{2023-08-02}
+\date{2023-08-24}
 
 \begin{document}
 \maketitle
@@ -185,12 +185,37 @@ path
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{nrow}\NormalTok{(ms[ms}\SpecialCharTok{$}\NormalTok{padj }\SpecialCharTok{\textless{}=} \FloatTok{0.05}\NormalTok{,])}
+\FunctionTok{nrow}\NormalTok{(ms[ms}\SpecialCharTok{$}\NormalTok{padj }\SpecialCharTok{\textless{}=} \FloatTok{0.05} \SpecialCharTok{\&} \SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(ms}\SpecialCharTok{$}\NormalTok{padj),])}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## [1] 808
+## [1] 94
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ms[}\FunctionTok{order}\NormalTok{(ms}\SpecialCharTok{$}\NormalTok{padj),]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 6,224 x 14
+##    Accession Description    WT1    WT2    WT3    WT4    KO1    KO2    KO3    KO4
+##    <chr>     <chr>        <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>
+##  1 Q60611    DNA-bindin~ 4439.  4698   4541.  4535.  3595.  3604.  3675.  3714. 
+##  2 Q921T2-2  Isoform 2 ~ 1338.  1339.  1394.  1341.  1119.  1082.  1101.  1108. 
+##  3 Q8VCT3    Aminopepti~  429.   389.   371.   391.   598.   596.   623.   630. 
+##  4 P29387    Guanine nu~   73.6   73     74.6   68.1  210.   204.   172    192  
+##  5 Q3TPE9    Ankyrin re~   79.7   78.6   71.2   66.1  132.   124    131    129. 
+##  6 P70269    Cathepsin ~   78.9   87.6   92     69.8   11.5   10.5   10.1   11.9
+##  7 Q91WU5    Arsenite m~  300.   306.   313.   332.   506    465.   481.   515  
+##  8 A2AKG8    Focadhesin~   43.8   47.8   51.4   48.3   71.7   71.1   71.9   68.6
+##  9 Q8BJ64    Choline de~ 1408.  1406.  1527.  1339.  2615.  2399.  2340.  2320. 
+## 10 Q6PHZ2    Calcium/ca~  569.   560.   578.   546.   835.   756    793.   780. 
+## # i 6,214 more rows
+## # i 4 more variables: `fold change` <dbl>, log2FoldChange <dbl>,
+## #   `P-value` <dbl>, padj <dbl>
 \end{verbatim}
 
 \hypertarget{divide-column-with-names}{%
@@ -262,7 +287,7 @@ path
 ## loaded via a namespace (and not attached):
 ##  [1] digest_0.6.33     utf8_1.2.3        fastmap_1.1.1     xfun_0.39        
 ##  [5] cellranger_1.1.0  magrittr_2.0.3    glue_1.6.2        tibble_3.2.1     
-##  [9] knitr_1.43        pkgconfig_2.0.3   htmltools_0.5.5   rmarkdown_2.23   
+##  [9] knitr_1.43        pkgconfig_2.0.3   htmltools_0.5.5   rmarkdown_2.24   
 ## [13] lifecycle_1.0.3   cli_3.6.1         fansi_1.0.4       vctrs_0.6.3      
 ## [17] compiler_4.3.1    rstudioapi_0.15.0 tools_4.3.1       pillar_1.9.0     
 ## [21] evaluate_0.21     yaml_2.3.7        rlang_1.1.1

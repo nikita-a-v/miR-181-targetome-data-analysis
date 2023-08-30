@@ -25,7 +25,7 @@ tidy.opts=list(width.cutoff=80,tidy=TRUE, echo=FALSE)
 # source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
 
 # nikita source
-source("D:/Krueger_Lab/Publications/miR181_paper_v21022023/Figure_theme/theme_paper.R")
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
 
 
 
@@ -60,7 +60,7 @@ library(ggrepel) # Nikita
 # out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Ago_targetome/"
 
 #Nikita out
-out <- "D:/Krueger_Lab/Publications/miR181_paper/Figure1/Ago_targetome/"
+out <- "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure1/Ago_targetome/"
 
 # farben
 farbeneg <- "#B4B4B4"
@@ -111,9 +111,9 @@ We obtain chimeric reads from 4 different conditions:
 #                              pattern = "*.bed")
 
 # Nikita source
-mir_crosslinks <- list.files("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks/", 
+mir_crosslinks <- list.files("C:/Users/nikit/Documents/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks/", 
                              pattern = "*.bed", recursive = TRUE, full.names = T) %>% map(~import.bed(.x, extraCols = c(Name = "character", Score="numeric", Strand="factor")))
-names(mir_crosslinks) <- list.files("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks/", 
+names(mir_crosslinks) <- list.files("C:/Users/nikit/Documents/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks/", 
                              pattern = "*.bed")
 
 
@@ -125,7 +125,7 @@ names(mir_crosslinks) <- list.files("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_
 # mir_imgen <- read.csv("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/files_public_mir_data/DPsets_immgen.csv")
 
 # Nikita source
-mir_imgen <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Ago_targetome/DPsets_immgen.csv")
+mir_imgen <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure1/Ago_targetome/DPsets_immgen.csv")
 
 
 
@@ -446,11 +446,11 @@ comp_df <- table(mir_crosslinks_per_cond$IP_WT$Name) %>% as.data.frame(.) %>%
 
 mir_imgen <- mir_imgen %>% full_join(comp_df, by = c(ID_REF = "Var1"))
 
-p4 <- ggplot(mir_imgen, aes(x = log(mean), y = log(Freq)))+
+p4 <- ggplot(mir_imgen, aes(x = log10(mean), y = log10(Freq)))+
   geom_point(fill="#b4b4b4", colour="black", size=3, shape=21)+ #changed by nikita
-  geom_point(data=mir_imgen[mir_imgen$ID_REF == "miR-181a-5p",],aes(x = log(mean), y = log(Freq)), fill="#8D0391", colour="black", size=4, shape=21)+ # changed by nikita
-  geom_point(data=mir_imgen[mir_imgen$ID_REF == "miR-181b-5p",],aes(x = log(mean), y = log(Freq)), fill="#8D0391", colour="black", size=4, shape=21)+ # changed by nikita
-  geom_text_repel(data=mir_imgen[mir_imgen$ID_REF %in% c("miR-181a-5p", "miR-181b-5p"),], aes(x = log(mean), y = log(Freq), label=ID_REF))+ #Nikita
+  geom_point(data=mir_imgen[mir_imgen$ID_REF == "miR-181a-5p",],aes(x = log10(mean), y = log10(Freq)), fill="#8D0391", colour="black", size=4, shape=21)+ # changed by nikita
+  geom_point(data=mir_imgen[mir_imgen$ID_REF == "miR-181b-5p",],aes(x = log10(mean), y = log10(Freq)), fill="#8D0391", colour="black", size=4, shape=21)+ # changed by nikita
+  geom_text_repel(data=mir_imgen[mir_imgen$ID_REF %in% c("miR-181a-5p", "miR-181b-5p"),], aes(x = log10(mean), y = log10(Freq), label=ID_REF))+ #Nikita
   geom_smooth(method =lm,se=F, colour=farbe1)+
   stat_cor()+
   xlab("Mean Abundance Imgen")+

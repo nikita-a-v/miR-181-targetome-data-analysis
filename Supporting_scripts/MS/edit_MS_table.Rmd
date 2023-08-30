@@ -1,8 +1,18 @@
 ---
 title: "edit_MS_table"
-author: "Nikita Verheyden"
-date: "`r Sys.Date()`"
-output: pdf_document
+author:
+- name: Nikita Verheyden
+  affiliation: JLU Giessen
+  date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+      toc: TRUE
+      toc_float: TRUE
+      code_folding: hide
+
+header-includes:
+- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+- \usepackage{placeins}
 ---
 
 ```{r setup, include=FALSE}
@@ -22,23 +32,14 @@ setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting
 ```{r packages}
 library(readxl)
 library(stats)
+library(DEqMS)
+library(dplyr)
 ```
 
 ## data
 ```{r data}
-ms <- read_xlsx("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/MS/Massspec_new_mouse_raw.xlsx", sheet = 2)
+ms <- read_xlsx("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/MS/Massspec_new_mouse_raw.xlsx", sheet = 3)
 head(ms)
-```
-
-
-# calculate padj
-```{r padj}
-ms$padj <- p.adjust(ms$`P-value`, method = "fdr")
-
-head(ms)
-
-nrow(ms[ms$padj <= 0.05 & !is.na(ms$padj),])
-ms[order(ms$padj),]
 ```
 
 # divide column with names
@@ -46,12 +47,154 @@ ms[order(ms$padj),]
 ms$gene_symbol <- sub(".*GN=", "", ms$Description)
 ms$gene_symbol <- sub(" PE=.*", "", ms$gene_symbol)
 
-head(ms)
+msnd <- as.data.frame(ms[!duplicated(ms$gene_symbol),])
+rownames(msnd) <- msnd$gene_symbol
+
+head(msnd)
 ```
+
+
+# Differential analysis with DEqMS
+
+## Is data median centered?
+
+Use boxplot to check if the samples have medians centered. if not, do median centering.
+
+```{r fit, echo=FALSE}
+protein.matrix <- msnd[,3:10]
+#map(protein.matrix, ~invisible(plotDensities(.x, legend = F)))
+
+# log transformation to linerase changes
+protein.matrix.linear <- log2(protein.matrix)
+# map(protein.matrix, ~plotDensities(.x, legend = F))
+boxplot(protein.matrix.linear)
+
+
+```
+--> medians are centered, no adjustment necessary
+
+
+```{r}
+
+###################
+# function DEqMS
+###################
+
+f_DEqMS <- function(protein_matrix, pep_count_table){
+
+# model
+##################
+condition = as.factor(c(rep("WT",4), rep("KO",4)))
+design = model.matrix(~0+condition)
+
+contrasts <- c("conditionWT-conditionKO")
+contrast <- makeContrasts(contrasts=contrasts, levels = design)
+
+# fit model to matrix
+########################
+
+fit1 = lmFit(protein_matrix, design = design)
+fit2 = contrasts.fit(fit1, contrasts = contrast)
+fit3 <- eBayes(fit2)
+
+
+# correct bias of variance estimate
+####################################
+
+fit3$count = pep_count_table[rownames(fit3$coefficients),"count"]
+
+
+fit4 <- spectraCounteBayes(fit3)
+
+VarianceBoxplot(fit4, main = "Fit of variance estimate",
+                xlab="peptide count + 1")
+
+VarianceScatterplot(fit4, main = "Fit of variance estimate",
+                xlab="peptide count + 1")
+
+
+# adding gene info to results
+DEqMS.results = outputResult(fit4, coef_col = 1)
+
+DEqMS.results$gene_name <- rownames(DEqMS.results)
+
+return(DEqMS.results)
+}
+
+#####################
+# peptide count tables
+########################
+# Maxquant: we use minimum peptide count among six samples
+# count unique+razor peptides used for quantification
+
+pep.count.table <- as.data.frame(msnd[,11])
+rownames(pep.count.table) <- rownames(msnd)
+colnames(pep.count.table) <- "count"
+
+
+# Minimum peptide count of some proteins can be 0
+# add pseudocount 1 to all proteins
+pep.count.table = pep.count.table %>% mutate(., count = count+1)
+
+
+#####################
+# run differential analysis
+#####################
+deqms <- f_DEqMS(protein_matrix = protein.matrix.linear, pep_count_table = pep.count.table)
+
+# 
+# # readd proteins with 4 fall outs in one catagory (without statistics)
+# LFQ_4_zeros_d <- LFQ_4_zeros[,c("gene_name", "na_wt", "na_kd")] %>%
+#   rowwise(.) %>%
+#   mutate(., logFC = case_when(na_wt == 4 ~ Inf,
+#                            na_kd == 4 ~ -Inf,
+#                            T ~ 0), 
+#          AveExpr = NA,
+#           t = NA, 
+#           P.Value = NA,     
+#           adj.P.Val = NA,   
+#           B   = NA,
+#           gene = NA,         
+#           count = NA,
+#           sca.t = NA,
+#           sca.P.Value = NA,
+#           sca.adj.pval = -Inf)
+# 
+# 
+# proteomics_deqms <- rbind(deqms, LFQ_4_zeros_d[, c(4:14, 1)])
+# LFQ_4_zeros_mat <- LFQ_4_zeros[,c("kd1", "kd2", "kd3", "kd4", "wt1", "wt2", "wt3", "wt4")]
+# 
+# rownames(LFQ_4_zeros_mat)<- LFQ_4_zeros$gene_name
+# protein.matrix <- rbind(protein.matrix, LFQ_4_zeros_mat)
+# 
+# # remove duplicated gene ids by choosing the stronger changing protein
+# proteomics_deqms <- left_join(proteomics_deqms, dplyr::select(maxquant_table, gene_name, ensembl_gene_id), by = c(gene_name = "gene_name"))
+# 
+# # proteomics_deqms <- proteomics_deqms %>%
+# #    group_by(ensembl_gene_id) %>%
+# #   arrange(desc(logFC), .by_group = T) %>%
+# #   dplyr::slice(1) %>%
+# #   ungroup(.) %>%
+# #   filter(!is.na(ensembl_gene_id))
+# # 
+
+colnames(deqms)[1] <- "log2FoldChange"
+colnames(deqms)[11] <- "padj"
+colnames(deqms)[12] <- "gene_symbol"
+head(deqms)
+
+# save diff analysis result
+# saveRDS(proteomics_deqms, paste0(outpath, "proteomics_deqms.rds"))
+
+
+```
+
+
+
 
 # export
 ```{r export}
-write.csv(ms, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/MS_data_MMU_02082023.csv")
+write.csv(deqms, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/MS_data_MMU_02082023.csv")
 ```
 
 # Session info

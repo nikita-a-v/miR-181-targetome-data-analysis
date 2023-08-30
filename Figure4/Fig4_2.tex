@@ -534,7 +534,7 @@ dir
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \includegraphics{Fig4_2_files/figure-latex/wobbleecdf-5.pdf}
@@ -559,7 +559,7 @@ dir
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \includegraphics{Fig4_2_files/figure-latex/wobbleecdf-6.pdf}
@@ -666,7 +666,7 @@ dir
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \begin{Shaded}
@@ -688,7 +688,7 @@ dir
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \begin{Shaded}
@@ -866,38 +866,10 @@ dir
 \NormalTok{TEWobbleksTest3 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(TE[TE}\SpecialCharTok{$}\NormalTok{wobble}\SpecialCharTok{==}\StringTok{"Non{-}Canonical"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], TE[TE}\SpecialCharTok{$}\NormalTok{wobble}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
 
 \NormalTok{MSWobbleksTest1 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS[MS}\SpecialCharTok{$}\NormalTok{wobble}\SpecialCharTok{==}\StringTok{"No seed"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS[MS}\SpecialCharTok{$}\NormalTok{wobble}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS[MS$wobble == "No seed", "log2FoldChange"], :
-## p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MSWobbleksTest2 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS[MS}\SpecialCharTok{$}\NormalTok{wobble}\SpecialCharTok{==}\StringTok{"Canonical"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS[MS}\SpecialCharTok{$}\NormalTok{wobble}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS[MS$wobble == "Canonical", "log2FoldChange"], :
-## p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MSWobbleksTest3 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS[MS}\SpecialCharTok{$}\NormalTok{wobble}\SpecialCharTok{==}\StringTok{"Non{-}Canonical"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS[MS}\SpecialCharTok{$}\NormalTok{wobble}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
 
-\begin{verbatim}
-## Warning in ks.test.default(MS[MS$wobble == "Non-Canonical", "log2FoldChange"],
-## : p-value will be approximate in the presence of ties
-\end{verbatim}
 
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{Wobblesig }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{),}
                         \FunctionTok{c}\NormalTok{(}\StringTok{"No seed"}\NormalTok{, }\StringTok{"Canonical"}\NormalTok{, }\StringTok{"Non{-}Canonical"}\NormalTok{, }\StringTok{"No seed"}\NormalTok{, }\StringTok{"Canonical"}\NormalTok{, }\StringTok{"Non{-}Canonical"}\NormalTok{,}
                           \StringTok{"No seed"}\NormalTok{, }\StringTok{"Canonical"}\NormalTok{, }\StringTok{"Non{-}Canonical"}\NormalTok{,}\StringTok{"No seed"}\NormalTok{, }\StringTok{"Canonical"}\NormalTok{, }\StringTok{"Non{-}Canonical"}\NormalTok{),}
@@ -925,9 +897,9 @@ dir
 ## 7          TE       No seed            8.078720e-02
 ## 8          TE     Canonical            8.684659e-01
 ## 9          TE Non-Canonical            8.451155e-01
-## 10         MS       No seed            2.304973e-02
-## 11         MS     Canonical            8.681944e-01
-## 12         MS Non-Canonical            8.025270e-01
+## 10         MS       No seed            2.063777e-02
+## 11         MS     Canonical            7.972666e-01
+## 12         MS Non-Canonical            8.022734e-01
 ##    Asymptotic two-sample Kolmogorov-Smirnov test
 ## 1                                   1.977510e-03
 ## 2                                   6.294551e-06
@@ -938,9 +910,9 @@ dir
 ## 7                                   3.317744e-05
 ## 8                                   4.542360e-02
 ## 9                                   2.051151e-01
-## 10                                  2.754684e-02
-## 11                                  5.044655e-01
-## 12                                  4.991635e-03
+## 10                                  1.534118e-02
+## 11                                  3.165336e-01
+## 12                                  6.964198e-03
 \end{verbatim}
 
 \begin{Shaded}
@@ -1126,7 +1098,7 @@ combined)}\label{by-type-of-mre-wobble-and-non-wobble-combined}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \includegraphics{Fig4_2_files/figure-latex/MREtype-5.pdf}
@@ -1151,7 +1123,7 @@ combined)}\label{by-type-of-mre-wobble-and-non-wobble-combined}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \includegraphics{Fig4_2_files/figure-latex/MREtype-6.pdf}
@@ -1259,7 +1231,7 @@ combined)}\label{by-type-of-mre-wobble-and-non-wobble-combined}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \begin{Shaded}
@@ -1281,7 +1253,7 @@ combined)}\label{by-type-of-mre-wobble-and-non-wobble-combined}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \begin{Shaded}
@@ -1515,60 +1487,12 @@ combined)}\label{by-type-of-mre-wobble-and-non-wobble-combined}}
 \NormalTok{TETypeksTest5 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(TE[TE}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_alt\_38"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], TE[TE}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
 
 \NormalTok{MSTypeksTest1 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS[MS}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_6mer"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS[MS}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS[MS$MREtype == "seed_6mer", "log2FoldChange"], :
-## p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MSTypeksTest2 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS[MS}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_7mer\_a1"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS[MS}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS[MS$MREtype == "seed_7mer_a1", "log2FoldChange"],
-## : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MSTypeksTest3 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS[MS}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_7mer\_m8"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS[MS}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS[MS$MREtype == "seed_7mer_m8", "log2FoldChange"],
-## : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MSTypeksTest4 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS[MS}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_8mer"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS[MS}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS[MS$MREtype == "seed_8mer", "log2FoldChange"], :
-## p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MSTypeksTest5 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS[MS}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_alt\_38"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS[MS}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
 
-\begin{verbatim}
-## Warning in ks.test.default(MS[MS$MREtype == "seed_alt_38", "log2FoldChange"], :
-## p-value will be approximate in the presence of ties
-\end{verbatim}
 
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{Typesig }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{,}
                         \StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{),}
                         \FunctionTok{c}\NormalTok{(}\StringTok{"seed\_6mer"}\NormalTok{, }\StringTok{"seed\_7mer\_a1"}\NormalTok{, }\StringTok{"seed\_7mer\_m8"}\NormalTok{, }\StringTok{"seed\_8mer"}\NormalTok{, }\StringTok{"seed\_alt\_38"}\NormalTok{, }
@@ -1605,11 +1529,11 @@ combined)}\label{by-type-of-mre-wobble-and-non-wobble-combined}}
 ## 13         TE seed_7mer_m8            8.502692e-01
 ## 14         TE    seed_8mer            4.156414e-01
 ## 15         TE  seed_alt_38            7.344542e-02
-## 16         MS    seed_6mer            1.454288e-01
-## 17         MS seed_7mer_a1            4.206178e-01
-## 18         MS seed_7mer_m8            7.964108e-01
-## 19         MS    seed_8mer            2.155652e-01
-## 20         MS  seed_alt_38            7.439077e-01
+## 16         MS    seed_6mer            1.027924e-01
+## 17         MS seed_7mer_a1            4.354216e-01
+## 18         MS seed_7mer_m8            9.037534e-01
+## 19         MS    seed_8mer            2.193621e-01
+## 20         MS  seed_alt_38            6.587539e-01
 ##    Asymptotic two-sample Kolmogorov-Smirnov test
 ## 1                                   1.943522e-01
 ## 2                                   5.004605e-01
@@ -1626,11 +1550,11 @@ combined)}\label{by-type-of-mre-wobble-and-non-wobble-combined}}
 ## 13                                  1.978366e-01
 ## 14                                  2.320939e-01
 ## 15                                  4.596671e-02
-## 16                                  3.382272e-01
-## 17                                  7.785792e-01
-## 18                                  4.262205e-01
-## 19                                  6.369432e-01
-## 20                                  1.772413e-01
+## 16                                  2.891960e-01
+## 17                                  6.927242e-01
+## 18                                  6.064841e-01
+## 19                                  6.439694e-01
+## 20                                  2.930846e-01
 \end{verbatim}
 
 \begin{Shaded}
@@ -1804,9 +1728,9 @@ ecdf}\label{mer-wobble-vs-non-wobble-ecdf}}
 \begin{verbatim}
 ## 
 ##      8mer AA      8mer AU     Multiple      No seed   Non-target    seed_6mer 
-##           33           12          716          486         4717           83 
+##           33           12          696          484         4693           82 
 ## seed_7mer_a1 seed_7mer_m8  seed_alt_38 
-##           40           73           64
+##           40           71           62
 \end{verbatim}
 
 \begin{Shaded}
@@ -1825,7 +1749,7 @@ ecdf}\label{mer-wobble-vs-non-wobble-ecdf}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \includegraphics{Fig4_2_files/figure-latex/8merwooblenonwobble-4.pdf}
@@ -1839,7 +1763,7 @@ ecdf}\label{mer-wobble-vs-non-wobble-ecdf}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \begin{Shaded}
@@ -2027,71 +1951,13 @@ ecdf}\label{mer-wobble-vs-non-wobble-ecdf}}
 \NormalTok{TE8wksTest6 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(TE8w[TE8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"8mer AU"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], TE8w[TE8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
 
 \NormalTok{MS8wksTest1 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS8w[MS8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_6mer"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS8w[MS8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS8w[MS8w$MREtype == "seed_6mer", "log2FoldChange"],
-## : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS8wksTest2 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS8w[MS8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_7mer\_a1"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS8w[MS8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS8w[MS8w$MREtype == "seed_7mer_a1",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS8wksTest3 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS8w[MS8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_7mer\_m8"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS8w[MS8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS8w[MS8w$MREtype == "seed_7mer_m8",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS8wksTest4 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS8w[MS8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_alt\_38"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS8w[MS8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS8w[MS8w$MREtype == "seed_alt_38",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS8wksTest5 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS8w[MS8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"8mer AA"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS8w[MS8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS8w[MS8w$MREtype == "8mer AA", "log2FoldChange"], :
-## p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS8wksTest6 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS8w[MS8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"8mer AU"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS8w[MS8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
 
-\begin{verbatim}
-## Warning in ks.test.default(MS8w[MS8w$MREtype == "8mer AU", "log2FoldChange"], :
-## p-value will be approximate in the presence of ties
-\end{verbatim}
 
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{Type8wsig }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{,}
                         \StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{),}
                         \FunctionTok{c}\NormalTok{(}\StringTok{"seed\_6mer"}\NormalTok{, }\StringTok{"seed\_7mer\_a1"}\NormalTok{, }\StringTok{"seed\_7mer\_m8"}\NormalTok{, }\StringTok{"seed\_alt\_38"}\NormalTok{, }\StringTok{"8mer AA"}\NormalTok{, }\StringTok{"8mer AU"}\NormalTok{,}
@@ -2131,12 +1997,12 @@ ecdf}\label{mer-wobble-vs-non-wobble-ecdf}}
 ## 16         TE  seed_alt_38            7.344542e-02
 ## 17         TE      8mer AA            5.143930e-01
 ## 18         TE      8mer AU            6.339716e-01
-## 19         MS    seed_6mer            1.454288e-01
-## 20         MS seed_7mer_a1            4.206178e-01
-## 21         MS seed_7mer_m8            7.964108e-01
-## 22         MS  seed_alt_38            7.439077e-01
-## 23         MS      8mer AA            1.195680e-01
-## 24         MS      8mer AU            9.525468e-01
+## 19         MS    seed_6mer            1.027924e-01
+## 20         MS seed_7mer_a1            4.354216e-01
+## 21         MS seed_7mer_m8            9.037534e-01
+## 22         MS  seed_alt_38            6.587539e-01
+## 23         MS      8mer AA            1.354226e-01
+## 24         MS      8mer AU            9.868729e-01
 ##    Asymptotic two-sample Kolmogorov-Smirnov test
 ## 1                                   1.943522e-01
 ## 2                                   5.004605e-01
@@ -2156,12 +2022,12 @@ ecdf}\label{mer-wobble-vs-non-wobble-ecdf}}
 ## 16                                  4.596671e-02
 ## 17                                  7.488055e-01
 ## 18                                  3.788896e-01
-## 19                                  3.382272e-01
-## 20                                  7.785792e-01
-## 21                                  4.262205e-01
-## 22                                  1.772413e-01
-## 23                                  5.345421e-01
-## 24                                  9.910340e-01
+## 19                                  2.891960e-01
+## 20                                  6.927242e-01
+## 21                                  6.064841e-01
+## 22                                  2.930846e-01
+## 23                                  5.767154e-01
+## 24                                  9.722010e-01
 \end{verbatim}
 
 \begin{Shaded}
@@ -2335,9 +2201,9 @@ ecdf}\label{mera1-wobble-vs-non-wobble-ecdf}}
 \begin{verbatim}
 ## 
 ##   7mer_a1 AA   7mer_a1 AU     Multiple      No seed   Non-target    seed_6mer 
-##           29           11          716          486         4717           83 
+##           29           11          696          484         4693           82 
 ## seed_7mer_m8    seed_8mer  seed_alt_38 
-##           73           45           64
+##           71           45           62
 \end{verbatim}
 
 \begin{Shaded}
@@ -2356,7 +2222,7 @@ ecdf}\label{mera1-wobble-vs-non-wobble-ecdf}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \includegraphics{Fig4_2_files/figure-latex/7merA1wooblenonwobble-4.pdf}
@@ -2370,7 +2236,7 @@ ecdf}\label{mera1-wobble-vs-non-wobble-ecdf}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \begin{Shaded}
@@ -2558,71 +2424,13 @@ ecdf}\label{mera1-wobble-vs-non-wobble-ecdf}}
 \NormalTok{TE7A1wksTest6 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(TE7A1w[TE7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"7mer\_a1 AU"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], TE7A1w[TE7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
 
 \NormalTok{MS7A1wksTest1 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS7A1w[MS7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_6mer"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS7A1w[MS7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS7A1w[MS7A1w$MREtype == "seed_6mer",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS7A1wksTest2 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS7A1w[MS7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_8mer"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS7A1w[MS7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS7A1w[MS7A1w$MREtype == "seed_8mer",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS7A1wksTest3 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS7A1w[MS7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_7mer\_m8"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS7A1w[MS7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS7A1w[MS7A1w$MREtype == "seed_7mer_m8",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS7A1wksTest4 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS7A1w[MS7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_alt\_38"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS7A1w[MS7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS7A1w[MS7A1w$MREtype == "seed_alt_38",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS7A1wksTest5 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS7A1w[MS7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"7mer\_a1 AA"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS7A1w[MS7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS7A1w[MS7A1w$MREtype == "7mer_a1 AA",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS7A1wksTest6 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS7A1w[MS7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"7mer\_a1 AU"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS7A1w[MS7A1w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
 
-\begin{verbatim}
-## Warning in ks.test.default(MS7A1w[MS7A1w$MREtype == "7mer_a1 AU",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
 
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{Type7A1wsig }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{,}
                         \StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{),}
                         \FunctionTok{c}\NormalTok{(}\StringTok{"seed\_6mer"}\NormalTok{, }\StringTok{"seed\_8mer"}\NormalTok{, }\StringTok{"seed\_7mer\_m8"}\NormalTok{, }\StringTok{"seed\_alt\_38"}\NormalTok{, }\StringTok{"7mer\_a1 AA"}\NormalTok{, }\StringTok{"7mer\_a1 AU"}\NormalTok{,}
@@ -2662,12 +2470,12 @@ ecdf}\label{mera1-wobble-vs-non-wobble-ecdf}}
 ## 16         TE  seed_alt_38            7.344542e-02
 ## 17         TE   7mer_a1 AA            4.711325e-01
 ## 18         TE   7mer_a1 AU            4.198263e-01
-## 19         MS    seed_6mer            1.454288e-01
-## 20         MS    seed_8mer            2.155652e-01
-## 21         MS seed_7mer_m8            7.964108e-01
-## 22         MS  seed_alt_38            7.439077e-01
-## 23         MS   7mer_a1 AA            5.681525e-01
-## 24         MS   7mer_a1 AU            5.042444e-01
+## 19         MS    seed_6mer            1.027924e-01
+## 20         MS    seed_8mer            2.193621e-01
+## 21         MS seed_7mer_m8            9.037534e-01
+## 22         MS  seed_alt_38            6.587539e-01
+## 23         MS   7mer_a1 AA            5.896834e-01
+## 24         MS   7mer_a1 AU            4.951936e-01
 ##    Asymptotic two-sample Kolmogorov-Smirnov test
 ## 1                                   1.943522e-01
 ## 2                                   2.999255e-05
@@ -2687,12 +2495,12 @@ ecdf}\label{mera1-wobble-vs-non-wobble-ecdf}}
 ## 16                                  4.596671e-02
 ## 17                                  5.699959e-01
 ## 18                                  6.546749e-01
-## 19                                  3.382272e-01
-## 20                                  6.369432e-01
-## 21                                  4.262205e-01
-## 22                                  1.772413e-01
-## 23                                  9.883246e-01
-## 24                                  8.296813e-01
+## 19                                  2.891960e-01
+## 20                                  6.439694e-01
+## 21                                  6.064841e-01
+## 22                                  2.930846e-01
+## 23                                  9.732241e-01
+## 24                                  7.858456e-01
 \end{verbatim}
 
 \begin{Shaded}
@@ -2866,9 +2674,9 @@ ecdf}\label{mer_m8-wobble-vs-non-wobble-ecdf}}
 \begin{verbatim}
 ## 
 ##   7mer_m8 AA   7mer_m8 AU     Multiple      No seed   Non-target    seed_6mer 
-##           50           23          716          486         4717           83 
+##           50           21          696          484         4693           82 
 ## seed_7mer_a1    seed_8mer  seed_alt_38 
-##           40           45           64
+##           40           45           62
 \end{verbatim}
 
 \begin{Shaded}
@@ -2887,7 +2695,7 @@ ecdf}\label{mer_m8-wobble-vs-non-wobble-ecdf}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \includegraphics{Fig4_2_files/figure-latex/7mer_m8wooblenonwobble-4.pdf}
@@ -2901,7 +2709,7 @@ ecdf}\label{mer_m8-wobble-vs-non-wobble-ecdf}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \begin{Shaded}
@@ -3089,71 +2897,13 @@ ecdf}\label{mer_m8-wobble-vs-non-wobble-ecdf}}
 \NormalTok{TE7m8wksTest6 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(TE7m8w[TE7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"7mer\_m8 AU"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], TE7m8w[TE7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
 
 \NormalTok{MS7m8wksTest1 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS7m8w[MS7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_6mer"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS7m8w[MS7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS7m8w[MS7m8w$MREtype == "seed_6mer",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS7m8wksTest2 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS7m8w[MS7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_7mer\_a1"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS7m8w[MS7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS7m8w[MS7m8w$MREtype == "seed_7mer_a1",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS7m8wksTest3 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS7m8w[MS7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_8mer"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS7m8w[MS7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS7m8w[MS7m8w$MREtype == "seed_8mer",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS7m8wksTest4 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS7m8w[MS7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_alt\_38"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS7m8w[MS7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS7m8w[MS7m8w$MREtype == "seed_alt_38",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS7m8wksTest5 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS7m8w[MS7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"7mer\_m8 AA"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS7m8w[MS7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS7m8w[MS7m8w$MREtype == "7mer_m8 AA",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS7m8wksTest6 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS7m8w[MS7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"7mer\_m8 AU"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS7m8w[MS7m8w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
 
-\begin{verbatim}
-## Warning in ks.test.default(MS7m8w[MS7m8w$MREtype == "7mer_m8 AU",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
 
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{Type7m8wsig }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{,}
                         \StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{),}
                         \FunctionTok{c}\NormalTok{(}\StringTok{"seed\_6mer"}\NormalTok{, }\StringTok{"seed\_7mer\_a1"}\NormalTok{, }\StringTok{"seed\_8mer"}\NormalTok{, }\StringTok{"seed\_alt\_38"}\NormalTok{, }\StringTok{"7mer\_m8 AA"}\NormalTok{, }\StringTok{"7mer\_m8 AU"}\NormalTok{,}
@@ -3193,12 +2943,12 @@ ecdf}\label{mer_m8-wobble-vs-non-wobble-ecdf}}
 ## 16         TE  seed_alt_38            7.344542e-02
 ## 17         TE   7mer_m8 AA            8.159848e-01
 ## 18         TE   7mer_m8 AU            6.202040e-01
-## 19         MS    seed_6mer            1.454288e-01
-## 20         MS seed_7mer_a1            4.206178e-01
-## 21         MS    seed_8mer            2.155652e-01
-## 22         MS  seed_alt_38            7.439077e-01
-## 23         MS   7mer_m8 AA            9.179521e-01
-## 24         MS   7mer_m8 AU            7.455353e-01
+## 19         MS    seed_6mer            1.027924e-01
+## 20         MS seed_7mer_a1            4.354216e-01
+## 21         MS    seed_8mer            2.193621e-01
+## 22         MS  seed_alt_38            6.587539e-01
+## 23         MS   7mer_m8 AA            8.839991e-01
+## 24         MS   7mer_m8 AU            6.154271e-01
 ##    Asymptotic two-sample Kolmogorov-Smirnov test
 ## 1                                   1.943522e-01
 ## 2                                   5.004605e-01
@@ -3218,12 +2968,12 @@ ecdf}\label{mer_m8-wobble-vs-non-wobble-ecdf}}
 ## 16                                  4.596671e-02
 ## 17                                  1.328122e-01
 ## 18                                  9.783545e-01
-## 19                                  3.382272e-01
-## 20                                  7.785792e-01
-## 21                                  6.369432e-01
-## 22                                  1.772413e-01
-## 23                                  9.387790e-01
-## 24                                  2.034385e-01
+## 19                                  2.891960e-01
+## 20                                  6.927242e-01
+## 21                                  6.439694e-01
+## 22                                  2.930846e-01
+## 23                                  9.495037e-01
+## 24                                  3.390773e-01
 \end{verbatim}
 
 \begin{Shaded}
@@ -3397,9 +3147,9 @@ ecdf}\label{mer-wobble-vs-non-wobble-ecdf-1}}
 \begin{verbatim}
 ## 
 ##      6mer AA      6mer AU     Multiple      No seed   Non-target seed_7mer_a1 
-##           50           33          716          486         4717           40 
+##           49           33          696          484         4693           40 
 ## seed_7mer_m8    seed_8mer  seed_alt_38 
-##           73           45           64
+##           71           45           62
 \end{verbatim}
 
 \begin{Shaded}
@@ -3418,7 +3168,7 @@ ecdf}\label{mer-wobble-vs-non-wobble-ecdf-1}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \includegraphics{Fig4_2_files/figure-latex/6merwooblenonwobble-4.pdf}
@@ -3432,7 +3182,7 @@ ecdf}\label{mer-wobble-vs-non-wobble-ecdf-1}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \begin{Shaded}
@@ -3620,71 +3370,13 @@ ecdf}\label{mer-wobble-vs-non-wobble-ecdf-1}}
 \NormalTok{TE6wksTest6 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(TE6w[TE6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"6mer AU"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], TE6w[TE6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
 
 \NormalTok{MS6wksTest1 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS6w[MS6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_8mer"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS6w[MS6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS6w[MS6w$MREtype == "seed_8mer", "log2FoldChange"],
-## : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS6wksTest2 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS6w[MS6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_7mer\_a1"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS6w[MS6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS6w[MS6w$MREtype == "seed_7mer_a1",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS6wksTest3 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS6w[MS6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_7mer\_m8"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS6w[MS6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS6w[MS6w$MREtype == "seed_7mer_m8",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS6wksTest4 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS6w[MS6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_alt\_38"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS6w[MS6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS6w[MS6w$MREtype == "seed_alt_38",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS6wksTest5 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS6w[MS6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"6mer AA"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS6w[MS6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MS6w[MS6w$MREtype == "6mer AA", "log2FoldChange"], :
-## p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MS6wksTest6 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MS6w[MS6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"6mer AU"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MS6w[MS6w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
 
-\begin{verbatim}
-## Warning in ks.test.default(MS6w[MS6w$MREtype == "6mer AU", "log2FoldChange"], :
-## p-value will be approximate in the presence of ties
-\end{verbatim}
 
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{Type6wsig }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{,}
                         \StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{),}
                         \FunctionTok{c}\NormalTok{(}\StringTok{"seed\_8mer"}\NormalTok{, }\StringTok{"seed\_7mer\_a1"}\NormalTok{, }\StringTok{"seed\_7mer\_m8"}\NormalTok{, }\StringTok{"seed\_alt\_38"}\NormalTok{, }\StringTok{"6mer AA"}\NormalTok{, }\StringTok{"6mer AU"}\NormalTok{,}
@@ -3724,12 +3416,12 @@ ecdf}\label{mer-wobble-vs-non-wobble-ecdf-1}}
 ## 16         TE  seed_alt_38            7.344542e-02
 ## 17         TE      6mer AA            8.484386e-01
 ## 18         TE      6mer AU            6.865960e-01
-## 19         MS    seed_8mer            2.155652e-01
-## 20         MS seed_7mer_a1            4.206178e-01
-## 21         MS seed_7mer_m8            7.964108e-01
-## 22         MS  seed_alt_38            7.439077e-01
-## 23         MS      6mer AA            2.644639e-02
-## 24         MS      6mer AU            5.737392e-01
+## 19         MS    seed_8mer            2.193621e-01
+## 20         MS seed_7mer_a1            4.354216e-01
+## 21         MS seed_7mer_m8            9.037534e-01
+## 22         MS  seed_alt_38            6.587539e-01
+## 23         MS      6mer AA            1.702130e-02
+## 24         MS      6mer AU            6.163264e-01
 ##    Asymptotic two-sample Kolmogorov-Smirnov test
 ## 1                                   2.999255e-05
 ## 2                                   5.004605e-01
@@ -3749,12 +3441,12 @@ ecdf}\label{mer-wobble-vs-non-wobble-ecdf-1}}
 ## 16                                  4.596671e-02
 ## 17                                  7.880630e-02
 ## 18                                  6.902798e-01
-## 19                                  6.369432e-01
-## 20                                  7.785792e-01
-## 21                                  4.262205e-01
-## 22                                  1.772413e-01
-## 23                                  1.462428e-01
-## 24                                  1.203722e-01
+## 19                                  6.439694e-01
+## 20                                  6.927242e-01
+## 21                                  6.064841e-01
+## 22                                  2.930846e-01
+## 23                                  4.658590e-02
+## 24                                  1.219600e-01
 \end{verbatim}
 
 \begin{Shaded}
@@ -3928,9 +3620,9 @@ ecdf}\label{alt_38-wobble-vs-non-wobble-ecdf}}
 \begin{verbatim}
 ## 
 ##    alt_38 AA    alt_38 AU     Multiple      No seed   Non-target    seed_6mer 
-##           42           22          716          486         4717           83 
+##           40           22          696          484         4693           82 
 ## seed_7mer_a1 seed_7mer_m8    seed_8mer 
-##           40           73           45
+##           40           71           45
 \end{verbatim}
 
 \begin{Shaded}
@@ -3949,7 +3641,7 @@ ecdf}\label{alt_38-wobble-vs-non-wobble-ecdf}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \includegraphics{Fig4_2_files/figure-latex/alt_38wooblenonwobble-4.pdf}
@@ -3963,7 +3655,7 @@ ecdf}\label{alt_38-wobble-vs-non-wobble-ecdf}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \begin{Shaded}
@@ -4151,71 +3843,13 @@ ecdf}\label{alt_38-wobble-vs-non-wobble-ecdf}}
 \NormalTok{TEa38wksTest6 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(TEa38w[TEa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"alt\_38 AU"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], TEa38w[TEa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
 
 \NormalTok{MSa38wksTest1 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MSa38w[MSa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_6mer"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MSa38w[MSa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MSa38w[MSa38w$MREtype == "seed_6mer",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MSa38wksTest2 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MSa38w[MSa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_7mer\_a1"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MSa38w[MSa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MSa38w[MSa38w$MREtype == "seed_7mer_a1",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MSa38wksTest3 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MSa38w[MSa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_7mer\_m8"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MSa38w[MSa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MSa38w[MSa38w$MREtype == "seed_7mer_m8",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MSa38wksTest4 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MSa38w[MSa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"seed\_8mer"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MSa38w[MSa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MSa38w[MSa38w$MREtype == "seed_8mer",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MSa38wksTest5 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MSa38w[MSa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"alt\_38 AA"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MSa38w[MSa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in ks.test.default(MSa38w[MSa38w$MREtype == "alt_38 AA",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{MSa38wksTest6 }\OtherTok{\textless{}{-}} \FunctionTok{ks.test}\NormalTok{(MSa38w[MSa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"alt\_38 AU"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{], MSa38w[MSa38w}\SpecialCharTok{$}\NormalTok{MREtype}\SpecialCharTok{==}\StringTok{"Non{-}target"}\NormalTok{, }\StringTok{"log2FoldChange"}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
 
-\begin{verbatim}
-## Warning in ks.test.default(MSa38w[MSa38w$MREtype == "alt_38 AU",
-## "log2FoldChange"], : p-value will be approximate in the presence of ties
-\end{verbatim}
 
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{Typea38wsig }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RNA"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{, }\StringTok{"RPF"}\NormalTok{,}
                         \StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"TE"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{, }\StringTok{"MS"}\NormalTok{),}
                         \FunctionTok{c}\NormalTok{(}\StringTok{"seed\_6mer"}\NormalTok{, }\StringTok{"seed\_7mer\_a1"}\NormalTok{, }\StringTok{"seed\_7mer\_m8"}\NormalTok{, }\StringTok{"seed\_8mer"}\NormalTok{, }\StringTok{"alt\_38 AA"}\NormalTok{, }\StringTok{"alt\_38 AU"}\NormalTok{,}
@@ -4255,12 +3889,12 @@ ecdf}\label{alt_38-wobble-vs-non-wobble-ecdf}}
 ## 16         TE    seed_8mer            4.156414e-01
 ## 17         TE    alt_38 AA            1.438686e-01
 ## 18         TE    alt_38 AU            2.746890e-01
-## 19         MS    seed_6mer            1.454288e-01
-## 20         MS seed_7mer_a1            4.206178e-01
-## 21         MS seed_7mer_m8            7.964108e-01
-## 22         MS    seed_8mer            2.155652e-01
-## 23         MS    alt_38 AA            7.253089e-01
-## 24         MS    alt_38 AU            9.788502e-01
+## 19         MS    seed_6mer            1.027924e-01
+## 20         MS seed_7mer_a1            4.354216e-01
+## 21         MS seed_7mer_m8            9.037534e-01
+## 22         MS    seed_8mer            2.193621e-01
+## 23         MS    alt_38 AA            5.921738e-01
+## 24         MS    alt_38 AU            9.302110e-01
 ##    Asymptotic two-sample Kolmogorov-Smirnov test
 ## 1                                   1.943522e-01
 ## 2                                   5.004605e-01
@@ -4280,12 +3914,12 @@ ecdf}\label{alt_38-wobble-vs-non-wobble-ecdf}}
 ## 16                                  2.320939e-01
 ## 17                                  3.481779e-01
 ## 18                                  9.912630e-02
-## 19                                  3.382272e-01
-## 20                                  7.785792e-01
-## 21                                  4.262205e-01
-## 22                                  6.369432e-01
-## 23                                  5.756411e-01
-## 24                                  4.724910e-01
+## 19                                  2.891960e-01
+## 20                                  6.927242e-01
+## 21                                  6.064841e-01
+## 22                                  6.439694e-01
+## 23                                  7.784498e-01
+## 24                                  3.656420e-01
 \end{verbatim}
 
 \begin{Shaded}
@@ -4381,7 +4015,7 @@ ecdf}\label{alt_38-wobble-vs-non-wobble-ecdf}}
 \begin{verbatim}
 ## 
 ## Non-target 
-##       6224
+##       6173
 \end{verbatim}
 
 \begin{Shaded}
@@ -4454,7 +4088,7 @@ ecdf}\label{alt_38-wobble-vs-non-wobble-ecdf}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \includegraphics{Fig4_2_files/figure-latex/mmsat4-3.pdf}
@@ -4514,7 +4148,7 @@ ecdf}\label{alt_38-wobble-vs-non-wobble-ecdf}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \begin{Shaded}
@@ -4786,7 +4420,7 @@ ecdf}\label{alt_38-wobble-vs-non-wobble-ecdf}}
 \begin{verbatim}
 ## 
 ## Non-target 
-##       6224
+##       6173
 \end{verbatim}
 
 \begin{Shaded}
@@ -4859,7 +4493,7 @@ ecdf}\label{alt_38-wobble-vs-non-wobble-ecdf}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \includegraphics{Fig4_2_files/figure-latex/MurSatRep1-3.pdf}
@@ -4919,7 +4553,7 @@ ecdf}\label{alt_38-wobble-vs-non-wobble-ecdf}}
 \end{Shaded}
 
 \begin{verbatim}
-## Warning: Removed 712 rows containing non-finite values (`stat_ecdf()`).
+## Warning: Removed 701 rows containing non-finite values (`stat_ecdf()`).
 \end{verbatim}
 
 \begin{Shaded}
@@ -5740,7 +5374,7 @@ satellites}\label{maplots-of-targets-with-satellites}}
 ##  [7] Rtsne_0.16           tibble_3.2.1         dplyr_1.1.2         
 ## [10] rtracklayer_1.60.0   GenomicRanges_1.52.0 GenomeInfoDb_1.36.1 
 ## [13] IRanges_2.34.1       S4Vectors_0.38.1     BiocGenerics_0.46.0 
-## [16] ggplot2_3.4.2       
+## [16] ggplot2_3.4.3       
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] DBI_1.1.3                   bitops_1.0-7               
@@ -5753,7 +5387,7 @@ satellites}\label{maplots-of-targets-with-satellites}}
 ## [15] backports_1.4.1             dbplyr_2.3.3               
 ## [17] XVector_0.40.0              labeling_0.4.2             
 ## [19] utf8_1.2.3                  Rsamtools_2.16.0           
-## [21] rmarkdown_2.23              purrr_1.0.1                
+## [21] rmarkdown_2.24              purrr_1.0.2                
 ## [23] bit_4.0.5                   xfun_0.39                  
 ## [25] zlibbioc_1.46.0             cachem_1.0.8               
 ## [27] progress_1.2.2              blob_1.2.4                 
@@ -5766,7 +5400,7 @@ satellites}\label{maplots-of-targets-with-satellites}}
 ## [41] knitr_1.43                  Matrix_1.6-0               
 ## [43] tidyselect_1.2.0            rstudioapi_0.15.0          
 ## [45] abind_1.4-5                 yaml_2.3.7                 
-## [47] codetools_0.2-19            curl_5.0.1                 
+## [47] codetools_0.2-19            curl_5.0.2                 
 ## [49] lattice_0.21-8              Biobase_2.60.0             
 ## [51] withr_2.5.0                 KEGGREST_1.40.0            
 ## [53] evaluate_0.21               polyclip_1.10-4            
@@ -5785,11 +5419,11 @@ satellites}\label{maplots-of-targets-with-satellites}}
 ## [79] GenomeInfoDbData_1.2.10     restfulr_0.0.15            
 ## [81] cli_3.6.1                   rappdirs_0.3.3             
 ## [83] fansi_1.0.4                 S4Arrays_1.0.5             
-## [85] gtable_0.3.3                rstatix_0.7.2              
+## [85] gtable_0.3.4                rstatix_0.7.2              
 ## [87] digest_0.6.33               farver_2.1.1               
 ## [89] rjson_0.2.21                memoise_2.0.1              
 ## [91] htmltools_0.5.5             lifecycle_1.0.3            
-## [93] httr_1.4.6                  bit64_4.0.5
+## [93] httr_1.4.7                  bit64_4.0.5
 \end{verbatim}
 
 \end{document}
