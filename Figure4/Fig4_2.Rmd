@@ -313,6 +313,9 @@ dev.off()
 
 
 table(RPF$wobble)
+table(RNA$wobble)
+table(TE$wobble)
+
 ```
 # TE density wobble
 ```{R TEdensitywobble}
@@ -599,6 +602,9 @@ dev.off()
 
 
 table(RPF$MREtype)
+table(RNA$MREtype)
+table(TE$MREtype)
+
 ```
 # TE density type
 ```{R TEdensitytype}
@@ -967,7 +973,7 @@ pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer
 typeECDFMS7A1w
 dev.off()
 
-
+table(RPF7A1w$MREtype)
 ```
 
 ## Significance
@@ -1149,7 +1155,7 @@ pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/7mer
 typeECDFMS7m8w
 dev.off()
 
-
+table(RPF7m8w$MREtype)
 ```
 
 
@@ -1331,7 +1337,7 @@ pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/6mer
 typeECDFMS6w
 dev.off()
 
-
+table(RPF6w$MREtype)
 ```
 
 ## Significance
@@ -1513,6 +1519,8 @@ typeECDFMSa38w
 dev.off()
 
 
+table(RPFa38w$MREtype)
+
 ```
 
 
@@ -1656,7 +1664,7 @@ table(TE$tvsmmsat4)
 tolECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(tvsmmsat4, levels = c("Non-target", "MMsat4", "miR-181 target", "both")))) + 
   stat_ecdf(geom="step", linewidth=2*zoomfac) +
   geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
-  scale_colour_manual(values = c("black", farbe1, farbe3, RPFncol)) +
+  scale_colour_manual(values = c("black", farbe1, farbe3, RNAncol)) +
   coord_cartesian(xlim = c(-xlim, xlim)) + 
   theme_paper() +
   scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
@@ -1724,6 +1732,8 @@ dev.off()
 
 
 table(RPF$tvsmmsat4)
+table(RNA$tvsmmsat4)
+table(TE$tvsmmsat4)
 ```
 
 
@@ -1911,6 +1921,9 @@ dev.off()
 
 
 table(RPF$tvsMurSatRep1)
+table(RNA$tvsMurSatRep1)
+table(TE$tvsMurSatRep1)
+
 ```
 ## density mursatrep1 TE
 ```{R TEdensitymursatrep1}
@@ -2231,6 +2244,147 @@ MAmursatrep1RPF
 
 
 ```
+
+#ma plots with significnace and "both" dots mmsat4 and mursatrep1
+```{r masig}
+ylim <- 2
+xlim <- 10^6
+xmin <- 10
+
+
+lfcsig <- 0
+pvsig <- 0.05
+
+#RNA
+#make columns with identifiers
+RNAdat <- RNA[RNA$baseMean >= xmin,]
+RNAdat$ycutoff <- "in"
+RNAdat$ycutoff[RNAdat$log2FoldChange > ylim] <- "high"
+RNAdat$ycutoff[RNAdat$log2FoldChange < -ylim] <- "low"
+
+RNAdat$xcutoff <- "in"
+RNAdat$xcutoff[RNAdat$baseMean > xlim] <- "high"
+
+#implement cutoff
+RNAdat$log2FoldChange[RNAdat$log2FoldChange > ylim] <- ylim
+RNAdat$log2FoldChange[RNAdat$log2FoldChange < -ylim] <- -ylim
+RNAdat$baseMean[RNAdat$baseMean > xlim] <- xlim
+
+
+
+
+#RPF
+#make columns with identifiers
+RPFdat <- RPF[RPF$baseMean >= xmin,]
+RPFdat$ycutoff <- "in"
+RPFdat$ycutoff[RPFdat$log2FoldChange > ylim] <- "high"
+RPFdat$ycutoff[RPFdat$log2FoldChange < -ylim] <- "low"
+
+RPFdat$xcutoff <- "in"
+RPFdat$xcutoff[RPFdat$baseMean > xlim] <- "high"
+
+#implement cutoff
+RPFdat$log2FoldChange[RPFdat$log2FoldChange > ylim] <- ylim
+RPFdat$log2FoldChange[RPFdat$log2FoldChange < -ylim] <- -ylim
+RPFdat$baseMean[RPFdat$baseMean > xlim] <- xlim
+
+#RNA MMsat4
+MAmmsat4RNAsig <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 0.5, 
+     aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
+  scale_fill_manual(values = c(farbeneg, RNAncol, RNApcol)) + scale_colour_manual(values = c(farbeneg, "black", "black")) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RNAncol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="high" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=24, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="low" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=25, size = 1, colour="black", fill=RNAncol) +
+  geom_point(data=RNAdat[RNAdat$tvsmmsat4 == "both" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RPFncol) +
+  theme_paper() +
+  geom_point(data=RNAdat[RNAdat$xcutoff == "high",], aes(y=log2FoldChange, x=log10(baseMean)), shape="\u25BA", size = 3, colour=farbeneg) +
+  geom_hline(yintercept = 0, linetype="solid", colour="black") + 
+  geom_hline(yintercept = lfcsig, linetype="dashed", colour="black") + 
+  geom_hline(yintercept = -lfcsig, linetype="dashed", colour="black") + 
+  scale_y_continuous("Fold change miR-181a/b-1 KO/WT (log2)", limits = c(-ylim, ylim)) + scale_x_continuous("Base mean expression ratio (log10)", limits = c(log10(xmin), log10(xlim))) +
+  guides(color = guide_legend(override.aes = list(size = 3))) + 
+  ggtitle("RNA MMsat4")
+
+MAmmsat4RNAsig
+
+pdf("MAplot_RNA_mmsat4.pdf", width = 1.8, height = 2)
+MAmmsat4RNAsig
+dev.off()
+
+#RNA Mursatrep1
+Mursatrep1RNAsig <- ggplot(RNAdat[!(RNAdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 0.5, 
+     aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
+  scale_fill_manual(values = c(farbeneg, RNAncol, RNApcol)) + scale_colour_manual(values = c(farbeneg, "black", "black")) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RNAncol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="in" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant up" & RNAdat$ycutoff =="high" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=24, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RNAdat[RNAdat$LFCandPADJSig == "Significant down" & RNAdat$ycutoff =="low" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=25, size = 1, colour="black", fill=RNAncol) +
+  geom_point(data=RNAdat[RNAdat$tvsMurSatRep1 == "both" & RNAdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RPFncol) +
+  theme_paper() +
+  geom_point(data=RNAdat[RNAdat$xcutoff == "high",], aes(y=log2FoldChange, x=log10(baseMean)), shape="\u25BA", size = 3, colour=farbeneg) +
+  geom_hline(yintercept = 0, linetype="solid", colour="black") + 
+  geom_hline(yintercept = lfcsig, linetype="dashed", colour="black") + 
+  geom_hline(yintercept = -lfcsig, linetype="dashed", colour="black") + 
+  scale_y_continuous("Fold change miR-181a/b-1 KO/WT (log2)", limits = c(-ylim, ylim)) + scale_x_continuous("Base mean expression ratio (log10)", limits = c(log10(xmin), log10(xlim))) +
+  guides(color = guide_legend(override.aes = list(size = 3)))+ 
+  ggtitle("RNA Mursatrep1")
+
+Mursatrep1RNAsig
+
+pdf("MAplot_RNA_Mursatrep1.pdf", width = 1.8, height = 2)
+Mursatrep1RNAsig
+dev.off()
+
+#RPF MMsat4
+MAmmsat4RPFsig <- ggplot(RPFdat[!(RPFdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 0.5, 
+     aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
+  scale_fill_manual(values = c(farbeneg, RNAncol, RNApcol)) + scale_colour_manual(values = c(farbeneg, "black", "black")) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RNAncol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="high" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=24, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="low" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=25, size = 1, colour="black", fill=RNAncol) +
+  geom_point(data=RPFdat[RPFdat$tvsmmsat4 == "both" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RPFncol) +
+  theme_paper() +
+  geom_point(data=RPFdat[RPFdat$xcutoff == "high",], aes(y=log2FoldChange, x=log10(baseMean)), shape="\u25BA", size = 3, colour=farbeneg) +
+  geom_hline(yintercept = 0, linetype="solid", colour="black") + 
+  geom_hline(yintercept = lfcsig, linetype="dashed", colour="black") + 
+  geom_hline(yintercept = -lfcsig, linetype="dashed", colour="black") + 
+  scale_y_continuous("Fold change miR-181a/b-1 KO/WT (log2)", limits = c(-ylim, ylim)) + scale_x_continuous("Base mean expression ratio (log10)", limits = c(log10(xmin), log10(xlim))) +
+  guides(color = guide_legend(override.aes = list(size = 3)))+ 
+  ggtitle("RPF MMsat4")
+
+MAmmsat4RPFsig
+
+pdf("MAplot_RPF_mmsat4.pdf", width = 1.8, height = 2)
+MAmmsat4RPFsig
+dev.off()
+
+#RPF Mursatrep1
+Mursatrep1RPFsig <- ggplot(RPFdat[!(RPFdat$xcutoff == "high"),], aes(y=log2FoldChange, x=log10(baseMean))) + geom_point_rast(shape=21, size = 0.5, 
+     aes(fill = factor(LFCandPADJSig), colour=factor(LFCandPADJSig))) +
+  scale_fill_manual(values = c(farbeneg, RNAncol, RNApcol)) + scale_colour_manual(values = c(farbeneg, "black", "black")) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RNAncol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="in" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant up" & RPFdat$ycutoff =="high" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=24, size = 1, colour="black", fill=RNApcol) +
+  geom_point(data=RPFdat[RPFdat$LFCandPADJSig == "Significant down" & RPFdat$ycutoff =="low" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=25, size = 1, colour="black", fill=RNAncol) +
+  geom_point(data=RPFdat[RPFdat$tvsMurSatRep1 == "both" & RPFdat$xcutoff == "in",], aes(y=log2FoldChange, x=log10(baseMean)), shape=21, size = 1, colour="black", fill=RPFncol) +
+  theme_paper() +
+  geom_point(data=RPFdat[RPFdat$xcutoff == "high",], aes(y=log2FoldChange, x=log10(baseMean)), shape="\u25BA", size = 3, colour=farbeneg) +
+  geom_hline(yintercept = 0, linetype="solid", colour="black") + 
+  geom_hline(yintercept = lfcsig, linetype="dashed", colour="black") + 
+  geom_hline(yintercept = -lfcsig, linetype="dashed", colour="black") + 
+  scale_y_continuous("Fold change miR-181a/b-1 KO/WT (log2)", limits = c(-ylim, ylim)) + scale_x_continuous("Base mean expression ratio (log10)", limits = c(log10(xmin), log10(xlim))) +
+  guides(color = guide_legend(override.aes = list(size = 3)))+ 
+  ggtitle("RPF Mursatrep1")
+
+Mursatrep1RPFsig
+
+pdf("MAplot_RPF_Mursatrep1.pdf",width = 1.8, height = 2)
+Mursatrep1RPFsig
+dev.off()
+```
+
 
 
 # Session info

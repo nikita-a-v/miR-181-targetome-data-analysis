@@ -690,6 +690,8 @@ numecdfRPF2Z
 dev.off()
 
 table(RPFnum$BS_num_plot)
+table(RNAnum$BS_num_plot)
+table(TEnum$BS_num_plot)
 ```
 
 # TE density num
@@ -1177,6 +1179,7 @@ regMAJecdfTESZ
 dev.off()
 
 table(TEnumr$region_single)
+table(RNAnumr$region_single)
 
 ```
 
