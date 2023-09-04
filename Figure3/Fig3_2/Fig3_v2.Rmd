@@ -1404,7 +1404,7 @@ head(arev2pdat)
 
 
 # make a dotplot for the top 25 by pvalue of this data
-avrevplot <- ggplot(arev2pdat, aes(y=calculated_ratios, x=factor(Description, levels = arev2pdat[order(arev2pdat$calculated_ratios, decreasing = T),"Description"]), size=Count, colour= p.adjust)) + geom_point() +
+avrevplot <- ggplot(arev2pdat, aes(x=calculated_ratios, y=factor(Description, levels = arev2pdat[order(arev2pdat$calculated_ratios, decreasing = F),"Description"]), size=Count, colour= p.adjust)) + geom_point() +
   theme_paper() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
         legend.position = "right") +
@@ -1413,7 +1413,7 @@ avrevplot <- ggplot(arev2pdat, aes(y=calculated_ratios, x=factor(Description, le
 
 avrevplot
 
-pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/reviplot_akselect.pdf", width=8, height = 4)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/reviplot_akselect.pdf", width=4, height = 6)
 avrevplot
 dev.off()
 ```
