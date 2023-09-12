@@ -39,6 +39,7 @@ library(grid)
 library(biomaRt)
 library(dplyr)
 library(Gviz)
+library(writexl)
 
 
 ```
@@ -442,6 +443,10 @@ save master DFs
 ```{r}
 # write.csv(RNAexp, "RNA_masterframe.csv")
 # write.csv(RPFexp, "RPF_masterframe.csv")
+
+# and as xlsx for supplementary
+write_xlsx(RNAexp, "RNA_masterframe.xlsx")
+write_xlsx(RPFexp, "RPF_masterframe.xlsx")
 
 ```
 

@@ -177,6 +177,17 @@ plot(euler(vlist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2), mai
 pdf("Venn_Overlap of differentially regulated genes.pdf", width = 3, height = 3)
 plot(euler(vlist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2), main = "Overlap of differentially regulated genes")
 dev.off()
+
+
+#t test
+oltable <- matrix(c(311, 237, 898, nrow(RNA[RNA$Gene %in% RPF$Gene & !(RNA$LFCandPADJSig  %in% c("Significant up", "Significant down")) & 
+                                              !(RNA$Gene %in% RPF[RPF$LFCandPADJSig  %in% c("Significant up", "Significant down"),"Gene"]),])),
+                  nrow = 2,
+                  dimnames = list(RNA=c("diff", "non-diff"),
+                                  RPF=c("diff", "non-diff")))
+
+fisher.test(oltable)
+
 ```
 
 
@@ -1402,6 +1413,8 @@ arev2pdat$calculated_ratios <- ratios_calculated
 head(arev2pdat)
 
 
+# export list with old pvalues
+write_xlsx(arev2pdat, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Revigo_BP_OnScreenTable_nonrelevantred_sorted_ak_pvals.xlsx")
 
 
 
@@ -1421,6 +1434,18 @@ avrevplot
 dev.off()
 ```
 
+## revigo unmodified
+hier nochmal der unmodifizierte revigo output für die supplementary table (alte pvalues adden)
+```{r revigounmod}
+avrev_org <- read_xlsx("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Revigo_BP_Table_full.xlsx")
+
+
+arevorgBPdf <- BPdf[BPdf$ID %in% avrev_org$TermID,]
+
+# export list with old pvalues
+write_xlsx(arevorgBPdf, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Revigo_BP_Table_full_pval.xlsx")
+
+```
 
 
 ## MSigDB
@@ -1492,6 +1517,48 @@ write_xlsx(mirdf, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_pape
 
 ```
 
+
+
+# Supplementary table S3
+```{r supTS3}
+bsnum
+
+S3table <- largetframe[!duplicated(largetframe$geneID) & !is.na(largetframe$geneID),c("geneID", "geneName", "geneType")]
+colnames(S3table) <- c("ID", "gene_symbol", "gene biotype")
+S3table <- left_join(S3table, utr5, by="gene_symbol")
+S3table <- left_join(S3table, utr3, by="gene_symbol")
+S3table <- left_join(S3table, cds, by="gene_symbol")
+S3table[is.na(S3table$num_5UTR),"num_5UTR"] <- 0
+S3table[is.na(S3table$num_3UTR),"num_3UTR"] <- 0
+S3table[is.na(S3table$num_CDS),"num_CDS"] <- 0
+S3table$total_bs_number <- rowSums(S3table[,c("num_5UTR", "num_3UTR", "num_CDS")])
+S3table <- left_join(S3table, RNA[,c("gene_symbol", "log2FoldChange", "padj")], by="gene_symbol")
+colnames(S3table)[8:9] <- c("log2FoldChange_RNAseq", "padj_RNAseq")
+S3table <- left_join(S3table, RPF[,c("gene_symbol", "log2FoldChange", "padj")], by="gene_symbol")
+colnames(S3table)[10:11] <- c("log2FoldChange_RF", "padj_RF")
+
+head(S3table)
+
+#export
+
+write_xlsx(S3table, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supplementary_tables/SupplementaryTable_3_onlydat.xlsx")
+
+# make a second tab with non coding genes
+#import data
+nctab <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Methods/mir181-enriched_binding_site_definition/2023-04-03-BS_mir181_enriched.rds")
+
+nctabframe <- as.data.frame(nctab)
+S3tab_nc <- nctabframe[!(nctabframe$geneType == "protein_coding"), c("geneID", "geneName", "geneType")]
+
+S3tab_ncE <- as.data.frame(table(S3tab_nc$geneID))
+colnames(S3tab_ncE) <- c("geneID", "total_bs_number")
+S3tab_ncE <- left_join(S3tab_ncE, S3tab_nc[!duplicated(S3tab_nc$geneID),], by="geneID")
+S3tab_ncE <- S3tab_ncE[,c(1,3,4,2)]
+
+#export
+write_xlsx(S3tab_ncE, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supplementary_tables/SupplementaryTable_3_onlydat_nc.xlsx")
+
+```
 
 
 

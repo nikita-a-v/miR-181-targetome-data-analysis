@@ -25,18 +25,19 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Set directory
 ```{r directory}
-setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3")
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3")
 ```
 
 Load packages
 ```{r load_packages}
-source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
 library(ComplexHeatmap)
 library(ggplot2)
 library(circlize)
 library(dplyr)
 library(eulerr)
-library(xlsx)
+library(readxl)
+library(writexl)
 library(ggpubr)
 
 
@@ -46,33 +47,24 @@ library(ggpubr)
 Load data
 ```{r load_data}
 #Ribo
-RNA <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Figure_3/RNA_masterframe.csv")
-RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Figure_3/RPF_masterframe.csv")
+RNA <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
+RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
 #ms
-ms <- as.data.frame(read.xlsx("D:/Krueger_Lab/R/ECDF plots/Kreuger_analysis_ms.xlsx", 
-                              sheetName = "Analysis"))
-#adjust upper case lower case of gene names of MS data:
-#function
-capFirst <- function(s) {
-  paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")
-}
-ms$Gene.Symbol <- tolower(ms$Gene.Symbol)
-ms$Gene.Symbol <- capFirst(ms$Gene.Symbol)
-names(ms)[names(ms) == 'Gene.Symbol'] <- 'GeneName'
-head(ms$GeneName)
+ms <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/MS_data_MMU_02082023.csv" )
+
 #diff clip
-eclipGR <- readRDS("D:/Krueger_Lab/miReCLIP/Mirco/DifferentialBinding/BsDifferentialResult.rds")
-eclip <- as.data.frame(eclipGR)
-tframe <- eclip[eclip$res.log2FoldChange < 0 & eclip$res.padj <= 0.05,] 
-head(tframe)
+# eclipGR <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/miReCLIP/Mirco/DifferentialBinding/BsDifferentialResult.rds")
+# eclip <- as.data.frame(eclipGR)
+# tframe <- eclip[eclip$res.log2FoldChange < 0 & eclip$res.padj <= 0.05,] 
+# head(tframe)
 
 #newdiffclip
-mir181bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
+mir181bs <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure1/mir181_binding_sites__venn_types/mir181_bs.rds")
 names(mir181bs) <- 1:length(mir181bs)
 mir181df <- as.data.frame(mir181bs)
 
 #Translational efficiency
-TEframe <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Supporting scipts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+TEframe <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/deltaTE/TE_m23_genesInRNAandRPF.csv")
 head(TEframe)
 ```
 
@@ -144,6 +136,17 @@ plot(euler(vlist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2), mai
 pdf("Venn_Overlap of differentially regulated genes.pdf", width = 3, height = 3)
 plot(euler(vlist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2), main = "Overlap of differentially regulated genes")
 dev.off()
+
+#t test
+oltable <- matrix(c(311, 237, 898, nrow(RNA[RNA$Gene %in% RPF$Gene & !(RNA$LFCandPADJSig  %in% c("Significant up", "Significant down")) & 
+                                              !(RNA$Gene %in% RPF[RPF$LFCandPADJSig  %in% c("Significant up", "Significant down"),"Gene"]),])),
+                  nrow = 2,
+                  dimnames = list(RNA=c("diff", "non-diff"),
+                                  RPF=c("diff", "non-diff")))
+
+fisher.test(oltable)
+
+
 ```
 
 
@@ -434,11 +437,11 @@ techist
 
 
 #export
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/TEbox_clustered.pdf", height = 2, width = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/TEbox_clustered.pdf", height = 2, width = 2)
 tecplot
 dev.off()
 
-pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure3/TEhist_clustered.pdf", height = 2, width = 2)
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/TEhist_clustered.pdf", height = 2, width = 2)
 techist
 dev.off()
 ```

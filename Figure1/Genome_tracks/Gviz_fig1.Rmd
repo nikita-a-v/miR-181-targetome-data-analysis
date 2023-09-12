@@ -258,7 +258,7 @@ data(geneModels)
 str(geneModels)
 gffframe <- as.data.frame(gff23)
 gffframe <- gffframe[gffframe$seqnames == tchr,]
-grtrack <- GeneRegionTrack(gffframe, genome = "Mmu", chromosome = tchr, name = "Gene",  transcript = "transcript_type", symbol = "gene_name", showId=TRUE, geneSymbol=TRUE, background.title = "brown")
+grtrack <- GeneRegionTrack(gffframe, genome = "Mmu", chromosome = tchr, name = "Gene",  transcript = "transcript_type", symbol = "gene_name", showId=TRUE, geneSymbol=TRUE, background.title = "brown", showExonId=TRUE)
 
 
 plotTracks(list(rnabam, ribobam,  gatrack, grtrack), from = scoord-3000, to= ecoord+6000, type="histogram", featureAnnotation = "id", 
