@@ -1,0 +1,234 @@
+---
+title: "Figure4_v2"
+author: "Nikita Verheyden"
+date: "2023-06-13"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# Setup
+
+dir
+```{r dir}
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure4")
+```
+
+
+## Packages
+```{r packages}
+source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+library(ggplot2)
+library(rtracklayer)
+library(dplyr)
+library(tibble)
+library(Rtsne)
+library(cliProfiler)
+library(GenomicRanges)
+library(cowplot)
+
+```
+
+## Data
+```{r data}
+#Ribo profiling
+RNA <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
+RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
+
+#load the gtf file to compare genes
+gff23 <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
+gff23path <- file.path("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
+
+#targets
+larget <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_with_seeds.rds")
+largetframe <- as.data.frame(larget)
+
+
+# modify dataset to only include working targetsets
+
+#only use miR181_enriched und both
+# largetframe <- largetframe[largetframe$set %in% c("mir181_enriched", "ago_bs_mir181_chi&mir181_enriched"),]
+
+
+
+#MMsat4
+repeat_masker <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure2/MMsat4/repeat_masker.rds")
+MMSAT4 <- repeat_masker[repeat_masker$repName == "MMSAT4"]
+```
+
+
+## colours
+```{r colours}
+#colours
+farbeneg <- "#b4b4b4"
+farbe1 <- "#0073C2FF"
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF"
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+  
+RNApcol <- "#b56504"
+RNAncol <- "#027d73"
+RPFpcol <- "#c4c404"
+RPFncol <- "#8d0391"
+```
+
+## axis limits
+```{r axislim}
+xlim <- 0.8
+zoomfac <- 0.45
+```
+
+# wobble plot
+
+## ecdf
+```{r wobbleecdf}
+#RNA
+RNA$wobble <- "Non-target"
+RNA$wobble[RNA$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.wobble) ,"geneName"]] <- "No seed"
+RNA$wobble[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == FALSE ,"geneName"]] <- "Canonical"
+RNA$wobble[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == TRUE ,"geneName"]] <- "Non-Canonical"
+
+#RPF
+RPF$wobble <- "Non-target"
+RPF$wobble[RPF$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.wobble) ,"geneName"]] <- "No seed"
+RPF$wobble[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == FALSE ,"geneName"]] <- "Canonical"
+RPF$wobble[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == TRUE ,"geneName"]] <- "Non-Canonical"
+
+
+#RPF
+wobbleecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Target genes RPFseq")
+
+wobbleecdfRPF
+
+#zoom
+wobbleecdfRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+wobbleecdfRPFZ
+
+
+#export RPF
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RPF.pdf", width=2, height = 2)
+wobbleecdfRPF
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/wobbleECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+wobbleecdfRPFZ
+dev.off()
+
+
+table(RPF$wobble)
+```
+## by type of MRE (wobble and non wobble combined)
+```{r MREtype}
+#RNA
+RNA$MREtype <- "Non-target"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.type),"geneName"]] <- "No seed"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_6mer","geneName"]] <- "seed_6mer"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+
+#RPF
+RPF$MREtype <- "Non-target"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.type),"geneName"]] <- "No seed"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_6mer","geneName"]] <- "seed_6mer"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+
+# ecdf plots
+#RNA
+typeECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA type of MRE")
+
+typeECDFRNA
+
+#RPF
+typeECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPFtype of MRE")
+
+typeECDFRPF
+
+# zoom
+typeECDFRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+typeECDFRPFZ
+
+#export RPF
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RPF.pdf", width=2, height = 2)
+typeECDFRPF
+dev.off()
+pdf("D:/Krueger_Lab/Publications/miR181_paper/Figure4/typeECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+typeECDFRPFZ
+dev.off()
+
+
+table(RPF$MREtype)
+```
+
+
+# Session info
+```{r sessioninfo}
+sessionInfo()
+```
+
+
+
+
+
+

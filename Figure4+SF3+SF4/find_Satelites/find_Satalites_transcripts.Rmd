@@ -1,0 +1,422 @@
+---
+title: "MMSAT4 & MurSatRep1"
+author: "Melina Klostermann"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  BiocStyle::html_document:
+    toc_float: TRUE
+    code_folding: hide
+    toc: TRUE
+    number_sections: yes
+    fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
+---
+
+```{r setup, include=FALSE}
+require("knitr")
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=F, cache.lazy = FALSE)
+tidy.opts=list(width.cutoff=80,tidy=TRUE, echo=FALSE)
+```
+
+# Libraries and settings
+
+```{r libraries}
+# ----------------------------------------
+# libraries
+# ----------------------------------------
+library(tidyverse)
+library(GenomicRanges)
+library(colorspace)
+library(gghalves)
+library(BSgenome.Mmusculus.UCSC.mm10)
+library(Biostrings)
+library(plyranges)
+library(AnnotationHub)
+library(GenomicFeatures)
+
+# ----------------------------------------
+# settings
+# ----------------------------------------
+out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure4/find_Satelites/"
+source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
+source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
+
+```
+
+# What was done?
+
+
+
+
+# Files
+```{r}
+# -----------------------------------
+# transcript sequences
+# ------------------------------------
+transcript_fasta <- readDNAStringSet("/Users/melinaklostermann/Documents/projects/anno/gencodevM23/gencode.vM23.transcripts.fa.gz") %>% RNAStringSet()
+
+transcript_anno_meta <- names(transcript_fasta)
+transcript_anno_meta <- data.frame(all = transcript_anno_meta) %>%
+  tidyr::separate(., col = all,
+                  into = c("transcript_id", "gene_id", "a", "b", "isoform_name", "gene_name", "entrez_gene_id", "gene_type"), sep = "\\|")
+
+names_transcript_fasta <- sub("\\..*", "", transcript_anno_meta$transcript_id)
+
+# add N in beginning in end to not run out of transcripts when search motif
+n200 <- c(rep("N",200)) %>%
+  paste(., collapse = "") %>%
+  RNAStringSet()
+
+transcript_fasta <- xscat(n200, transcript_fasta, n200)
+names(transcript_fasta) <- names_transcript_fasta
+
+transcript_fasta_df <- data.frame(tx_name = names(transcript_fasta), width = width(transcript_fasta))
+
+# ----------------------------------------
+# MREs
+# ----------------------------------------
+
+mir181_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/03_Seed_motifes/mir181_bs_with_seeds_transcripts.rds")
+
+mir181_enriched_set <- mir181_bs %>% 
+  subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")) %>%
+  makeGRangesFromDataFrame(., keep.extra.columns = T)
+
+
+mir181_bs_gene_anno <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/01_MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+
+# ----------------------------------------
+# annotation
+# ----------------------------------------
+
+anno <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/annotation.rds")
+anno$gene_id <- sub("\\..*", "", anno$gene_id)
+anno$transcript_id <- sub("\\..*", "", anno$transcript_id)
+
+```
+
+# Overlap of mir181 binding sites to Satelite sequences
+
+```{r}
+# ------------------------
+# Get repeat Masker annotation for mouse
+# ------------------------
+ah = AnnotationHub()
+repeat_masker <- ah[["AH99012"]]
+
+# ------------------------
+# map repeats to transcripts
+# ------------------------
+
+# prepare a txdb of expressed transcripts
+anno_transcripts_exons <- anno[anno$type != "gene"] 
+anno_transcripts_exons$transcript_id <- sub("\\..*", "", anno_transcripts_exons$transcript_id)
+anno_transcripts_GR_list <- anno_transcripts_exons %>%
+  splitAsList(., f = .$transcript_id) %>%
+  GRangesList(.) 
+
+txdb <- makeTxDbFromGRanges(unlist(anno_transcripts_GR_list))
+
+# prepare a transcript mapper (contains transcript ids and names together with genomic positions of transcripts)
+transcripts_txdb_mapper <- transcripts(txdb)
+
+# get transcript-relative coordinates of BS
+repeat_masker_tx <- mapToTranscripts(repeat_masker, txdb, extractor.fun = GenomicFeatures::exonsBy, ignore.strand=T)
+# Mapped position is computed by counting from the transcription start site (TSS) and is not affected by the value of ignore.strand.
+
+# readd metadata
+elementMetadata(repeat_masker_tx) <- c(elementMetadata(repeat_masker_tx), elementMetadata(repeat_masker[repeat_masker_tx$xHits]))
+
+# change the seqnames to the transcript names
+names(repeat_masker_tx) <- 1: NROW(repeat_masker_tx)
+repeat_masker_tx <- as.data.frame(repeat_masker_tx)
+repeat_masker_tx$seqnames <- transcripts_txdb_mapper$tx_name[repeat_masker_tx$transcriptsHits] 
+
+
+repeat_masker_tx <- makeGRangesFromDataFrame(repeat_masker_tx, keep.extra.columns = T) 
+repeat_masker_tx$rep_id <-  paste0(repeat_masker_tx$repName, "-", 1:NROW(repeat_masker_tx))
+
+gene_id_mapper <- anno[anno$type == "transcript"] %>%
+  as.data.frame(.) %>%
+  dplyr::select(gene_id, transcript_id)
+
+repeat_masker_tx <- as.data.frame(repeat_masker_tx) %>%
+  left_join(., gene_id_mapper, by = c(seqnames = "transcript_id")) %>%
+  makeGRangesFromDataFrame(., keep.extra.columns = T)
+
+# ------------------------
+# overlap to mir181 binding sites
+# ------------------------
+# Achtung duplications
+
+i <- findOverlaps(repeat_masker_tx, mir181_enriched_set) 
+
+m <- c(mcols(mir181_enriched_set[subjectHits(i)]),
+       mcols(repeat_masker_tx[queryHits(i), c("repName", "rep_id")]))
+
+mcols(mir181_enriched_set) <- NULL
+mcols(mir181_enriched_set) <- m
+
+mir181_enriched_set$on_rep <- F
+mir181_enriched_set[unique(subjectHits(i))]$on_rep <- T 
+
+bs_with_rep <- mir181_enriched_set %>% subset(on_rep == T)
+
+saveRDS(repeat_masker_tx, paste0(out, "rep_on_transcripts.rds"))
+saveRDS(bs_with_rep, paste0(out, "bs_with_rep_transcript.rds"))
+
+repeat_masker_tx[repeat_masker_tx$repName == "MMSAT4"]
+
+```
+
+# Bound repeats
+```{r}
+# bound_reps <- readRDS(paste0(out, "bound_repeat_sequences.rds"))
+
+bs_with_rep_gg <- table(bs_with_rep$repName) %>% 
+  as.data.frame() %>%
+  arrange(desc(Freq)) 
+
+bs_with_rep_gg <- bs_with_rep_gg[1:10,]
+bs_with_rep_gg$Var1<- factor(bs_with_rep_gg$Var1, levels = rev(bs_with_rep_gg$Var1))
+
+ggplot(bs_with_rep_gg, aes(x = Var1, y = Freq))+
+  geom_col()+
+  coord_flip()+
+  theme_paper()
+
+ggsave(paste0(out, "mir181_binding_sites_on_repeats_transcript.pdf"), height = 6, width = 5, units = "cm")
+
+
+```
+
+
+# Overlap MMSAT4, MurSatRep1
+
+## binding sites in repeats
+```{r}
+ repeat_masker_tx <-  repeat_masker_tx %>% as.data.frame(.)
+
+mmsat4_bs <- repeat_masker_tx %>%
+  subset(repName == "MMSAT4") %>%
+  subset(gene_id %in% mir181_enriched_set$geneID)
+
+mursatrep1_bs <- repeat_masker_tx %>% 
+  subset(repName == "MurSatRep1") %>%
+  subset(gene_id %in% mir181_enriched_set$geneID)
+
+# make venn
+union_genes <- c(mmsat4_bs$gene_id, mursatrep1_bs$gene_id) %>% unique()
+
+venn_df <- data.frame(MMSat4 = union_genes %in% mmsat4_bs$gene_id ,
+                      MurSatRep1 = union_genes %in% mursatrep1_bs$gene_id )
+
+
+
+venn <- eulerr::euler(venn_df)
+p <- plot(venn, quantities = T) #fills = c( lighten(farbe1, amount = 0.4), lighten(farbe2, amount = 0.4), lighten(farbe3, amount = 0.4)))
+p
+
+pdf(paste0(out, "Figure3I_Venn_overlaps_mmsat4_mursatrep1_transcript.pdf"), height = 3, width = 4 )
+p
+dev.off()
+
+```
+
+## binding sites on genes with repeats
+
+```{r}
+mmsat4_bs <- bs_with_rep %>%
+  as.data.frame(.) %>%
+  subset(repName == "MMSAT4")
+mursatrep1_bs <- bs_with_rep %>%
+  as.data.frame(.) %>%
+  subset(repName == "MurSatRep1")
+
+# make venn
+union_genes <- c(mmsat4_bs$geneID, mursatrep1_bs$geneID) %>% unique()
+
+venn_df <- data.frame(MMSat4 = union_genes %in% mmsat4_bs$geneID ,
+                      MurSatRep1 = union_genes %in% mursatrep1_bs$geneID )
+
+
+
+venn <- eulerr::euler(venn_df)
+p <- plot(venn, quantities = T) #fills = c( lighten(farbe1, amount = 0.4), lighten(farbe2, amount = 0.4), lighten(farbe3, amount = 0.4)))
+p
+
+pdf(paste0(out, "Figure3I_Venn_overlaps_mmsat4_mursatrep1_transcript.pdf"), height = 3, width = 4 )
+p
+dev.off()
+
+```
+
+# Example Sequence of MMSAT4 and MurSatRep1
+```{r}
+genes_with_mmsat4 <- as.data.frame(t(table(mmsat4_bs$geneName)))
+genes_with_mmsat4 %>% arrange(desc(Freq))
+
+
+mmsat4 <- repeat_masker_tx %>% subset(repName == "MMSAT4") %>%
+  makeGRangesFromDataFrame(.)
+
+mmsat4_target <- mmsat4_bs %>% subset(geneName == "Zfp583") %>% makeGRangesFromDataFrame()
+
+mmsat4_target_seq <- subsetByOverlaps(mmsat4, mmsat4_target)
+
+mmsat4_target_seq <- getSeq(x = transcript_fasta, mmsat4_target_seq)
+
+as.data.frame(mmsat4_target_seq) %>% .$x
+
+```
+
+```{r}
+genes_with_mursatrep1 <- as.data.frame(t(table(mursatrep1_bs$geneName)))
+genes_with_mursatrep1 %>% arrange(desc(Freq))
+
+
+mursatrep1 <- repeat_masker_tx %>% subset(repName == "MMSAT4") %>%
+  makeGRangesFromDataFrame(.)
+
+mursatrep1_target <- mursatrep1_bs %>% subset(geneName == "Zfp26") %>% makeGRangesFromDataFrame()
+
+mursatrep1_target_seq <- subsetByOverlaps(mursatrep1, mursatrep1_target)
+
+mursatrep1_target_seq <- getSeq(x = transcript_fasta, mursatrep1_target_seq)
+
+as.data.frame(mursatrep1_target_seq) %>% .$x
+```
+
+
+
+# How many binding sites on repeats do we detect per gene?
+
+```{r}
+mmsat4_bs_genes <- mmsat4_bs %>% 
+  as.data.frame(.) %>%
+  group_by(geneID) %>%
+  summarize(bs_per_gene = length(xHits))
+
+ggplot(mmsat4_bs_genes, aes(x = bs_per_gene))+
+  geom_bar()
+
+
+```
+
+# How many binding sites do we detect per gene with Repeat?
+
+```{r eval=FALSE, include=FALSE}
+mmsat4 <- repeat_masker_tx[repeat_masker_tx$repName == "MMSAT4"]
+
+
+
+
+```
+
+# How many seeds exists per Repeat?
+
+```{r}
+
+
+```
+
+
+
+- barchart welche repeats uberlappen
+- count how many seeds are in MMSAT4, MurSat1
+- count seed distances in satalites
+- count how many binding sites are in MMSAT4, MurSat1
+- example gviz
+
+
+# Example tracks for IGV (genome choordinates)
+
+
+```{r}
+library(BSgenome.Mmusculus.UCSC.mm10)
+library(Biostrings)
+
+# make bed of reps
+rtracklayer::export.bed(repeat_masker[repeat_masker$repName == "MMSAT4"], paste0(out, "MMSAT4.bed"))
+
+rtracklayer::export.bed(repeat_masker[repeat_masker$repName == "MurSatRep1"], paste0(out, "MurSatRep1.bed"))
+
+
+# make bed of all seed complementary sequences in genes
+
+seqs_all_genes <- getSeq(anno[anno$type=="gene"], x = BSgenome.Mmusculus.UCSC.mm10 ) %>% RNAStringSet()
+
+all_seed_positions <- vmatchPattern(seqs_all_genes, pattern= "GAAUGU")
+
+all_seed_positions <- lapply(all_seed_positions, as.data.frame)
+
+names(all_seed_positions) <- anno[anno$type=="gene"]$geneID
+
+all_seed_positions <- Filter(nrow, all_seed_positions)
+
+gene_p <- anno[anno$type=="gene"] %>% 
+  as.data.frame(.) %>% 
+  subset((geneID %in% names(all_seed_positions)) & (strand == "+")) 
+gene_m <- anno[anno$type=="gene"] %>% 
+  as.data.frame(.) %>% 
+  subset((geneID %in% names(all_seed_positions)) & (strand == "-"))
+
+gene_list_p <- gene_p %>%
+  split(., 1:nrow(.))
+gene_list_m <- gene_m %>%
+  split(., 1:nrow(.))
+
+
+all_seeds_plus <- all_seed_positions[gene_p$geneID]
+  
+all_seeds_plus <-  map2(all_seeds_plus, gene_list_p, 
+     ~data.frame( geneID = .y$geneID,
+                  strand = .y$strand,
+                  seqnames = .y$seqnames,
+                  start =.y$start + .x$start - 1,
+                  end = .y$start + .x$end - 1)) %>%
+  map_dfr(.,~.x) %>%
+  makeGRangesFromDataFrame(., keep.extra.columns = T)
+  
+all_seeds_minus <- map2(all_seed_positions[gene_m$geneID], gene_list_m, 
+     ~data.frame( geneID = .y$geneID,
+                  strand = .y$strand,
+                  seqnames = .y$seqnames,
+                  start = .y$end - .x$end +1 ,
+                  end =  .y$end - .x$start +1))%>%
+  map_dfr(.,~.x) %>%
+  makeGRangesFromDataFrame(., keep.extra.columns = T)
+
+all_seeds <- c(all_seeds_plus, all_seeds_minus)
+
+
+rtracklayer::export.bed(all_seeds, paste0(out, "mir181_seedMatches.bed"))
+
+
+# bs
+MRE_genome <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/01_MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+
+rtracklayer::export.bed(MRE_genome, paste0(out, "mir181_MREs.bed"))
+
+```
+
+
+# Session Info
+
+```{r}
+sessionInfo()
+
+```
+
+
+```{r}
+
+
+```
+
+

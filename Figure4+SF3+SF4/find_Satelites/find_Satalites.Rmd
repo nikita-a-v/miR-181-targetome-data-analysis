@@ -1,0 +1,220 @@
+---
+title: "MMSAT4 & MurSatRep1"
+author: "Melina Klostermann"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  BiocStyle::html_document:
+    toc_float: TRUE
+    code_folding: hide
+    toc: TRUE
+    number_sections: yes
+    fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
+---
+
+```{r setup, include=FALSE}
+require("knitr")
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=F, cache.lazy = FALSE)
+tidy.opts=list(width.cutoff=80,tidy=TRUE, echo=FALSE)
+```
+
+# Libraries and settings
+
+```{r libraries}
+# ----------------------------------------
+# libraries
+# ----------------------------------------
+library(tidyverse)
+library(GenomicRanges)
+library(colorspace)
+library(gghalves)
+library(BSgenome.Mmusculus.UCSC.mm10)
+library(Biostrings)
+library(plyranges)
+library(AnnotationHub)
+library(GenomicFeatures)
+
+# ----------------------------------------
+# settings
+# ----------------------------------------
+out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure4/find_Satelites/"
+source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
+source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
+
+```
+
+# What was done?
+
+
+
+
+# Files
+```{r}
+# -----------------------------------
+# transcript sequences
+# ------------------------------------
+# transcript_fasta <- readDNAStringSet("/Users/melinaklostermann/Documents/projects/anno/gencodevM23/gencode.vM23.transcripts.fa.gz") %>% RNAStringSet()
+# 
+# transcript_anno_meta <- names(transcript_fasta) 
+# transcript_anno_meta <- data.frame(all = transcript_anno_meta) %>%
+#   tidyr::separate(., col = all,
+#                   into = c("transcript_id", "gene_id", "a", "b", "isoform_name", "gene_name", "entrez_gene_id", "gene_type"), sep = "\\|")
+# 
+# names_transcript_fasta <- sub("\\..*", "", transcript_anno_meta$transcript_id)
+# 
+# # add N in beginning in end to not run out of transcripts when search motif
+# n200 <- c(rep("N",200)) %>% 
+#   paste(., collapse = "") %>%
+#   RNAStringSet()
+# 
+# transcript_fasta <- xscat(n200, transcript_fasta, n200)
+# names(transcript_fasta) <- names_transcript_fasta
+# 
+# transcript_fasta_df <- data.frame(tx_name = names(transcript_fasta), width = width(transcript_fasta))
+
+# ----------------------------------------
+# MREs
+# ----------------------------------------
+
+mir181_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/01_MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+
+mir181_enriched_set <- mir181_bs %>% 
+  subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")) %>%
+  makeGRangesFromDataFrame(., keep.extra.columns = T)
+
+
+mir181_bs_gene_anno <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/01_MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+
+# ----------------------------------------
+# annotation
+# ----------------------------------------
+
+anno <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/annotation.rds")
+anno$gene_id <- sub("\\..*", "", anno$gene_id)
+anno$transcript_id <- sub("\\..*", "", anno$transcript_id)
+
+```
+
+# Overlap of mir181 binding sites to Satelite sequences
+
+```{r}
+# ------------------------
+# Get repeat Masker annotation for mouse
+# ------------------------
+ah = AnnotationHub()
+repeat_masker <- ah[["AH99012"]]
+
+repeat_masker$rep_id <-  paste0(repeat_masker$repName, "-", 1:NROW(repeat_masker))
+
+
+# ------------------------
+# overlap to mir181 binding sites
+# ------------------------
+
+i <- findOverlaps(repeat_masker, mir181_enriched_set) 
+
+m <- c(mcols(mir181_enriched_set[subjectHits(i)]),
+       mcols(repeat_masker[queryHits(i), c("repName", "rep_id")]))
+
+mcols(mir181_enriched_set) <- NULL
+mcols(mir181_enriched_set) <- m
+
+mir181_enriched_set$on_rep <- F
+mir181_enriched_set[subjectHits(i)]$on_rep <- T
+
+bs_with_rep <- mir181_enriched_set %>% subset(on_rep == T)
+
+# saveRDS(repeat_masker_tx, paste0(out, "rep_on_transcripts.rds"))
+# saveRDS(bs_with_rep, paste0(out, "bs_with_rep.rds"))
+```
+
+# Bound repeats
+```{r}
+# bound_reps <- readRDS(paste0(out, "bound_repeat_sequences.rds"))
+
+bs_with_rep_gg <- table(bs_with_rep$repName) %>% 
+  as.data.frame() %>%
+  arrange(desc(Freq)) 
+
+bs_with_rep_gg <- bs_with_rep_gg[1:10,]
+bs_with_rep_gg$Var1<- factor(bs_with_rep_gg$Var1, levels = rev(bs_with_rep_gg$Var1))
+
+ggplot(bs_with_rep_gg, aes(x = Var1, y = Freq))+
+  geom_col()+
+  coord_flip()+
+  theme_paper()
+
+ggsave(paste0(out, "mir181_binding_sites_on_repeats.pdf"), height = 6, width = 5, units = "cm")
+
+
+```
+
+
+# Overlap MMSAT4, MurSatRep1
+```{r}
+
+mmsat4_bs <- bs_with_rep %>% subset(repName == "MMSAT4")
+mursatrep1_bs <- bs_with_rep %>% subset(repName == "MurSatRep1")
+
+# make venn
+union_genes <- c(mmsat4_bs$geneID, mursatrep1_bs$geneID) %>% unique()
+
+venn_df <- data.frame(MMSat4 = union_genes %in% mmsat4_bs$geneID ,
+                      MurSatRep1 = union_genes %in% mursatrep1_bs$geneID )
+
+
+
+venn <- eulerr::euler(venn_df)
+p <- plot(venn, quantities = T) #fills = c( lighten(farbe1, amount = 0.4), lighten(farbe2, amount = 0.4), lighten(farbe3, amount = 0.4)))
+p
+
+pdf(paste0(out, "Figure3I_Venn_overlaps_mmsat4_mursatrep1.pdf"), height = 3, width = 4 )
+p
+dev.off()
+
+```
+
+
+# How many binding sites do we detect per Repeat?
+
+```{r}
+i <- findOverlaps(makeGRangesFromDataFrame(bound_reps), mir181_enriched_set)
+
+
+
+mir181_enriched_set[subjectHits(i)]) <- c(elementMetadata(mir181_enriched_set[subjectHits(i)]), bound_reps[queryHits(i), c("repName", "rep_id")])
+
+```
+
+# How many seeds exists per Repeat?
+
+```{r}
+
+
+```
+
+
+```{r}
+sessionInfo()
+
+```
+
+- barchart welche repeats uberlappen
+- count how many seeds are in MMSAT4, MurSat1
+- count seed distances in satalites
+- count how many binding sites are in MMSAT4, MurSat1
+- example gviz
+
+# Session Info
+
+```{r}
+
+
+```
+
+
