@@ -1,0 +1,181 @@
+---
+title: "Assign mir181 binding sites to a specific transcript"
+author: "Melina Klostermann"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  BiocStyle::html_document:
+  toc_float: TRUE
+  code_folding: hide
+  toc: TRUE
+  number_sections: yes
+  fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
+---
+
+```{r setup, include=FALSE}
+require("knitr")
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=F, cache.lazy = FALSE)
+tidy.opts=list(width.cutoff=80,tidy=TRUE, echo=FALSE)
+```
+
+# Libraries and settings
+
+```{r libraries}
+# ----------------------------------------
+# libraries
+# ----------------------------------------
+library(tidyverse)
+library(GenomicRanges)
+library(GenomicFeatures)
+
+
+# ----------------------------------------
+# settings
+# ----------------------------------------
+out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/02_assign_transcripts/"
+
+```
+
+# What was done?
+
+- The main expressed transcript isoform (as defined by APRIS) of each mir181 binding site is obtained
+- Then the mir181 binding sites are mapped to their respective transcript
+- The transcript annotations are later used for motiv discovery and structure predictions
+
+```{r}
+#------------------------------------
+# Files
+#------------------------------------
+anno <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/annotation.rds")
+
+mir181_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/01_MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+
+
+```
+
+
+```{r}
+# get appris transcripts (when there are multiple take the longest)
+transcripts <- anno[anno$type=="transcript"] %>% as.data.frame(.)
+
+transcripts$transcript_id <- sub("\\..*", "", transcripts$transcript_id)
+
+transcripts_appris <- transcripts[grepl(transcripts$tag, pattern= "appris_principal_1"),] %>%
+  group_by(geneID) %>%
+  arrange(desc(width), .by_group = T) %>%
+  dplyr::slice(1)
+
+
+length(unique(transcripts[transcripts$gene_type == "protein_coding",]$geneID))
+length(unique(transcripts_appris$geneID_tx))
+
+# add transcript id to binding sites  
+transcripts_appris <- makeGRangesFromDataFrame(transcripts_appris, keep.extra.columns = T)
+mir181_bs <- makeGRangesFromDataFrame(mir181_bs, keep.extra.columns = T)
+
+idx <- findOverlaps(mir181_bs, transcripts_appris)
+
+length(unique(queryHits(idx)))
+
+transcripts_appris <- as.data.frame(transcripts_appris) %>% 
+  dplyr::select(seqnames, start, end, width, strand, geneID, transcript_id)
+
+colnames(transcripts_appris) <- paste0(colnames(transcripts_appris), "_tx")
+
+mir181_bs_appris <- as.data.frame(mir181_bs)
+
+mir181_bs_appris <- cbind(mir181_bs_appris[queryHits(idx),], transcripts_appris[subjectHits(idx),])
+
+# get mir181 bs position relative to transcript
+# (start of transcript is 1, strand is always +)
+
+# rel_mir181_bs_appris_p <- mir181_bs_appris %>% 
+#   subset(strand == "+") %>%
+#   rowwise(.) %>%
+#   mutate(start = start - start_tx,
+#          end = end - start_tx,
+#          seqnames = transcript_id_tx) %>%
+#   subset(start > 0)
+# 
+# rel_mir181_bs_appris_m <- mir181_bs_appris %>% 
+#   subset(strand == "-") %>%
+#   rowwise(.) %>%
+#   mutate(start_genomic = start,
+#          start = -(end - end_tx),
+#          end = -(start_genomic - end_tx),
+#          strand = "+",
+#          seqnames = transcript_id_tx)  %>%
+#   subset(end > 0)
+# 
+# rel_mir181_bs_appris_m$start_genomic <- NULL
+# 
+# rel_mir181_bs_appris <- rbind(rel_mir181_bs_appris_p, rel_mir181_bs_appris_m)
+# 
+# rel_mir181_bs_appris <- rel_mir181_bs_appris %>%
+#   subset(end <= width_tx)
+```
+
+```{r}
+###########################
+# BS sequence considering mature transcripts
+##########################
+# prepare a txdb of expressed transcripts
+anno_transcripts_exons <- anno[anno$type != "gene"] 
+anno_transcripts_exons$transcript_id <- sub("\\..*", "", anno_transcripts_exons$transcript_id)
+anno_transcripts_GR_list <- anno_transcripts_exons %>%
+  splitAsList(., f = .$transcript_id) %>%
+  GRangesList(.) 
+
+txdb <- makeTxDbFromGRanges(unlist(anno_transcripts_GR_list))
+
+# prepare a transcript mapper (contains transcript ids and names together with genomic positions of transcripts)
+transcripts_txdb_mapper <- transcripts(txdb)
+
+# get transcript-relative coordinates of BS
+mir181_bs_appris <- makeGRangesFromDataFrame(mir181_bs_appris, keep.extra.columns = T)
+mir181_bs_appris_tx <- mapToTranscripts(mir181_bs_appris, txdb, extractor.fun = GenomicFeatures::exonsBy)
+
+# readd metadata
+elementMetadata(mir181_bs_appris_tx) <- c(elementMetadata(mir181_bs_appris_tx), elementMetadata(mir181_bs_appris[mir181_bs_appris_tx$xHits]))
+
+# change the seqnames to the transcript names
+names(mir181_bs_appris_tx) <- 1: NROW(mir181_bs_appris_tx)
+mir181_bs_appris_tx <- as.data.frame(mir181_bs_appris_tx)
+mir181_bs_appris_tx$seqnames <- transcripts_txdb_mapper$tx_name[mir181_bs_appris_tx$transcriptsHits] 
+
+mir181_bs_not_appris <- mir181_bs_appris_tx %>% subset(seqnames != transcript_id_tx)
+
+mir181_bs_appris_tx <- mir181_bs_appris_tx %>% subset(seqnames == transcript_id_tx)
+
+mir181_bs_not_appris <- mir181_bs_not_appris %>% subset(!(xHits %in% mir181_bs_appris_tx$xHits))
+
+```
+
+- Number of mirBS: `r nrow(as.data.frame(mir181_bs))`
+- Number of mirBS on appris transcripts (with intron): `r nrow(mir181_bs_appris)`
+- Number of mirBS on appris transcripts (without intron): `r nrow(mir181_bs_appris_tx)`
+
+- Number of enriched mirBS: `r nrow(as.data.frame(mir181_bs) %>% subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")))`
+- Number of enriched mirBS on appris transcripts: `r nrow(mir181_bs_appris_tx %>% subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")))`
+
+
+
+
+```{r}
+
+saveRDS(mir181_bs_appris_tx, paste0(out,"mir181_bs_on_transcripts.rds"))
+saveDb(txdb, paste0(out,"transcript_annotation.db"))
+
+```
+
+
+
+
+
+
+
