@@ -1,0 +1,996 @@
+---
+title: "Differential binding of AGO in mir181KO vs WT"
+author: "Mirko Brüggemann, Melina Klostermann"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
+  BiocStyle::html_document:
+    toc_float: TRUE
+    code_folding: hide
+    toc: TRUE
+    number_sections: yes
+    fig_caption: yes
+params:
+  config: "config"
+---
+
+```{r setup, include=FALSE}
+require("knitr")
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=F, cache.lazy = FALSE)
+tidy.opts=list(width.cutoff=80,tidy=TRUE, echo=FALSE)
+```
+
+
+# Libraries and settings
+
+```{r, loadLibs}
+# ----------------------------------------
+# libraries
+# ----------------------------------------
+
+library(rtracklayer)
+library(GenomicRanges)
+library(ggplot2)
+library(AnnotationDbi)
+library(dplyr)
+library(reshape2)
+library(UpSetR)
+library(GenomicFeatures)
+library(kableExtra)
+library(knitr)
+library(ggrepel)
+library(gridExtra)
+library(grid)
+library(viridis)
+library(BindingSiteFinder)
+library(ComplexHeatmap)
+library(forcats)
+library(ggtext)
+library(patchwork)
+library(tibble)
+library(tidyr)
+library(dplyr)
+library(ggpointdensity)
+library(ggsci)
+library(ggtext)
+library(ggrepel)
+library(patchwork)
+library(ggrastr)
+library(matrixStats)
+library(DESeq2)
+library(IHW)
+library(ggrepel) # nikita
+
+
+source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
+source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
+source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/colorPalette.R")
+
+#nikita
+# source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/CustomThemes.R")
+# source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+# source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/colorPalette.R")
+
+# ----------------------------------------
+# settings
+# ----------------------------------------
+
+out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Differential_Binding/"
+#nikita out
+# out <- "D:/Krueger_Lab/Publications/miR181_paper/Figure1/Differential_Binding/"
+
+
+tpm_cut <- 50
+```
+
+```{r}
+# ----------------------------------------
+# ----------------------------------------
+# Files
+# ----------------------------------------
+# ----------------------------------------
+
+# ----------------------------------------
+# annotation
+# ----------------------------------------
+
+annoDb <- loadDb("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/annotation.db")
+gns <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/gene_annotation.rds")
+#Nikita 
+# annoDb <- loadDb("D:/Krueger_Lab/Publications/miR181_paper_nongithub/Figure1/annotation.db")
+# gns <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/01_Annotation_preprocessing/gene_annotation.rds")
+
+
+
+# nikita source
+
+# ----------------------------------------
+# AGO binding sites
+# ----------------------------------------
+
+bs_wt <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
+
+bs_ko <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/03_KOmir181_AGO_binding_site_definition/2023-04-12-KOmir181_AGO_BS.rds")
+
+#nikita source
+# bs_wt <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
+# 
+# bs_ko <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/03_KOmir181_AGO_binding_site_definition/2023-04-12-KOmir181_AGO_BS.rds")
+
+# ---------------------------------------- 
+# Load clip data
+# ----------------------------------------
+
+clipFiles = "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/pipe_output_22_02_14/non-chimeric/bw"
+
+#nikita source
+# clipFiles = "D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw"
+
+clipFiles = list.files(clipFiles, pattern = ".bw$", full.names = TRUE)
+clipFiles = clipFiles[!grepl("Inp", clipFiles)]
+clipFiles = clipFiles[!grepl("miR181_", clipFiles)]
+clipFilesP = clipFiles[grep(clipFiles, pattern = "plus")]
+clipFilesM = clipFiles[grep(clipFiles, pattern = "minus")]
+
+
+```
+
+# farben
+```{r farben}
+farbeneg <- "#B4B4B4"
+farbe1 <- "#0073C2FF" #WT farbe
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF" #miR181KO farbe
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+```
+
+
+
+# What was done?
+
+
+# Combine binding sites
+
+Binding sites from both conditions do either overlap exactly, overlap partially or don't overlap at all. In the following partial overlaps are resolved by re-centering the binding sites based on the highest crosslink signal of both conditions. 
+
+```{r}
+# merge BS from both conditions
+bsMerge = unique(c(resize(bs_wt, fix = "center", width = 1),
+                   resize(bs_ko, fix = "center", width = 1)))
+
+# Organize clip data in dataframe
+colData = data.frame(
+  id = c(1:6),
+  condition = factor(c(rep("KO",3), rep("WT",3)),
+                     levels = c("KO", "WT")),
+                     clPlus = clipFilesP,
+                     clMinus = clipFilesM)
+
+# Make BindingSiteFinder object
+bds = BSFDataSetFromBigWig(ranges = bsMerge, meta = colData)
+
+
+# Make unified binding sites from both conditions
+bdsMerge <- makeBindingSites(object = bds, bsSize = 7, minWidth = 0,
+                        minCrosslinks = 0, minClSites = 0, centerIsSummit = FALSE)
+
+df = getSummary(bdsMerge)
+kable(myNumberFormat(df), caption = "Merge and combine") 
+```
+
+Combination of both sets of binding sites results in a single set (N=`r myNumberFormat(length(getRanges(bdsMerge)))`), where each binding site was either seen in *WT*, *KO* or both conditions. The figure below shows the set sizes in more detail. 
+
+Annotate combined binding sites with *PureCLIP score*, *WT* and *KO* status information.
+
+```{r}
+# annotate with pureclip score
+rng = getRanges(bds)
+rng$additionalScores = NULL
+mcols(rng)$score = rng$scoreSum
+bdsFinal = annotateWithScore(bdsMerge, rng)
+
+# annotate with condition support
+rngFinal = getRanges(bdsFinal)
+r1 = resize(bs_wt, fix = "center", width = 1)
+r2 = resize(bs_ko, fix = "center", width = 1)
+condition_support = data.frame(WT = countOverlaps(rngFinal, r1),
+                KO = countOverlaps(rngFinal, r2))
+mcols(rngFinal) = cbind(mcols(rngFinal), condition_support)
+
+# transfer the geneID 
+olsWT = findOverlaps(rngFinal, bs_wt)
+olsKO = findOverlaps(rngFinal, bs_ko)
+rngFinal$geneID = NA
+rngFinal$geneID[queryHits(olsWT)] = bs_wt$geneID[subjectHits(olsWT)]
+rngFinal$geneID[queryHits(olsKO)] = bs_ko$geneID[subjectHits(olsKO)]
+
+# transfer gene names
+rngFinal$geneName = NA
+rngFinal$geneName[queryHits(olsWT)] = bs_wt$geneName[subjectHits(olsWT)]
+rngFinal$geneName[queryHits(olsKO)] = bs_ko$geneName[subjectHits(olsKO)]
+
+# transfer transcript region
+rngFinal$region = NA
+rngFinal$region[queryHits(olsWT)] = bs_wt$region[subjectHits(olsWT)]
+rngFinal$region[queryHits(olsKO)] = bs_ko$region[subjectHits(olsKO)]
+
+# set final range 
+bdsFinal = setRanges(bdsFinal, rngFinal)
+```
+
+# Perform Differntial binding
+
+In order to perform differential binding analysis, we use DEseq2. The design formula contains both the number of crosslinks per binding site and the background crosslinks in the whole gene of the binding site.
+
+
+## Calculate crosslinks in bs and in gene background
+
+The number of background crosslinks per gene is calculated to infer upregulation or downregulation of genes between the two conditions. The background contains all crosslinks on a gene except crosslinks in a binding site or  within a 5nt offset to the binding sites.
+
+```{r}
+### ============================================================================
+### Get crosslink numbers in background and binding sites
+### ----------------------------------------------------------------------------
+# Function get coverage per bs
+#------------------------
+# NOTE: this is a simple copy from the BindingSiteFinder package, that uses
+# the range and signal objects directly as input.
+coverageBySignal <- function(range, signal,
+         merge = TRUE,
+         returnType = c("GRanges", "matrix", "data.frame")) {
+
+    # split by strand
+    rng = range
+    rngPlus = rng[strand(rng) == "+"]
+    rngMinus = rng[strand(rng) == "-"]
+    # prepare signal
+    sgn = signal
+    
+    # signal coverage is reported for each position in the range of the peak
+    if (!isTRUE(merge)) {
+        # manage return type
+        # only return type data.frame is possible with this option
+        returnType = match.arg(returnType,
+                               choices = c("GRanges", "matrix", "data.frame"))
+        if (returnType != "data.frame") {
+            warning("Only return type 'data.frame' possible with non-merged output.")
+        }
+        returnType = "data.frame"
+        
+        if (length(rngPlus) > 0) {
+            matPlus = lapply(sgn$signalPlus, function(x) {
+                as.matrix(x[rngPlus])
+            })
+            covPlus = do.call(rbind, lapply(matPlus, colSums))
+        }
+        if (length(rngPlus) == 0) {
+            covPlus = 0
+        }
+        if (length(rngMinus) > 0) {
+            matMinus = lapply(sgn$signalMinus, function(x) {
+                as.matrix(x[rngMinus])
+            })
+            covMinus = do.call(rbind, lapply(matMinus, colSums))
+            # flip orientation of minus strand coverage
+            covMinus = covMinus %>% as.data.frame() %>% rev() %>% as.matrix()
+        }
+        if (length(rngMinus) == 0) {
+            covMinus = 0
+        }
+        covDf = covPlus + covMinus
+        retObj = as.data.frame(covDf)
+    }
+    # signal is merged over all positions in the range
+    if (isTRUE(merge)) {
+        mcols(rngPlus) = as.matrix(
+            do.call(cbind, lapply(sgn$signalPlus, function(x) {
+                sum(x[rngPlus])
+            })))
+        mcols(rngMinus) = as.matrix(
+            do.call(cbind, lapply(sgn$signalMinus, function(x) {
+                sum(x[rngMinus])
+            })))
+        # sort ranges
+        rngCov = c(rngPlus, rngMinus)
+        rngCov = GenomeInfoDb::sortSeqlevels(rngCov)
+        rngCov = sort(rngCov)
+        # manage return type
+        returnType = match.arg(returnType,
+                               choices = c("GRanges", "matrix", "data.frame"))
+        if (returnType == "GRanges") {
+            retObj = rngCov
+        }
+        if (returnType == "matrix") {
+            retObj = as.matrix(mcols(rngCov))
+        }
+        if (returnType == "data.frame") {
+            retObj = as.data.frame(mcols(rngCov))
+        }
+    }
+    return(retObj)
+}
+
+# Make Matrix from background Signal
+#------------------------
+makeBsBackgroundMatrix <- function(geneRanges, object, offset, matchBy = "geneID"){
+    # reassign input
+    genes = geneRanges
+    bs = getRanges(object) 
+    bsWidth = unique(width(bs))
+    signal = getSignal(object)
+    
+        # prepare the background region
+        gen = genes[genes$geneID %in% bs$geneID]
+        gen = sort(sortSeqlevels(gen))
+        gen = as(gen, "GRangesList")
+        # group binding sites per gene
+        bs = sort(sortSeqlevels(bs))
+        bsNames = mcols(bs) %>% 
+            as.data.frame() %>% 
+            group_by(geneID) %>% 
+            mutate(name = paste0("bs",seq_along(geneID))) %>% 
+            pull(name)
+        names(bs) = bsNames
+        bs = split(bs, bs$geneID)
+        idx = match(names(gen), names(bs))
+        bs = bs[idx]
+    
+    # add a protective range around each binding site
+    # bsOffset = bs + offset
+    bsOffset = resize(bs, fix = "center", width = bsWidth + offset)
+    
+    # remove binding sites ranges from gene ranges to create background
+    bac = GenomicRanges::disjoin(pc(gen, bsOffset), with.revmap = TRUE)
+    bac = unlist(bac)
+    len = lapply(bac$revmap, length)
+    bac = bac[len == 1]
+    bac = split(bac, names(bac))
+    bac = unlist(bac, use.names = F)
+    
+    # count crosslinks in background regions summarized by gene
+    bac = coverageBySignal(range = bac, signal = signal, returnType = "GRanges")
+    colnames(mcols(bac)) = paste0("counts.bg.", colnames(mcols(bac)))
+    mcols(bac)$geneID = sapply(strsplit(names(bac),"\\."), `[`, 1)
+    # mcols(bac)$geneID = names(bac)
+    bacCounts = as.data.frame(mcols(bac))
+    bacCounts = bacCounts %>% 
+        group_by(geneID) %>% 
+        summarize_if(is.numeric, sum) %>% 
+        as.data.frame()
+    
+    # count crosslinks in binding sites  
+    bs = unlist(bs)
+    bsInitial = bs
+    bsCounts = coverageBySignal(range = bs, signal = signal, returnType = "GRanges")
+    colnames(mcols(bsCounts)) = paste0("counts.bs.", colnames(mcols(bsCounts)))
+    
+    # set matching IDs
+    bsCounts$geneID = sapply(strsplit(names(bsCounts),"\\."), `[`, 1)
+    bsCounts$PeakID = names(bsCounts)
+    bsCounts = as.data.frame(mcols(bsCounts))
+    
+    # match peak and gene counts
+    idx = match(bsCounts$geneID, bacCounts$geneID)
+    comb = cbind.data.frame(bsCounts, bacCounts[idx,])
+    comb$geneID = NULL
+    comb$PeakID = NULL
+    
+    # combine counts and peak ranges for output
+    idx = match(names(bs), rownames(comb))
+    mcols(bs) = comb[idx,]
+    
+    # remove duplicated binding sites
+    if (any(duplicated(bs))) {
+        message(paste0("Found ", length(duplicated(bs)[duplicated(bs) == TRUE]), 
+                       " duplicated ranges. These are removed. "))
+        bsDub = bs[duplicated(bs)]
+        bs = bs[! bs %in% bsDub]
+    }
+
+    
+    # match binding site counts and existing meta data
+    idx = match(names(bs), names(bsInitial))
+    mcols(bs) = cbind(mcols(bsInitial[idx]), mcols(bs))
+    
+    return(bs)
+}
+
+
+countObj = makeBsBackgroundMatrix(object = bdsFinal, geneRanges = gns, offset = 5, matchBy = "geneID") 
+
+
+
+```
+
+## Differential analysis of binding sites
+
+```{r}
+
+### ============================================================================
+### Run test with DESeq
+### ----------------------------------------------------------------------------
+#
+count_matrix = as.data.frame(mcols(countObj))
+count_matrix = count_matrix %>% dplyr::select(starts_with("counts"))
+
+# internal modification for col data
+colDataMod = rbind.data.frame(colData,colData)
+colDataMod$type = c(rep("bs", nrow(colData)),
+                    rep("bg", nrow(colData)))
+colDataMod$condition = factor(colDataMod$condition, levels = c("KO", "WT"))
+colDataMod$type = factor(colDataMod$type, levels = c("bs", "bg"))
+
+# create SE object
+se = SummarizedExperiment(assays = list(counts = as.matrix(count_matrix)),
+                          rowRanges = granges(countObj), colData = colDataMod)
+
+# set design - YOUs design
+ddsBs = DESeqDataSet(se, design = ~condition + type + condition:type)
+ddsBs$condition = relevel(ddsBs$condition, "WT")
+ddsBs$type = relevel(ddsBs$type, "bg")
+ddsBs = DESeq(ddsBs, test="LRT", reduced = ~ condition + type)
+resBs = results(ddsBs, name = "conditionKO.typebs") # needs relevel of type to bg
+resShrinkBs = lfcShrink(ddsBs, res = resBs, coef = "conditionKO.typebs", type = "ashr")
+
+
+# deseq fetch results 
+diff_bs = countObj
+colnames(resBs) = paste0("resBs.", colnames(resBs))
+idx = match(names(diff_bs), rownames(resBs))
+mcols(diff_bs) = cbind(mcols(diff_bs), resBs[idx,])
+
+```
+
+## Differential analysis of background
+
+```{r}
+### ============================================================================
+### Run Background test with DESeq
+### ----------------------------------------------------------------------------
+#
+# construct background signal dataframe to test for the background level change
+count_matrix_bg = as.data.frame(mcols(countObj)) %>% 
+    dplyr::select(starts_with("counts.bg")) %>%
+    unique() 
+#rownames(count_matrix_bg) = sapply(strsplit(rownames(count_matrix_bg),"\\."), `[`, 1)
+
+# create SE object
+seBg = SummarizedExperiment(assays = list(counts = as.matrix(count_matrix_bg)), colData = colData)
+
+# DESeq design
+ddsBg = DESeqDataSet(seBg, design = ~ condition)
+ddsBg$condition = relevel(ddsBg$condition, "WT")
+ddsBg = DESeq(ddsBg)
+resBg = results(ddsBg, contrast = c("condition", "KO", "WT"))
+resShrinkBg = lfcShrink(ddsBg, res = resBg, contrast = c("condition", "KO", "WT"), type = "ashr")
+
+# add results to final differential object
+colnames(resBg) = paste0("resBg.", colnames(resBg))
+idx = match(names(diff_bs), rownames(resBg))
+mcols(diff_bs) = cbind(mcols(diff_bs), resBg[idx,])
+
+```
+
+```{r}
+# ### ============================================================================
+# ### Run enhanced background test with DESeq
+# ### ----------------------------------------------------------------------------
+# #
+# # load WT
+# peaksInitialWT = "/Users/mirko/Projects/mirEClip/01_eCLIP/pureclip/IP_WT_pureclip_sites.bed"
+# peaksInitialWT = import(con = peaksInitialWT, format = "BED", extraCols=c("additionalScores" = "character"))
+# peaksInitialWT = keepStandardChromosomes(peaksInitialWT, pruning.mode = "coarse")
+# # load KO
+# peaksInitialKO = "/Users/mirko/Projects/mirEClip/01_eCLIP/pureclip/IP_KO_pureclip_sites.bed"
+# peaksInitialKO = import(con = peaksInitialKO, format = "BED", extraCols=c("additionalScores" = "character"))
+# peaksInitialKO = keepStandardChromosomes(peaksInitialKO, pruning.mode = "coarse")
+# # peaks all
+# peaksAll = unique(c(peaksInitialKO, peaksInitialWT)) 
+# bdsPeaksAll = setRanges(bds, peaksAll)
+# 
+# countObj2 = makeBsBackgroundMatrix(object = bdsPeaksAll, geneRanges = gns, offset = 5, matchBy = "range") 
+# # construct background signal dataframe to test for the background level change
+# mAllPeaks = as.data.frame(mcols(countObj2))
+# mAllPeaks = mAllPeaks %>% 
+#     select(starts_with("counts.bg")) %>%
+#     unique()
+# rownames(mAllPeaks) = sapply(strsplit(rownames(mAllPeaks),"\\."), `[`, 1)
+# 
+# # create SE object
+# seBg2 = SummarizedExperiment(assays = list(counts = as.matrix(mAllPeaks)), colData = colData)
+# 
+# # DESeq design
+# ddsBg2 = DESeqDataSet(seBg2, design = ~ condition)
+# ddsBg2$condition = relevel(ddsBg2$condition, "WT")
+# ddsBg2 = DESeq(ddsBg2)
+# resBg2 = results(ddsBg2, contrast = c("condition", "KO", "WT"))
+# resBg2 = lfcShrink(ddsBg2, res = resBg2, contrast = c("condition", "KO", "WT"), type = "ashr")
+
+
+### ============================================================================
+### Run Gene test with DESeq
+### ----------------------------------------------------------------------------
+#
+# # construct gene signal dataframe to test for total gene level change
+# m = mcols(countObj) %>%
+#     as.data.frame() %>%
+#     select(starts_with("counts.bs"), geneID) %>%
+#     group_by(geneID) %>%
+#     summarise_all(sum) %>%
+#     tibble::column_to_rownames("geneID")
+# 
+# # create SE object
+# seGene = SummarizedExperiment(assays = list(counts = as.matrix(m)), colData = colData)
+# 
+# # DESeq design
+# ddsGene = DESeqDataSet(seGene, design = ~ condition)
+# ddsGene$condition = relevel(ddsGene$condition, "WT")
+# ddsGene = DESeq(ddsGene)
+# resGene = results(ddsGene, contrast = c("condition", "KO", "WT"))
+# resGene = lfcShrink(ddsGene, res = resGene, contrast = c("condition", "KO", "WT"), type = "ashr")
+
+
+### ============================================================================
+### Export results
+### ----------------------------------------------------------------------------
+#
+
+
+
+
+```
+
+
+## Initial results
+```{r}
+### ============================================================================
+### Numbers overview table
+### ----------------------------------------------------------------------------
+### 
+df = data.frame(Name = c("Tested", "Not Significant", "Significant", "Sig+Up", "Sig+Down"),
+                N = c(nrow(resBs),
+                      nrow(subset(resBs, resBs.padj >= 0.05)),
+                      nrow(subset(resBs, resBs.padj < 0.05)),
+                      nrow(subset(resBs, resBs.padj < 0.05 & resBs.log2FoldChange > 0)),
+                      nrow(subset(resBs, resBs.padj < 0.05 & resBs.log2FoldChange < 0))
+                      ))
+df$Per = c(100,
+           nrow(subset(resBs, resBs.padj >= 0.05)) / nrow(resBs) * 100,
+           nrow(subset(resBs, resBs.padj < 0.05)) / nrow(resBs) * 100,
+           nrow(subset(resBs, resBs.padj < 0.05 & resBs.log2FoldChange > 0)) / nrow(subset(resBs, resBs.padj < 0.05)) * 100,
+           nrow(subset(resBs, resBs.padj < 0.05 & resBs.log2FoldChange < 0)) / nrow(subset(resBs, resBs.padj < 0.05)) * 100
+           )
+df$Per = round(df$Per, digits = 2)
+colnames(df) = c("Name", "Count (#N)", "Percentage (%)")
+
+kable(myNumberFormat(df), caption = "Results by numbers. Significant based on IHW adjusted P value threshold 0.05.") 
+```
+
+## Gene expression filter
+
+Some genes might not be expressed in both conditions. Binding sites on a gene that is for example only expressed in the *WT* but not in the *KO* condition will all appear to be down regulated. In reality we can not tell if such sites changed, because the hosting gene is not expressed. To prevent these effects I filtered all genes with a merged binding site (so the combined set from both conditions) before running the differential binding search. As cutoff a TPM > 50 is used.
+
+```{r, fig.height=6, fig.width=6}
+# cutoff based on gene
+
+counts = counts(ddsBg, normalized = FALSE)
+# Extract all exons of a gen
+exonsByGene <- exonsBy(annoDb, by = "gene")
+# reduce overlapping exons to a single region
+reducedExonsByGene <- GenomicRanges::reduce(exonsByGene)
+# Approximate the gene length as the sum of the its exons lengths
+geneLengths <- sum(width(reducedExonsByGene))
+# Adapt gene IDs
+names(geneLengths) = sapply(strsplit(names(geneLengths),"\\."), `[`, 1)
+# Re-order the vector of gene lengths to match the order in the counts
+counts_genes <- sapply(strsplit(rownames(counts),"\\."),  `[`, 1)
+geneLengths <- geneLengths[match(counts_genes, names(geneLengths))]
+# First step1 in TPM calculation
+tpms <- counts / geneLengths
+# Second step in TPM calculation
+tpms <- t(t(tpms) * 1e6 / colSums(tpms, na.rm = T)) %>% as.data.frame()
+# # Adapt gene IDs
+rownames(tpms) = sapply(strsplit(rownames(tpms),"\\."), `[`, 1)
+colnames(tpms) = paste0("tpm.", colnames(tpms) )
+
+# add tpm to final object
+idx <- match(diff_bs$geneID, rownames(tpms))
+mcols(diff_bs) <- cbind(mcols(diff_bs), tpms[idx,])
+
+df = tpms %>%
+    as.data.frame() %>%
+    tibble::rownames_to_column("geneID") %>%
+    pivot_longer(-geneID) %>%
+    group_by(name) %>% 
+    mutate(rank = rank(value, ties.method = "first"))
+
+
+p <- ggplot(df, aes(x = rank, y = value)) +
+    ggrastr::rasterise(geom_pointdensity(size = 2), dpi = 300) +
+    facet_wrap(~name) +
+    theme_nice() +
+    geom_hline(yintercept = 50, linetype = "dashed") +
+    scale_y_log10() +
+    scale_color_viridis(option = "rocket") +
+    theme(legend.position = "top") +
+    guides(color = guide_colorbar(
+                          barwidth = unit(0.25, "cm"), barheight = unit(3, "cm"))) +
+    labs(
+        x = "Rank",
+        y = "TPMs",
+        color = "#Points"
+        )+
+  theme_paper()
+
+ggsave(p, filename = paste0(out, "SupF1_tpms_diff_binding.pdf"), height = 12, width = 12, units = "cm")
+
+```
+A gene is considered expressed by a condition if at least two of the three replicates have a TPM over 50. Each gene must be found expressed in both conditions to be considered for the differential binding analysis.
+
+```{r, fig.width=6, fig.height=4, fig.small=TRUE, fig.cap="Intersection of genes expressed in both conditions."}
+
+# filter for tpm cutoff in 2 samples per condition
+diff_bs$BS_ID <- names(diff_bs)
+diff_bs <- as.data.frame(diff_bs) %>%
+  rowwise() %>%
+  mutate(tpm_support_KO = sum(c((tpm.counts.bg.1_KO > tpm_cut),
+                             (tpm.counts.bg.2_KO > tpm_cut),
+                             (tpm.counts.bg.3_KO > tpm_cut))),
+         tpm_support_WT = sum(c((tpm.counts.bg.4_WT > tpm_cut),
+                             (tpm.counts.bg.5_WT > tpm_cut),
+                             (tpm.counts.bg.6_WT > tpm_cut))),
+         tpm_supported = (tpm_support_KO > 1) & (tpm_support_WT > 1)) 
+                           
+
+# make upset plot
+genesExpInWT = diff_bs %>% subset(tpm_support_WT > 1) %>% pull(geneID) %>% unique()
+genesExpInKO = diff_bs %>% subset(tpm_support_KO > 1) %>% pull(geneID) %>% unique()
+  
+l = list(genesExpInWT = genesExpInWT, genesExpInKO = genesExpInKO)
+m = make_comb_mat(l)
+
+ha = HeatmapAnnotation(
+  "Intersections" = anno_barplot(comb_size(m), border = FALSE, gp = gpar(fill = "#a6a6a6"), height = unit(6, "cm"))
+)
+ha2 = HeatmapAnnotation(
+  "set sizes" = anno_barplot(set_size(m), border = FALSE, gp = gpar(fill = "#a6a6a6"), width = unit(4, "cm")),
+  which = "row"
+)
+
+ht = UpSet(m,
+           comb_order = order(comb_size(m), decreasing = T),
+           top_annotation = ha,
+           right_annotation = ha2,
+           comb_col = "#003399", bg_col = "white", pt_size = unit(.5, "cm") ,
+           border = T, lwd = 2, bg_pt_col = "#a6a6a6"
+)
+
+ss = set_size(m)
+cs = comb_size(m)
+ht = draw(ht,  padding = unit(c(0, 0, 10, 0), "mm"))
+od = column_order(ht)
+decorate_annotation("Intersections", {
+    grid.text(format(cs[od], big.mark = ".", decimal.mark = ","), x = seq_along(cs), y = unit(cs[od], "native") + unit(.1, "pt"), 
+        default.units = "native", just = c("left", "bottom"), 
+        gp = gpar(fontsize = 8, col = "black"), rot = 45)
+})
+
+
+pdf(file=paste0(out, "SupF1_diff_binding_set.pdf"))
+ht = UpSet(m,
+           comb_order = order(comb_size(m), decreasing = T),
+           top_annotation = ha,
+           right_annotation = ha2,
+           comb_col = "#003399", bg_col = "white", pt_size = unit(.5, "cm") ,
+           border = T, lwd = 2, bg_pt_col = "#a6a6a6"
+)
+
+ss = set_size(m)
+cs = comb_size(m)
+ht = draw(ht,  padding = unit(c(0, 0, 10, 0), "mm"))
+od = column_order(ht)
+decorate_annotation("Intersections", {
+    grid.text(format(cs[od], big.mark = ".", decimal.mark = ","), x = seq_along(cs), y = unit(cs[od], "native") + unit(.1, "pt"), 
+        default.units = "native", just = c("left", "bottom"), 
+        gp = gpar(fontsize = 8, col = "black"), rot = 45)
+})
+dev.off()
+
+# subset by cutoff
+diff_bs <- diff_bs %>% subset(tpm_supported )
+
+```
+
+ The expression filtering resulted in `r myNumberFormat(length(unique(diff_bs$geneID)))` target genes, with `r myNumberFormat(nrow(diff_bs))` binding sites. 
+ 
+# Results (after Gene Expression filter)
+
+```{r}
+### ============================================================================
+### Numbers overview table
+### ----------------------------------------------------------------------------
+### 
+df = data.frame(Name = c("Tested", "Not Significant", "Significant", "Sig+Up", "Sig+Down"),
+                N = c(nrow(diff_bs),
+                      nrow(subset(diff_bs, resBs.padj >= 0.05)),
+                      nrow(subset(diff_bs, resBs.padj < 0.05)),
+                      nrow(subset(diff_bs, resBs.padj < 0.05 & resBs.log2FoldChange > 0)),
+                      nrow(subset(diff_bs, resBs.padj < 0.05 & resBs.log2FoldChange < 0))
+                      ))
+df$Per = c(100,
+           nrow(subset(diff_bs, resBs.padj >= 0.05)) / nrow(diff_bs) * 100,
+           nrow(subset(diff_bs, resBs.padj < 0.05)) / nrow(diff_bs) * 100,
+           nrow(subset(diff_bs, resBs.padj < 0.05 & resBs.log2FoldChange > 0)) / nrow(subset(diff_bs, resBs.padj < 0.05)) * 100,
+           nrow(subset(diff_bs, resBs.padj < 0.05 & resBs.log2FoldChange < 0)) / nrow(subset(diff_bs, resBs.padj < 0.05)) * 100
+           )
+df$Per = round(df$Per, digits = 2)
+colnames(df) = c("Name", "Count (#N)", "Percentage (%)")
+
+kable(myNumberFormat(df), caption = "Results by numbers. Significant based on IHW adjusted P value threshold 0.05.") 
+```
+
+## Decide for P value cutoff
+
+```{r, fig.width=8, fig.height=8, fig.wide=TRUE, fig.cap="Regulation enrichment per adjusted P value cutoff. The dashed line indicates a cutoff of 0.05."}
+d = lapply(seq(0, 1, by = 0.05), function(cutoff){
+    diff_bs %>%
+         dplyr::select(region, resBs.log2FoldChange, resBs.padj) %>%
+        rename("lfc" = "resBs.log2FoldChange", "padj" = "resBs.padj") %>%
+        subset(padj <= cutoff) %>%
+        mutate(dir = ifelse(lfc > 0, "Up", "Down")) %>%
+         dplyr::select(region, dir) %>%
+        mutate(cutoff = cutoff)
+})
+d = do.call("rbind", d)
+
+df = d %>%
+    group_by(region, dir, cutoff) %>% 
+    tally() %>%
+    ungroup() %>%
+    group_by(cutoff, region) %>%
+    mutate(sum = sum(n)) %>%
+    arrange(cutoff) %>%
+    mutate(percentage = round(n/sum, digits = 4)*100) %>%
+    mutate(dir = factor(dir, level = c("Up", "Down"))) %>%
+    arrange(dir)
+
+p1 = ggplot(df, aes(x = cutoff, y = percentage, color = dir, fill = dir, group = dir)) +
+    geom_line() +
+    geom_point(size = 4, shape = 21) +
+    theme_pub() +
+    scale_fill_nice_ud_b() +
+    scale_color_nice_ud_d() +
+    theme(legend.position = "top") +
+    labs(
+        title = "Regulation enrichment",
+        x = "Adjusted P value cutoffs",
+        y = "Percentage of significantly regulated binding sites",
+        color = "Direction",
+        fill = "Direction"
+    ) +
+    theme(axis.text.x=element_text(angle = 45, hjust = 1, vjust = 1)) +
+    facet_wrap(~region) +
+    geom_vline(xintercept = 0.075, linetype = "dashed")
+
+p2 = ggplot(df, aes(x = cutoff, y = n, fill = dir, color = dir, group = dir)) +
+    geom_col() +
+    theme_pub() +
+    scale_fill_nice_ud_b() +
+    scale_color_nice_ud_d() +
+    theme(legend.position = "top") +
+    theme(axis.text.x=element_text(angle = 45, hjust = 1, vjust = 1)) +
+    facet_wrap(~region, scales = "free_y") +
+    geom_vline(xintercept = 0.075, linetype = "dashed") +
+    labs(
+        title = "Number of binding site per adjusted P value cutoff",
+        x = "Adjusted P value cutoffs",
+        y = "Count",
+        color = "Direction",
+        fill = "Direction"
+    ) 
+
+p1 / p2
+```
+
+```{r, fig.width=8, fig.height=4, fig.wide=TRUE, fig.cap="P value distributions."}
+# P value hist
+p1 = ggplot(diff_bs, aes(x = resBs.pvalue)) +
+    geom_histogram(bins = 50, fill = "#999999", color = "#4d4d4d") +
+    theme_nice() +
+    labs(
+        x = "P value",
+        y = "Count"
+    )
+
+p2 = ggplot(diff_bs, aes(x = resBs.padj)) +
+    geom_histogram(bins = 50, fill = "#999999", color = "#4d4d4d") +
+    theme_nice() +
+    geom_vline(xintercept = 0.05) +
+    labs(
+        x = "Adj P value",
+        y = "Count"
+    )
+
+p1 + p2
+```
+
+```{r, fig.width=9, fig.height=3, fig.wide=TRUE, fig.cap="Significantly regulated binding sites per region and direction. The percentage is calculated from all significant binding sites at adusted P value cutoff of 0.05."}
+df2 = d %>%
+    subset(., cutoff == 0.05) %>%
+    subset(., !is.na(region)) %>%
+    subset(., region != "outside")%>%
+    group_by(region, dir) %>% 
+    tally() %>%
+    ungroup() %>%
+    mutate(sum = sum(n)) %>%
+    mutate(percentage = round(n/sum, digits = 4)*100) 
+df2 = df2 %>%
+    mutate(region = factor(region, levels = c("utr5", "intron", "cds", "utr3"))) %>%
+    arrange(region) 
+
+p1 = ggplot(df2, aes(x = dir, y = percentage, fill = region)) + 
+    geom_col(position = "stack") +
+    theme_pub() +
+    scale_fill_npg() +
+    labs(
+        title = "Significantly regulated binding sites per region and direction",
+        x = "Direction of regulation",
+        y = "Percentage",
+        fill = "Region"
+    ) + 
+    coord_flip() +
+    theme(legend.position = "top") 
+
+p2 = ggplot(df2, aes(x = dir, y = percentage, fill = region)) + 
+    geom_col(position = "fill", lwd = 2) +
+    theme_pub() +
+    scale_fill_npg() +
+    labs(
+        title = "Significantly regulated binding sites per region and direction",
+        x = "Direction of regulation",
+        y = "Percentage",
+        fill = "Region"
+    ) + 
+    coord_flip() +
+    theme(legend.position = "top") 
+    # annotate(geom = "rect", xmin = 0.55, xmax = 1.45, ymin = 0, ymax = 1, fill = "NA", color = "#874C62", lwd = 2) +
+    # annotate(geom = "rect", xmin = 1.55, xmax = 2.45, ymin = 0, ymax = 1, fill = "NA", color = "#68b1a5", lwd = 2)
+
+p1 + p2
+
+ggsave(p1, filename = "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure1/Differential_Binding/S1L_differential_regionwise.pdf", height = 6, width = 6, units = "cm")
+
+df2
+
+```
+
+We cut of the p-value at < 0.05 and use no cutoff on the foldchange.
+
+### Final numbers
+
+```{r}
+diff_bs_sig <- diff_bs %>% subset(resBs.padj < 0.05)
+
+
+table(diff_bs_sig$region)
+sum(table(diff_bs_sig$region))
+sum(is.na(diff_bs_sig$region))
+
+```
+
+
+
+
+### Final results vulcano
+
+```{r, fig.width=8, fig.height=4, fig.wide=TRUE, fig.cap="MA and Volcano plots. With adjusted P value and fold-change cutoffs. Custom annotaitons - significant only."}
+# MA + Volcano plots
+df = diff_bs %>%
+    mutate(sig = (ifelse(resBs.padj < 0.05 , TRUE, FALSE))) %>%
+    mutate(dir = factor(ifelse(resBs.log2FoldChange > 0,
+                               "Up",
+                               "Down"),
+                        level = c("Up", "Down"))) %>%
+    mutate(sigDir = ifelse(sig == TRUE & dir == "Up", 
+                           "Up", 
+                           ifelse(sig == TRUE & dir == "Down",
+                                  "Down", 
+                                  "Not"))) %>%
+    mutate(sigDir = factor(sigDir, 
+                           levels = c("Not", "Up", "Down"))) %>%
+    arrange(sigDir)
+
+dfN = df %>% 
+  filter(sig == TRUE) %>%  
+  dplyr::select(dir) %>% 
+  group_by(dir) %>% 
+  tally()
+
+ selectedGenes = c("Zfp36l1","Zfp36l2","Dusp10","Ddit4","Gnb4","S1pr1")
+
+dfLabMa_up = df %>% 
+  filter(geneName %in%  selectedGenes & resBs.log2FoldChange > 0 & sig == TRUE)
+
+dfLabMa_down = df %>% 
+  filter(geneName %in% selectedGenes & resBs.log2FoldChange < 0 & sig == TRUE)
+
+p1 = ggplot(df, aes(x = log2(resBs.baseMean), y = resBs.log2FoldChange, color = sigDir, fill = sigDir)) +
+    geom_point_rast(shape = 21, stroke = 0.5, size = 1.5) +
+    scale_fill_nice_udn_b() +
+    scale_color_nice_udn_d() +
+    geom_hline(yintercept = 0, color = "black", alpha = .5) +
+    theme_nice() +
+    guides(color = guide_legend(override.aes = list(size = 4))) + 
+    theme(legend.key.size = unit(1, 'cm'), legend.position = "top") +
+    labs(
+        x = "Base mean", 
+        y = "Fold-change (log2)", 
+        color = "Regulation",
+        fill = "Regulation") +
+    geom_text_repel(data = dfLabMa_down, aes(x = log2(resBs.baseMean), y = resBs.log2FoldChange, color = sigDir, fill = sigDir, label = paste0(geneName,"-", sapply(strsplit(BS_ID,"\\."), `[`, 2))),
+                    min.segment.length = 0, nudge_y = -6, size = 2.5) +
+    ylim(-7,7) +
+    annotate(geom = "text", label = paste0("#N=",dfN[1,][[2]]), x = 12.5, y = 5) +
+    annotate(geom = "text", label = paste0("#N=",dfN[2,][[2]]), x = 12.5, y = -5)
+
+
+p2 = ggplot(df, aes(x = resBs.log2FoldChange, y = -log10(resBs.padj), color = sigDir, fill = sigDir)) +
+    geom_point_rast(shape = 21, stroke = 0.5, size = 1.5) +
+    scale_fill_nice_udn_b() +
+    scale_color_nice_udn_d() +
+    geom_vline(xintercept = 0, color = "black", alpha = .5) +
+    theme_nice() +
+    guides(color = guide_legend(override.aes = list(size = 4))) + 
+    theme(legend.key.size = unit(1, 'cm'), legend.position = "top") +
+    labs(
+        x = "Fold-change (log2)", 
+        y = "Adjusted P value (-log10)", 
+        color = "Regulation",
+        fill = "Regulation") +
+    geom_text_repel(data = dfLabMa_down, aes(x = resBs.log2FoldChange, y = -log10(resBs.padj), color = sigDir, fill = sigDir, label = paste0(geneName,"-", sapply(strsplit(BS_ID,"\\."), `[`, 2))),
+                    min.segment.length = 0, nudge_x = -4, size = 2.5) +
+    xlim(-6,6) +
+    annotate(geom = "text", label = paste0("#N=",dfN[1,][[2]]), y = 50, x = 2.5) +
+    annotate(geom = "text", label = paste0("#N=",dfN[2,][[2]]), y = 50, x = -2.5)
+
+(p1 + p2) + plot_layout(guides = "collect") & theme(legend.position = "top")
+
+
+```
+
+
+
+### Export results
+
+```{r}
+# export results 
+saveRDS(diff_bs, file = paste0(out, "BsDifferentialResult.rds"))
+
+write.csv(diff_bs, paste0(out, "supplementary_table_differentail_binding.csv"))
+
+diff_bs %>% subset(resBs.padj < 0.05) %>% subset(gene)
+
+```
+
+# Session Info
+```{r}
+sessionInfo()
+
+```
