@@ -3,18 +3,18 @@ title: "Bound genes and gene regions of MREs"
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  # BiocStyle::html_document:
-  # toc_float: TRUE
-  # code_folding: hide
-  # toc: TRUE
-  # number_sections: yes
-  # fig_caption: yes
-  pdf_document:
-    fig_caption: true
-    fig_crop: true
-    toc: true
-    toc_depth: 1
-    number_sections: true
+  BiocStyle::html_document:
+  toc_float: TRUE
+  code_folding: hide
+  toc: TRUE
+  number_sections: yes
+  fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -91,8 +91,6 @@ mir181_enriched_set <- mir181_bs %>%
 
 ```{r}
 
-table(mir181_enriched_set$region)
-
 mir181_enriched_set <- mutate(mir181_enriched_set, geneType =
                          case_when(geneType != "protein_coding" ~ "other",
                                    region == "intron" ~ "other",
@@ -101,13 +99,12 @@ mir181_enriched_set <- mutate(mir181_enriched_set, geneType =
                                     T ~ "mature protein_coding RNA"))
 gene_type_df <-   table(mir181_enriched_set$geneType) %>% 
   as.data.frame(.) 
-gene_type_df
 
 p <- ggplot(gene_type_df, aes(y=Freq, x="", fill=Var1)) +
      geom_col()+
      coord_polar(theta="y") +
   #    xlim(c(2, 4)) +
-  geom_label(data = gene_type_df , aes(y=Freq, x="", fill=Var1, label = Freq),
+  geom_label(data = gene_type_df %>% subset(gene_type_df == "mature protein_coding RNA"), aes(y=Freq, x="", fill=Var1, label = Freq),
              position = position_stack(vjust = 0.5),
              show.legend = FALSE) +
   scale_fill_manual(values = c (farbe6, farbe4)) +
@@ -149,8 +146,6 @@ p
 ggsave(p, filename = paste0(out, "Figure2B_bound_gene_regions_miR181_BS", Sys.Date(), ".pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
 
 sum(gene_region_df$Freq)
-gene_region_df / sum(gene_region_df$Freq)
-gene_region_df
 ```
 ### Remove binding sites in introns or outside of any gene region
 
