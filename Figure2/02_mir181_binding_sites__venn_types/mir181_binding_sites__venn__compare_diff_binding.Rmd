@@ -179,172 +179,7 @@ mir181_bs$BS_ID <- NULL
 mir181_bs$mir181BS_ID <- 1:NROW(mir181_bs)
 ```
 
-
-# Combine mir181 binding sites with differntial binding sites
-
-Next, I combine the obtained mir181 binding sites with the results we obtained from the differntial binding between AGO binding sites and AGO binding sites with mir181 KO (see script Figure1/Differntial_Binding_AGO_BS_mir181_KO).
-
-```{r}
-# ---------------------------
-# combine with differential BS
-# --------------------------
-# get overlaps with diff binding
-# diff_overlap <- findOverlaps( mir181_bs, makeGRangesFromDataFrame(diff, keep.extra.columns = T) , type = "any", select = "first")
-# # add differential information to mir181 binding sites
-# d <- diff[,9:48]
-# mcols(mir181_bs) <- cbind(mcols(mir181_bs), d[diff_overlap,])
-
-# add only diff bs (these are Ago binding sites but not mir181 Binding sites)
-# diff_only <- subsetByOverlaps( makeGRangesFromDataFrame(diff, keep.extra.columns = T), mir181_bs , type = "any", invert = T)
-# mir181_bs_diff <- c(mir181_bs, diff_only)
-
-# 
-# # ---------------------------
-# # make venn diagram
-# # --------------------------
-# 
-# # select downregulated BS from differential BS
-# mir181_bs_diff_anygroup <- mir181_bs_diff %>% subset((down == T) | !is.na(set))
-# 
-# # make venn
-# venn_df <- data.frame(ago_bs_mir181_chi = 
-#                         ((mir181_bs_diff_anygroup$set == "ago_bs_mir181_chi") | (mir181_bs_diff_anygroup$set == "ago_bs_mir181_chi&mir181_enriched")),
-#                       mir181_enriched = 
-#                         ((mir181_bs_diff_anygroup$set == "mir181_enriched") | (mir181_bs_diff_anygroup$set == "ago_bs_mir181_chi&mir181_enriched")),
-#                       mir181_ko_downregulated = (mir181_bs_diff_anygroup$down == T )
-#                       ) %>%
-#   mutate(ago_bs_mir181_chi = case_when(is.na(ago_bs_mir181_chi) ~ F, T~ago_bs_mir181_chi),
-#          mir181_enriched = case_when(is.na(mir181_enriched) ~ F, T ~ mir181_enriched),
-#          mir181_ko_downregulated = case_when(is.na(mir181_ko_downregulated) ~ F, T ~ mir181_ko_downregulated))
-# 
-# 
-# 
-# venn <- eulerr::euler(venn_df)
-# p <- plot(venn, quantities = T, fills = c( lighten(farbe1, amount = 0.4), lighten(farbe2, amount = 0.4), lighten(farbe3, amount = 0.4)))
-# p
-# 
-# pdf(paste0(out, "Figure2b_Venn_overlaps_mirBs.pdf"), height = 3, width = 4 )
-# p
-# dev.off()
-
-#Nikitas changed version
-# make venn
-# venn_dfnv <- data.frame(ago_bs_mir181_chi = 
-#                         ((mir181_bs$set == "ago_bs_mir181_chi") | (mir181_bs$set == "ago_bs_mir181_chi&mir181_enriched")),
-#                       mir181_enriched = 
-#                         ((mir181_bs$set == "mir181_enriched") | (mir181_bs$set == "ago_bs_mir181_chi&mir181_enriched"))
-#                       ) %>%
-#   mutate(ago_bs_mir181_chi = case_when(is.na(ago_bs_mir181_chi) ~ F, T~ago_bs_mir181_chi),
-#          mir181_enriched = case_when(is.na(mir181_enriched) ~ F, T ~ mir181_enriched))
-# 
-# 
-# 
-# vennnv <- eulerr::euler(venn_dfnv)
-# pnv <- plot(vennnv, quantities = T, fills = c( "#0073C2", "#8D0391"))
-# pnv
-# 
-# pdf(paste0(out, "Figure2b_Venn_overlaps_mirBs_nv.pdf"), height = 3, width = 4 )
-# pnv
-# dev.off()
-
-```
-
-
-## Differential binding both sets
-
-Here I look at the overall binding changes between mir181 KO and WT for the three subsets of the mir181 binding sites.
-
-```{r}
-# # ---------------------------
-# # Compare regulation of BS during mir181 KO of the different subgroups of mir181 binding sites
-# # --------------------------
-# names(mir181_bs_diff) <- 1:NROW(mir181_bs_diff)
-# 
-# mir181_bs_diff <- as.data.frame(mir181_bs_diff)
-# 
-# 
-# p1 <- ggplot(mir181_bs_diff, aes(x = resBs.log2FoldChange, color = set))+
-#   geom_vline(xintercept = 0, color = "grey")+
-#   stat_ecdf()+
-#   scale_color_manual(values = c(farbe1, farbe14, farbe2, farbeneg))+
-#   theme_paper()+
-#   theme(legend.position = "top")
-# 
-# 
-# p2 <- ggplot(mir181_bs_diff, aes(y = resBs.log2FoldChange, x = set, fill = set))+
-#   geom_half_violin()+
-#   geom_half_boxplot(side = "r")+
-#   theme_paper()+
-#   scale_fill_manual(values = c(farbe1, farbe14, farbe2, farbeneg))+
-#   theme(legend.position = "top")+
-#   scale_x_discrete(guide = guide_axis(angle = 25)) 
-# 
-# p1
-# 
-# p2
-# 
-# ggsave(p1, filename =  paste0(out, "Figure_1J_ecdf_differntial_binding_vs_mir181BS.pdf"), width = 6, height = 7, units = "cm")
-# ggsave(p2, filename = paste0(out, "violin_differntial_binding_vs_mir181BS.pdf"), width = 10, height = 10, units = "cm")
-```
-
-### Statistical tests for differential binding changes
-
-#### T-tests
-```{r}
-
-# t.tests of 3 sets against not bound
-# ------------------------------------
-# t1 <- t.test(x = mir181_bs_diff %>% subset(set == "mir181_enriched") %>% pull(resBs.lfcSE), 
-#        y = mir181_bs_diff %>% subset(is.na(set)) %>% pull(resBs.lfcSE))
-# t1
-# 
-# t.test(x = mir181_bs_diff %>% subset(set == "ago_bs_mir181_chi") %>% pull(resBs.lfcSE), 
-#        y = mir181_bs_diff %>% subset(is.na(set)) %>% pull(resBs.lfcSE))
-# 
-# t.test(x = mir181_bs_diff %>% subset(set == "ago_bs_mir181_chi&mir181_enriched") %>% pull(resBs.lfcSE), 
-#        y = mir181_bs_diff %>% subset(is.na(set)) %>% pull(resBs.lfcSE))
-# 
-# # --> the p-values are driven strongly by the number of binding sites per set, for this reason the highest difference has the lowest p-value (although it is still very high)
-# 
-# # check power of test
-# # ------------------------------------
-# pwr::pwr.t2n.test(n1 = mir181_bs_diff %>% subset(set == "mir181_enriched") %>% nrow(.),
-#                 n2 = mir181_bs_diff %>% subset(is.na(set)) %>% nrow(.),
-#                 d = abs(t1$estimate[1] -t1$estimate[2])/t1$stderr)
-```
-
-#### Kolmogorov-Smirnov Tests
-```{r}
-# Kolmogorov-Smirnov Tests
-# -------------------------
-# ks.test(x = mir181_bs_diff %>% subset(set == "mir181_enriched") %>% arrange(resBs.lfcSE) %>%pull(resBs.lfcSE),
-#         y = mir181_bs_diff %>% subset(is.na(set) ) %>% arrange(resBs.lfcSE) %>%pull(resBs.lfcSE))
-# 
-# ks.test(x = mir181_bs_diff %>% subset(set == "ago_bs_mir181_chi") %>% arrange(resBs.lfcSE) %>%pull(resBs.lfcSE),
-#         y = mir181_bs_diff %>% subset(is.na(set) ) %>% arrange(resBs.lfcSE) %>%pull(resBs.lfcSE))
-# 
-# ks.test(x = mir181_bs_diff %>% subset(set == "ago_bs_mir181_chi&mir181_enriched") %>% arrange(resBs.lfcSE) %>%pull(resBs.lfcSE),
-#         y = mir181_bs_diff %>% subset(is.na(set) ) %>% arrange(resBs.lfcSE) %>%pull(resBs.lfcSE))
-
-```
-
-## Venn bound genes from  all sets
-
-```{r eval=FALSE, include=FALSE}
-# bound_genes <- c(mir181_bs$geneID, diff$geneID) %>% unique()
-# venn_df <- data.frame(ago_bs_mir181_chi = 
-#                         (bound_genes %in% c(mir181_bs[mir181_bs$set == "ago_bs_mir181_chi"]$geneID,
-#                                             mir181_bs[mir181_bs$set == "ago_bs_mir181_chi&mir181_enriched"]$geneID %in% bound_genes)),
-#                       mir181_enriched = 
-#                         (bound_genes %in% c(mir181_bs[mir181_bs$set == "mir181_enriched"]$geneID,
-#                                             mir181_bs[mir181_bs$set == "ago_bs_mir181_chi&mir181_enriched"]$geneID %in% bound_genes)))
-# 
-# venn <- eulerr::euler(venn_df)
-# plot(venn, quantities = T)
-
-```
-
-# pie chart mir181 enriched set
+# pie chart mir181 enriched set - Figure 2b
 
 ```{r}
 # ----------------------------------------
@@ -383,6 +218,58 @@ ggsave(p, filename = paste0(out, "Figure2b_pie_miR181_enriched_BS.pdf"), width =
 
 ```
 
+# Combine mir181 binding sites with differntial binding sites
+
+Next, I combine the obtained mir181 binding sites with the results we obtained from the differntial binding between AGO binding sites and AGO binding sites with mir181 KO (see script Figure1/Differntial_Binding_AGO_BS_mir181_KO).
+
+```{r}
+# ---------------------------
+# combine with differential BS
+# --------------------------
+# get overlaps with diff binding
+diff_overlap <- findOverlaps( mir181_bs, makeGRangesFromDataFrame(diff, keep.extra.columns = T) , type = "any", select = "first")
+# add differential information to mir181 binding sites
+ d <- diff[,9:48]
+mcols(mir181_bs) <- cbind(mcols(mir181_bs), d[diff_overlap,])
+
+# add only diff bs (these are Ago binding sites but not mir181 Binding sites)
+diff_only <- subsetByOverlaps( makeGRangesFromDataFrame(diff, keep.extra.columns = T), mir181_bs , type = "any", invert = T)
+mir181_bs_diff <- c(mir181_bs, diff_only)
+
+```
+
+
+## Differential binding both sets
+
+Here I look at the overall binding changes between mir181 KO and WT for mir181 enriched binding sites and other Ago2 binding sites.
+
+```{r violin}
+mycomp <- list(c("miR-181 target", "Other"))
+mir181_bs_diff[is.na(mir181_bs_diff$set), "set"] <- "Other"
+table(mir181_bs_diff$set)
+
+viodat <- mir181_bs_diff
+viodat <- viodat[!(viodat$set == "ago_bs_mir181_chi"),]
+viodat[!(viodat$set == "Other"), "set"] <- "miR-181 target"
+table(viodat$set)
+
+
+p2n <- ggplot(viodat, aes(y = resBs.log2FoldChange, x = as.character(set), fill = as.character(set)))+
+  geom_boxplot(outlier.shape = NA)+
+  geom_hline(yintercept = 0, linetype="dashed") +
+  theme_paper()+
+  scale_fill_manual(values = c(farbe1, farbe14))+
+  theme(legend.position = "top")+
+  scale_x_discrete(guide = guide_axis(angle = 25)) +
+  stat_compare_means(comparisons = mycomp, label.y = 2.5 ) + 
+  coord_cartesian(ylim = c(-3,3))
+  
+p2n
+ggsave(p2n, filename =  paste0(out, "Figure_2d_boxplot_differntial_binding_vs_mir181BS_pvalues.pdf"), width = 3.5, height = 7, units = "cm")
+
+
+
+```
 
 
 # Save output
