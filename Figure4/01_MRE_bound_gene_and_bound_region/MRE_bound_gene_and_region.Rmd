@@ -98,7 +98,7 @@ p <- ggplot(gene_type_df, aes(y=Freq, x="", fill=Var1)) +
      geom_col()+
      coord_polar(theta="y") +
   #    xlim(c(2, 4)) +
-  geom_label(data = gene_type_df %>% subset(gene_type_df == "mature protein_coding RNA"), aes(y=Freq, x="", fill=Var1, label = Freq),
+  geom_label(data = gene_type_df, aes(y=Freq, x="", fill=Var1, label = Freq),
              position = position_stack(vjust = 0.5),
              show.legend = FALSE) +
   scale_fill_manual(values = c (farbe6, farbe4)) +
@@ -137,7 +137,7 @@ p <- ggplot(gene_region_df %>% subset(Var1 != "outside"), aes(y=Freq, x=Var1)) +
   theme_paper() 
 p
 
-ggsave(p, filename = paste0(out, "Figure2B_bound_gene_regions_miR181_BS.pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
+ggsave(p, filename = paste0(out, "Figure4d_bound_gene_regions_miR181_BS.pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
 
 sum(gene_region_df$Freq)
 ```
@@ -158,6 +158,24 @@ mir181_bs <- mutate(mir181_bs, geneType =
 
 
 ```
+
+# Number of MREs per transcript
+
+```{r}
+df <- table(mir181_bs$geneID) %>%
+  as.data.frame(.) 
+
+df[df$Freq > 10,]$Freq <- 10
+
+ggplot(df, aes(x = Freq))+
+  geom_bar()+
+  theme_paper()
+
+ggsave(p, filename = paste0(out, "Figure4b_MREs_per_transcript.pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
+
+```
+
+
 
 # Save filtered BS 
 
