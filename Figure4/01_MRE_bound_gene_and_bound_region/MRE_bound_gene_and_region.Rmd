@@ -1,0 +1,187 @@
+---
+title: "Bound genes and gene regions of MREs"
+author: "Melina Klostermann"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  BiocStyle::html_document:
+  toc_float: TRUE
+  code_folding: hide
+  toc: TRUE
+  number_sections: yes
+  fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
+---
+
+```{r setup, include=FALSE}
+require("knitr")
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=F, cache.lazy = FALSE)
+tidy.opts=list(width.cutoff=80,tidy=TRUE, echo=FALSE)
+```
+
+# Libraries and settings
+
+```{r libraries}
+# ----------------------------------------
+# libraries
+# ----------------------------------------
+library(tidyverse)
+library(GenomicRanges)
+library(colorspace)
+library(eulerr)
+library(gghalves)
+
+# ----------------------------------------
+# settings
+# ----------------------------------------
+
+here <- here::here()
+
+source(paste0(here,"/Supporting_scripts/themes/theme_paper.R"))
+
+
+out <- paste0(here,"/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure4/01_MRE_bound_gene_and_bound_region/")
+
+
+
+
+# farben
+farbeneg <- "#B4B4B4"
+farbe1 <- "#0073C2FF" #WT farbe
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF" #miR181KO farbe
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+```
+
+# What was done?
+
+- the genetype and gene region of the mir 181 binding sites (union) are ploted (Figure4)
+
+# Files
+```{r}
+# ----------------------------------------
+# MREs
+# ----------------------------------------
+
+mir181_bs <- readRDS(paste0(here, "/Figure2/01_mir181-enriched_binding_site_definition/mir181_bs.rds"))
+
+names(mir181_bs) <- 1:NROW(mir181_bs)
+mir181_bs <- as.data.frame(mir181_bs)
+
+mir181_enriched_set <- mir181_bs %>% 
+  as.data.frame(.) %>%
+  subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched"))
+
+```
+
+
+# Characterise MRE
+
+## mir181 bound genes - Figure 4A
+
+```{r}
+
+mir181_enriched_set <- mutate(mir181_enriched_set, geneType =
+                         case_when(geneType != "protein_coding" ~ "other",
+                                   region == "intron" ~ "other",
+                                   region == "outside" ~ "other",
+                                   is.na(region) ~ "other",
+                                    T ~ "mature protein_coding RNA"))
+gene_type_df <-   table(mir181_enriched_set$geneType) %>% 
+  as.data.frame(.) 
+
+p <- ggplot(gene_type_df, aes(y=Freq, x="", fill=Var1)) +
+     geom_col()+
+     coord_polar(theta="y") +
+  #    xlim(c(2, 4)) +
+  geom_label(data = gene_type_df %>% subset(gene_type_df == "mature protein_coding RNA"), aes(y=Freq, x="", fill=Var1, label = Freq),
+             position = position_stack(vjust = 0.5),
+             show.legend = FALSE) +
+  scale_fill_manual(values = c (farbe6, farbe4)) +
+  theme_paper() +
+  theme_nice_pie() +
+  #theme(legend.position = "none") +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  labs(y = NULL,
+       x = NULL)
+p
+
+ggsave(p, filename = paste0(out, "Figure4A_bound_gene_types_miR181_BS.pdf"), width = unit(8, "cm"), height = unit(6,"cm"))
+
+```
+
+### Remove non protein-coding binding sites
+
+For all further analyses we removed binding sites on non protein-coding RNAs.
+
+```{r}
+mir181_enriched_set <- subset(mir181_enriched_set, geneType == "mature protein_coding RNA")
+
+```
+
+## mir181 bound regions - Figure 4B
+
+```{r}
+gene_region_df <- table(mir181_enriched_set$region) %>% 
+  as.data.frame(.) %>%
+  arrange(desc(Freq))
+
+gene_region_df$Var1 <- factor(gene_region_df$Var1, levels = gene_region_df$Var1) 
+
+p <- ggplot(gene_region_df %>% subset(Var1 != "outside"), aes(y=Freq, x=Var1)) +
+     geom_col()+
+  theme_paper() 
+p
+
+ggsave(p, filename = paste0(out, "Figure2B_bound_gene_regions_miR181_BS.pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
+
+sum(gene_region_df$Freq)
+```
+
+### Remove binding sites in introns or outside of any gene region
+
+For all further analyses we removed binding sites in introns or in a gene regions with no region annotation.
+
+```{r}
+mir181_bs <- mutate(mir181_bs, geneType =
+                         case_when(geneType != "protein_coding" ~ "other",
+                                   region == "intron" ~ "other",
+                                   region == "outside" ~ "other",
+                                   is.na(region) ~ "other",
+                                    T ~ "mature protein_coding RNA")) %>%
+  subset(.,  geneType == "mature protein_coding RNA")
+
+
+
+```
+
+# Save filtered BS 
+
+```{r}
+
+saveRDS(mir181_bs, paste0(out, "mir181_bs_afterFigure4B.rds"))
+
+```
+
+# Session Info
+
+```{r}
+
+sessionInfo()
+```

@@ -57,7 +57,7 @@ source(paste0(here,"/Supporting_scripts/themes/theme_paper.R"))
 # settings
 # ----------------------------------------
 
-out <- paste0(here,"/Figure2+SF1h-j/01_mir181-enriched_binding_site_definition/")
+out <- paste0(here,"/Figure2/01_mir181-enriched_binding_site_definition/")
 
 
 ```

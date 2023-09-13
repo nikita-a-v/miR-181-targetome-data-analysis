@@ -3,18 +3,18 @@ title: "Annotation file preprocessing for binding sites"
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  # BiocStyle::html_document:
-  #   toc_float: TRUE
-  #   code_folding: hide
-  #   toc: TRUE
-  #   number_sections: yes
-  #   fig_caption: yes
-  pdf_document:
-    fig_caption: true
-    fig_crop: true
-    toc: true
-    toc_depth: 1
-    number_sections: true
+  BiocStyle::html_document:
+    toc_float: TRUE
+    code_folding: hide
+    toc: TRUE
+    number_sections: yes
+    fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -40,8 +40,9 @@ library(kableExtra)
 # ----------------------------------------
 # settings
 # ----------------------------------------
+here <- here::here()
 
-out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/"
+out <- paste0(here,"/Supporting_scripts/annotation_preprocessing/")
 
 ```
 

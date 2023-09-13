@@ -3,18 +3,18 @@ title: "AGO binding sites definition"
 author: "Mirko Brüggemann, Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
-  pdf_document:
-    fig_caption: true
-    fig_crop: true
-    toc: true
-    toc_depth: 1
-    number_sections: true
-  # BiocStyle::html_document:
-  #   toc_float: TRUE
-  #   code_folding: hide
-  #   toc: TRUE
-  #   number_sections: yes
-  #   fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
+  BiocStyle::html_document:
+    toc_float: TRUE
+    code_folding: hide
+    toc: TRUE
+    number_sections: yes
+    fig_caption: yes
 params:
   config: "config"
 ---
@@ -70,7 +70,7 @@ source(paste0(here,"/Supporting_scripts/themes/theme_paper.R"))
 # settings
 # ----------------------------------------
 
-out <- paste0(here,"/Figure1+SF1a-g/02_AGO_binding_site_definition/")
+out <- paste0(here,"/Figure1/01_AGO_binding_site_definition/")
 
 # farben
 farbe4 <- "#7AA6DCFF"
