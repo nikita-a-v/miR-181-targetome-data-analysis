@@ -86,7 +86,7 @@ mir181_enriched <- readRDS(paste0(here,"/Figure2/01_mir181-enriched_binding_site
 # chimeric reads
 # ----------------------------------------
 
-chimeric_reads <- readRDS(paste0(here,"/Figure1/03_Ago_targetome/mir_chimeric_crosslinks.rds"))
+chimeric_reads <- readRDS(paste0(here,"/Figure1/02_Ago_targetome/mir_chimeric_crosslinks.rds"))
 
 #nikita
 # chimeric_reads <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Ago_targetome/mir_chimeric_crosslinks.rds")
@@ -94,7 +94,7 @@ chimeric_reads <- readRDS(paste0(here,"/Figure1/03_Ago_targetome/mir_chimeric_cr
 # ----------------------------------------
 # AGO binding sites
 # ----------------------------------------
-ago_bs <- readRDS(paste0(here,"/Figure1/02_AGO_binding_site_definition/AGO_BS.rds"))
+ago_bs <- readRDS(paste0(here,"/Figure1/01_AGO_binding_site_definition/AGO_BS.rds"))
 
 #nikita
 # ago_bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")

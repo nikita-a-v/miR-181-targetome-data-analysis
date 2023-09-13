@@ -59,7 +59,7 @@ library(ggrepel) # Nikita
 # settings
 # ----------------------------------------
 
-out <- paste0(here,"/Figure1+SF1a-g/03_Ago_targetome/")
+out <- paste0(here,"/Figure1/02_Ago_targetome/")
 
 #Nikita out
 # out <- "D:/Krueger_Lab/Publications/miR181_paper/Figure1/Ago_targetome/"
@@ -87,7 +87,7 @@ We obtain chimeric reads from 4 different conditions:
 # ----------------------------------------
 # AGO binding sites
 # ----------------------------------------
-ago_bs <- readRDS(paste0(here,"/Figure1+SF1a-g/02_AGO_binding_site_definition/AGO_BS.rds"))
+ago_bs <- readRDS(paste0(here,"/Figure1/01_AGO_binding_site_definition/AGO_BS.rds"))
 
 
 # ----------------------------------------
