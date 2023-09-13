@@ -582,7 +582,7 @@ p <- ggplot(df3, aes(y=Freq, x="", fill=GeneType)) +
   labs(y = NULL,
        x = NULL)
 p
-ggsave(p, filename = paste0(out, "Figure1C_bound_gene_types_AGO", Sys.Date(), ".pdf"), width = unit(8, "cm"), height = unit(6,"cm"))
+ggsave(p, filename = paste0(out, "Figure1B_bound_gene_types_AGO.pdf"), width = unit(8, "cm"), height = unit(6,"cm"))
 
 ```
 

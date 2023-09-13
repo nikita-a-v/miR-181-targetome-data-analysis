@@ -355,7 +355,7 @@ p1 <- p1 + theme_paper()
 p3 <- p3 + theme_paper()
 
 ggsave(p1, filename = paste0(out, "Figure1E_Barchart_IP_WT_KO_top_mirs.pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
-ggsave(p3, filename = paste0(out, "Figure1G_Barchart_IP_WT_KO_181enriched_top_mirs.pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
+ggsave(p3, filename = paste0(out, "Figure2A_Barchart_IP_WT_KO_181enriched_top_mirs.pdf"), width = unit(6, "cm"), height = unit(6,"cm"))
 
 
 ```
