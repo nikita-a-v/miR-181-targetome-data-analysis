@@ -40,7 +40,7 @@ library(ggpubr)
 # settings
 # ----------------------------------------
 here <- here::here()
-out <- paste0(here,"/Figure2+SF1h-j/01_mir181-enriched_binding_site_definition/")
+out <- paste0(here,"/Figure2/01_mir181-enriched_binding_site_definition/")
 
 source(paste0(here,"/Supporting_scripts/themes/theme_paper.R"))
 source(paste0(here,"/Supporting_scripts/themes/CustomThemes.R"))
@@ -77,7 +77,7 @@ mir181 binding sites are defined as the union of
 # ----------------------------------------
 # mir181 enriched binding sites
 # ----------------------------------------
-mir181_enriched <- readRDS(paste0(here,"/Figure2+SF1h-j/01_mir181-enriched_binding_site_definition/BS_mir181_enriched.rds"))
+mir181_enriched <- readRDS(paste0(here,"/Figure2/01_mir181-enriched_binding_site_definition/BS_mir181_enriched.rds"))
 
 # #nikita
 # mir181_enriched <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Methods/mir181-enriched_binding_site_definition/2023-04-03-BS_mir181_enriched.rds")
@@ -86,7 +86,7 @@ mir181_enriched <- readRDS(paste0(here,"/Figure2+SF1h-j/01_mir181-enriched_bindi
 # chimeric reads
 # ----------------------------------------
 
-chimeric_reads <- readRDS(paste0(here,"/Figure1+SF1a-g/03_Ago_targetome/mir_chimeric_crosslinks.rds"))
+chimeric_reads <- readRDS(paste0(here,"/Figure1/03_Ago_targetome/mir_chimeric_crosslinks.rds"))
 
 #nikita
 # chimeric_reads <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Ago_targetome/mir_chimeric_crosslinks.rds")
@@ -94,7 +94,7 @@ chimeric_reads <- readRDS(paste0(here,"/Figure1+SF1a-g/03_Ago_targetome/mir_chim
 # ----------------------------------------
 # AGO binding sites
 # ----------------------------------------
-ago_bs <- readRDS(paste0(here,"/Figure1+SF1a-g/02_AGO_binding_site_definition/AGO_BS.rds"))
+ago_bs <- readRDS(paste0(here,"/Figure1/02_AGO_binding_site_definition/AGO_BS.rds"))
 
 #nikita
 # ago_bs <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/AGO_binding_site_definition/2023-04-21-AGO_BS.rds")
@@ -102,7 +102,7 @@ ago_bs <- readRDS(paste0(here,"/Figure1+SF1a-g/02_AGO_binding_site_definition/AG
 # ----------------------------------------
 # BS downregulated in mir181 KO
 # ----------------------------------------
-diff <- readRDS(paste0(here,"/Figure2+SF1h-j/03_Differential_Binding/BsDifferentialResult.rds"))
+diff <- readRDS(paste0(here,"/Figure2/04_Differential_Binding/BsDifferentialResult.rds"))
 
 #nikita
 # diff <- readRDS("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Differential_Binding/BsDifferentialResult.rds")
@@ -235,6 +235,8 @@ mcols(mir181_bs) <- cbind(mcols(mir181_bs), d[diff_overlap,])
 # add only diff bs (these are Ago binding sites but not mir181 Binding sites)
 diff_only <- subsetByOverlaps( makeGRangesFromDataFrame(diff, keep.extra.columns = T), mir181_bs , type = "any", invert = T)
 mir181_bs_diff <- c(mir181_bs, diff_only)
+names(mir181_bs_diff) <- 1:NROW(mir181_bs_diff)
+mir181_bs_diff <- as.data.frame(mir181_bs_diff)
 
 ```
 

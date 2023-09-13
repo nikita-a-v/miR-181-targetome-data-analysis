@@ -1,5 +1,6 @@
 ---
 title: "fig3 TE and MS plots"
+<<<<<<< HEAD
 author:
 - name: Nikita Verheyden
   affiliation: JLU Giessen
@@ -13,6 +14,11 @@ output:
 header-includes:
 - \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
 - \usepackage{placeins}
+=======
+author: "Nikita Verheyden"
+date: "2023-05-23"
+output: pdf_document
+>>>>>>> melina_code5
 ---
 
 ```{r setup, include=FALSE}
@@ -23,24 +29,37 @@ knitr::opts_chunk$set(echo = TRUE)
 
 dir
 ```{r dir}
+<<<<<<< HEAD
 setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3")
+=======
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure3")
+>>>>>>> melina_code5
 ```
 
 ## packages 
 ```{r packages}
+<<<<<<< HEAD
 source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
 library(readxl)
+=======
+source("D:/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+library(xlsx)
+>>>>>>> melina_code5
 library(ggplot2)
 library(ggrastr)
 library(dplyr)
 library(MASS)
+<<<<<<< HEAD
 library(ggpubr)
 library(ggrepel)
+=======
+>>>>>>> melina_code5
 ```
 
 ## data
 ```{r data}
 #ms
+<<<<<<< HEAD
 ms <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/MS_data_MMU_02082023.csv")
 
 #Ribo profiling
@@ -56,6 +75,29 @@ larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_pape
 largetframe <- as.data.frame(larget)
 table(largetframe$set)
 largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
+=======
+ms <- as.data.frame(read.xlsx("D:/Krueger_Lab/R/ECDF plots/Kreuger_analysis_ms.xlsx", 
+                              sheetName = "Analysis"))
+#adjust upper case lower case of gene names of MS data:
+#function
+capFirst <- function(s) {
+  paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")
+}
+ms$Gene.Symbol <- tolower(ms$Gene.Symbol)
+ms$Gene.Symbol <- capFirst(ms$Gene.Symbol)
+names(ms)[names(ms) == 'Gene.Symbol'] <- 'GeneName'
+head(ms$GeneName)
+
+#Ribo profiling
+RNA <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RNA_masterframe.csv")
+RPF <- read.csv("D:/Krueger_Lab/Publications/miR181_paper/Figure3/RPF_masterframe.csv")
+
+#Translational efficiency
+TEframe <- read.csv("D:/Krueger_Lab/Publications/miR181_paper_v07122022/Supporting scipts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+head(TEframe)
+
+
+>>>>>>> melina_code5
 
 ```
 ## colours
@@ -86,6 +128,7 @@ RPFncol <- "#8d0391"
 ```
 
 
+<<<<<<< HEAD
 # genelist
 ```{r genelist}
 Agenes <- c("Cd69", "Dusp6", "Ptpn22", "Zfp36l1", "Zfp36l2")
@@ -249,21 +292,37 @@ dev.off()
 ```{r msvol}
 pms <- 0.05
 lfccutoffmax <- 2
+=======
+# ms volcano
+```{r msvol}
+pms <- 0.05
+lfccutoffmax <- 1.5
+>>>>>>> melina_code5
 
 # #make columns with identifiers
 msco <- ms
 # msco$lfccutoff <- "in"
+<<<<<<< HEAD
 # msco$lfccutoff[msco$log2FoldChange > lfccutoffmax] <- "high"
 # msco$lfccutoff[msco$log2FoldChange < -lfccutoffmax] <- "low"
 # 
 # #implement cutoff
 # msco$log2FoldChange[msco$log2FoldChange > lfccutoffmax] <- lfccutoffmax
 # msco$log2FoldChange[msco$log2FoldChange < -lfccutoffmax] <- -lfccutoffmax
+=======
+# msco$lfccutoff[msco$Log2.FC. > lfccutoffmax] <- "high"
+# msco$lfccutoff[msco$Log2.FC. < -lfccutoffmax] <- "low"
+# 
+# #implement cutoff
+# msco$Log2.FC.[msco$Log2.FC. > lfccutoffmax] <- lfccutoffmax
+# msco$Log2.FC.[msco$Log2.FC. < -lfccutoffmax] <- -lfccutoffmax
+>>>>>>> melina_code5
 
 
 
 #add significance identifier
 msco$significance <- "Not significant"
+<<<<<<< HEAD
 msco$significance[msco$padj <= pms & msco$log2FoldChange > 0] <- "Significant up"
 msco$significance[msco$padj <= pms & msco$log2FoldChange < 0] <- "Significant down"
 
@@ -276,6 +335,20 @@ mscovolcano <- ggplot(msco, aes(y=-log10(padj), x=log2FoldChange,  fill=factor(s
   geom_point(data = msco[msco$significance == "Significant down",], shape=21, colour="black", fill=RPFncol) +
   # geom_point(data=msco[msco$significance == "Significant up" & msco$lfccutoff =="high",], aes(y=-log10(padj), x=log2FoldChange), shape=23, size = 2, colour="black", fill=RPFpcol) +
   # geom_point(data=msco[msco$significance == "Significant down" & msco$lfccutoff =="low",], aes(y=-log10(padj), x=log2FoldChange), shape=24, size = 2, colour="black", fill=RPFncol) +
+=======
+msco$significance[msco$P.value <= pms & msco$Log2.FC. > 0] <- "Significant up"
+msco$significance[msco$P.value <= pms & msco$Log2.FC. < 0] <- "Significant down"
+
+
+
+#plot
+mscovolcano <- ggplot(msco, aes(y=-log10(P.value), x=Log2.FC.,  fill=factor(significance, levels = c("Not significant", "Significant up","Significant down")))) + geom_point_rast(shape=21, size=0.5, colour=farbeneg) +
+  scale_fill_manual(values=c(farbeneg, RPFpcol, RPFncol)) +
+  geom_point(data = msco[msco$significance == "Significant up",], shape=21, colour="black", fill=RPFpcol) +
+  geom_point(data = msco[msco$significance == "Significant down",], shape=21, colour="black", fill=RPFncol) +
+  # geom_point(data=msco[msco$significance == "Significant up" & msco$lfccutoff =="high",], aes(y=-log10(P.value), x=Log2.FC.), shape=23, size = 2, colour="black", fill=RPFpcol) +
+  # geom_point(data=msco[msco$significance == "Significant down" & msco$lfccutoff =="low",], aes(y=-log10(P.value), x=Log2.FC.), shape=24, size = 2, colour="black", fill=RPFncol) +
+>>>>>>> melina_code5
   geom_hline(yintercept = -log10(pms), linetype="dashed") +
   geom_vline(xintercept = 0, linetype="dashed") +
   coord_cartesian(xlim = c(-lfccutoffmax, lfccutoffmax))+
@@ -288,6 +361,7 @@ mscovolcano
 pdf("Volcanoplot_MS.pdf", width = 2, height = 2)
 mscovolcano
 dev.off()
+<<<<<<< HEAD
 
 table(msco$significance)
 
@@ -347,6 +421,10 @@ dev.off()
 ```
 
 
+=======
+```
+
+>>>>>>> melina_code5
 # TE crossover
 ```{r tecross}
 names(RNA)[4] <- "RNA_log2FoldChange"
@@ -363,7 +441,21 @@ get_density <- function(x, y, ...) {
   return(dens$z[ii])
 }
 
+<<<<<<< HEAD
 
+=======
+set.seed(1)
+dat <- data.frame(
+  x = c(
+    rnorm(1e4, mean = 0, sd = 0.1),
+    rnorm(1e3, mean = 0, sd = 0.1)
+  ),
+  y = c(
+    rnorm(1e4, mean = 0, sd = 0.1),
+    rnorm(1e3, mean = 0.1, sd = 0.2)
+  )
+)
+>>>>>>> melina_code5
 
 #implement density
 ribo$density <- get_density(ribo$RNA_log2FoldChange, ribo$RPF_log2FoldChange, n=100)
@@ -372,6 +464,7 @@ ribo$density <- get_density(ribo$RNA_log2FoldChange, ribo$RPF_log2FoldChange, n=
 
 
 #plot
+<<<<<<< HEAD
 riboplot <- ggplot(ribo, aes(x=RNA_log2FoldChange, y=RPF_log2FoldChange, colour=log2(density))) +
   geom_point_rast(size=0.5) +
   geom_abline(slope = 1, colour=farbe1) +
@@ -380,6 +473,15 @@ riboplot <- ggplot(ribo, aes(x=RNA_log2FoldChange, y=RPF_log2FoldChange, colour=
   stat_cor(method = "pearson", label.x = -2, label.y = 2) +
   coord_cartesian(ylim = c(-3,3), xlim = c(-3,3)) +
   scale_colour_gradient(high=farbe3, low=farbeneg) +
+=======
+riboplot <- ggplot(ribo, aes(x=RNA_log2FoldChange, y=RPF_log2FoldChange, colour=density)) +
+  geom_point(size=1) +
+  geom_smooth(method=lm, colour=farbe1) +
+  geom_hline(yintercept = 0, linetype="dashed") +
+  geom_vline(xintercept = 0, linetype="dashed") +
+  coord_cartesian(ylim = c(-3,3), xlim = c(-3,3)) +
+  scale_color_gradient(low = farbeneg, high = farbe3) +
+>>>>>>> melina_code5
   theme_paper()
 
 
@@ -393,7 +495,11 @@ dev.off()
 
 
 
+<<<<<<< HEAD
 # Te volcano
+=======
+#Te volcano
+>>>>>>> melina_code5
 ```{r tevol}
 head(TEframe)
 
@@ -402,19 +508,30 @@ telfccutoff <- 2.5
 #add significance identifier
 TEco <- TEframe
 TEco$significance <- "Not significant"
+<<<<<<< HEAD
 TEco$significance[TEco$padj <= pms & TEco$log2FoldChange > 0] <- "Significant up"
 TEco$significance[TEco$padj <= pms & TEco$log2FoldChange < 0] <- "Significant down"
+=======
+TEco$significance[TEco$pvalue <= pms & TEco$log2FoldChange > 0] <- "Significant up"
+TEco$significance[TEco$pvalue <= pms & TEco$log2FoldChange < 0] <- "Significant down"
+>>>>>>> melina_code5
 
 
 
 #plot
+<<<<<<< HEAD
 TEcovolcano <- ggplot(TEco, aes(y=-log10(padj), x=log2FoldChange,  fill=factor(significance, levels = c("Not significant", "Significant up","Significant down")))) + geom_point_rast(shape=21, size=0.5, colour=farbeneg) +
   scale_fill_manual(values=c(farbeneg, "#CD534C", "#E3A09C")) +
+=======
+TEcovolcano <- ggplot(TEco, aes(y=-log10(pvalue), x=log2FoldChange,  fill=factor(significance, levels = c("Not significant", "Significant up","Significant down")))) + geom_point_rast(shape=21, size=0.5, colour=farbeneg) +
+  scale_fill_manual(values=c(farbeneg, RPFpcol, RPFncol)) +
+>>>>>>> melina_code5
   geom_point(data = TEco[TEco$significance == "Significant up",], shape=21, colour="black", fill="#CD534C") +
   geom_point(data = TEco[TEco$significance == "Significant down",], shape=21, colour="black", fill="#E3A09C") +
   geom_hline(yintercept = -log10(pms), linetype="dashed") +
   geom_vline(xintercept = 0, linetype="dashed") +
   coord_cartesian(xlim = c(-telfccutoff, telfccutoff))+
+<<<<<<< HEAD
   theme_paper() +
   geom_point(data = TEco[TEco$gene_symbol %in% Ngenes,], shape=21, colour="black", fill=farbe1, size=2) +
   geom_point(data = TEco[TEco$gene_symbol %in% Ogenes,], shape=21, colour="black", fill="#595959", size=2) +
@@ -511,10 +628,21 @@ msriboplot
 #export
 pdf("Crossdots_MSvsRPF.pdf", width = 2, height = 2)
 msriboplot
+=======
+  theme_paper()
+
+TEcovolcano
+
+
+#export
+pdf("Volcanoplot_TE.pdf", width = 2, height = 2)
+TEcovolcano
+>>>>>>> melina_code5
 dev.off()
 ```
 
 
+<<<<<<< HEAD
 
 # RNA and RPF bar plots
 
@@ -567,6 +695,8 @@ table(RPFbardat)
 
 
 
+=======
+>>>>>>> melina_code5
 # Session info
 ```{r sessioninfo}
 sessionInfo()

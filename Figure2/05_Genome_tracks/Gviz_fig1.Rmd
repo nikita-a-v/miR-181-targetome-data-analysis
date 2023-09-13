@@ -1,0 +1,223 @@
+---
+title: "Gviz_fig1"
+author: "Nikita Verheyden"
+date: "2023-04-17"
+output: pdf_document
+---
+# setup
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+directory
+```{r dir}
+setwd("D:/Krueger_Lab/Publications/miR181_paper/Figure1/Genome_tracks")
+```
+
+## packages
+```{r packages}
+library(Gviz)
+library(GenomicRanges)
+library(rtracklayer)
+library(dplyr)
+library(plyranges)
+library(BSgenome.Mmusculus.UCSC.mm10)
+```
+
+
+## Import data
+
+```{r data}
+# diferential results
+diffres <- rtracklayer::import(con = "D:/Krueger_Lab/miReCLIP/Mirco/DifferentialBinding/BsDifferentialResult.bed", format = "BED")
+
+# non enriched non chimeric
+IPKOminus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_KO.minus.bw")
+IPKOplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_KO.plus.bw")
+IPWTminus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT.minus.bw")
+IPWTplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT.plus.bw")
+
+IP181WTminus  <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT_miR181.minus.bw")
+IP181WTplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/non-chimeric/bw_merged/IP_WT_miR181.plus.bw")
+
+
+
+# enriched chimeric
+IP181chimWTminus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks_merged/chimeric_IP_WT_miR181.minus.bw")
+IP181chimWTplus <- import.bw("D:/Krueger_Lab/miReCLIP/Melina/pipe_output_22_02_14/pipe_output_22_02_14/chimeric/crosslinks_merged/chimeric_IP_WT_miR181.plus.bw")
+
+```
+
+
+# setting regions 
+
+Use this panel to change the coordinates in all following plots
+```{r region}
+scoord = 80108008 
+ecoord = 80108895
+tchr = "chr12"
+clim = 45
+```
+
+Zfp36l1: chr12 80107716-80108070
+Zfp36l2: chr17 84184290-84184345
+Cblb: chr16:52171980-52172133
+elmo1: chr13:20405350-20406237
+srsf11: chr3:158,010,824-158,012,135
+Aebp2: chr6:140652591-140652785
+Zfp36L1: total: chr12:80108008-80108895    181bs:chr12:80108023-80108,242    otherbs: chr12:80108634-80108853
+
+# Tracks
+
+## Annotation track
+
+```{r annotation}
+# genome axis
+gatrack <- GenomeAxisTrack()
+
+# gene track---------------------------this is not working yet
+# data(cpgIslands)
+# class(cpgIslands)
+# ## [1] "GRanges"
+# ## attr(,"package")
+# ## [1] "GenomicRanges"
+# chr <- as.character(unique(seqnames(cpgIslands)))
+# gen <- genome(cpgIslands)
+# atrack <- AnnotationTrack(cpgIslands, name = "CpG")
+# 
+# data(geneModels)
+# 
+# gff <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
+# 
+# gffloc <- as.data.frame(gff)
+# 
+# gffloc <- gffloc[gffloc$seqnames==tchr,]
+# 
+# grtrack <- GeneRegionTrack(gffloc, genome = "mm10", chromosome = tchr, 
+#                            name = "Gene")
+# 
+# grtrack <- GeneRegionTrack(geneModels, genome = BSgenome.Mmusculus.UCSC.mm10, chromosome = tchr, 
+#                            name = "foo")
+```
+
+
+## pureclip (merged)
+
+Always just activate or inactivate the strand that actually contains data
+```{r pureclipmerge}
+# -
+
+#KO minus
+KOm <- as.data.frame(IPKOminus)
+KOm <- KOm[KOm$seqnames == tchr & KOm$start >= scoord & KOm$end <= ecoord,]
+KOm$seqnames <- as.character(KOm$seqnames)
+KOm <- makeGRangesFromDataFrame(KOm, keep.extra.columns = T)
+
+KOmT <- DataTrack(KOm, name="KO-", ylim = c(0,clim))
+
+
+#WT minus
+WTm <- as.data.frame(IPWTminus)
+WTm <- WTm[WTm$seqnames == tchr & WTm$start >= scoord & WTm$end <= ecoord,]
+WTm$seqnames <- as.character(WTm$seqnames)
+WTm <- makeGRangesFromDataFrame(WTm, keep.extra.columns = T)
+
+WTmT <- DataTrack(WTm, name="WT-", ylim = c(0,clim))
+
+#181 WT minus
+WT181m <- as.data.frame(IP181WTminus)
+WT181m <- WT181m[WT181m$seqnames == tchr & WT181m$start >= scoord & WT181m$end <= ecoord,]
+WT181m$seqnames <- as.character(WT181m$seqnames)
+WT181m <- makeGRangesFromDataFrame(WT181m, keep.extra.columns = T)
+
+WT181mT <- DataTrack(WT181m, name="WT181-", ylim = c(0,clim))
+
+
+# +
+
+# #KO plus
+# KOp <- as.data.frame(IPKOplus)
+# KOp <- KOp[KOp$seqnames == tchr & KOp$start >= scoord & KOp$end <= ecoord,]
+# KOp$seqnames <- as.character(KOp$seqnames)
+# KOp <- makeGRangesFromDataFrame(KOp, keep.extra.columns = T)
+# 
+# KOpT <- DataTrack(KOp, name="KO+", ylim = c(0,clim))
+# 
+# #WT plus
+# WTp <- as.data.frame(IPWTplus)
+# WTp <- WTp[WTp$seqnames == tchr & WTp$start >= scoord & WTp$end <= ecoord,]
+# WTp$seqnames <- as.character(WTp$seqnames)
+# WTp <- makeGRangesFromDataFrame(WTp, keep.extra.columns = T)
+# 
+# WTpT <- DataTrack(WTp, name="WT+", ylim = c(0,clim))
+
+# #181 WT plus
+# WT181p <- as.data.frame(IP181WTplus)
+# WT181p <- WT181p[WT181p$seqnames == tchr & WT181p$start >= scoord & WT181p$end <= ecoord,]
+# WT181p$seqnames <- as.character(WT181p$seqnames)
+# WT181p <- makeGRangesFromDataFrame(WT181p, keep.extra.columns = T)
+# 
+# WT181pT <- DataTrack(WT181p, name="WT181+", ylim = c(0,clim))
+
+
+```
+
+
+## chimeric reads
+
+```{r chimeric}
+# minus
+chim181m <- as.data.frame(IP181chimWTminus)
+chim181m <- chim181m[chim181m$seqnames == tchr & chim181m$start >= scoord & chim181m$end <= ecoord,]
+chim181m$seqnames <- as.character(chim181m$seqnames)
+chim181m <- makeGRangesFromDataFrame(chim181m, keep.extra.columns = T)
+
+chim181mT <- DataTrack(chim181m, name="WT181rich-", ylim = c(0,clim))
+
+# #plus
+# chim181p <- as.data.frame(IP181chimWTplus)
+# chim181p <- chim181p[chim181p$seqnames == tchr & chim181p$start >= scoord & chim181p$end <= ecoord,]
+# chim181p$seqnames <- as.character(chim181p$seqnames)
+# chim181p <- makeGRangesFromDataFrame(chim181p, keep.extra.columns = T)
+# 
+# chim181pT <- DataTrack(chim181p, name="WT181rich-", ylim = c(0,clim))
+
+```
+
+
+## differential binding
+
+```{r diffbinding}
+diffresf <- diffres %>% filter(seqnames == tchr)
+
+diffresT <- AnnotationTrack(diffresf, name = "dBS", id=diffresf$name)
+
+```
+
+
+
+# plot
+
+```{r plottracks}
+# # +
+# plotTracks(list(WTpT, KOpT, WT181pT, chim181pT, diffresT,  gatrack), from = scoord, to= ecoord, type="histogram", featureAnnotation = "id", 
+#            fontsize.feature=10, fontcolor.feature = "black")
+
+# -
+plotTracks(list(WTmT, KOmT,WT181mT, diffresT,  gatrack), from = scoord, to= ecoord, type="histogram", featureAnnotation = "id", 
+           fontsize.feature=10, fontcolor.feature = "black")
+``` 
+
+
+
+# make seperate plots for different binding sites
+
+
+
+
+
+# session info
+```{r sessioninfo}
+sessionInfo()
+
+```
