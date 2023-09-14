@@ -23,7 +23,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #Setup
 
 ```{r}
-setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3")
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Ribosome_profiling_pipeline")
 ```
 
 
