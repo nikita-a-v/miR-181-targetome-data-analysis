@@ -1,0 +1,191 @@
+---
+title: "GO_terms"
+author:
+- name: Nikita Verheyden
+  affiliation: JLU Giessen
+  date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+      toc: TRUE
+      toc_float: TRUE
+      code_folding: hide
+
+header-includes:
+- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+- \usepackage{placeins}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Setup
+
+directory
+```{r dir}
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/06_GO_analysis")
+```
+
+
+## Packages
+```{r packages}
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+library(ggplot2)
+library(rtracklayer)
+library(dplyr)
+library(tibble)
+library(Rtsne)
+library(cliProfiler)
+library(GenomicRanges)
+library(readxl)
+library(writexl)
+library(clusterProfiler)
+library(biomaRt)
+library(org.Mm.eg.db)
+library(msigdbr)
+library(eulerr)
+```
+
+## Import data
+
+```{r data}
+#Ribo profiling
+RNA <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RNA_masterframe.csv")
+RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RPF_masterframe.csv")
+
+#targets
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_afterFigure2B.rds")
+largetframe <- as.data.frame(larget)
+table(largetframe$set)
+largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
+```
+
+
+# GO analysis
+
+## enrichGO
+-add entrezIDs
+-enrichGO analysis
+-dotplots for Biological Process (BP), Molecular Function (MF) and Cell Compartmant (CC)
+```{r goplots}
+
+#entrezID for binding sites
+mart <- useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = "https://jul2019.archive.ensembl.org")
+genes <- largetframe$geneID
+G_list <- getBM(filters= "ensembl_gene_id", attributes= c("ensembl_gene_id","entrezgene_id"),values=genes,mart= mart)
+colnames(G_list) <- c("geneID", "entrezgene_id")
+largetframe <- left_join(largetframe,G_list,by="geneID")
+head(largetframe)
+
+#entrezID for background (RNAseq)
+genesBG <- RNA$Gene
+G_listBG <- getBM(filters= "ensembl_gene_id_version", attributes= c("ensembl_gene_id_version","entrezgene_id"),values=genesBG,mart= mart)
+colnames(G_listBG) <- c("Gene", "entrezgene_id")
+RNA <- left_join(RNA,G_listBG,by="Gene")
+head(RNA)
+
+
+bg <- as.character(RNA[!is.na(RNA$entrezgene_id) & RNA$baseMean > 0,"entrezgene_id"])
+l <- as.character(largetframe[!duplicated(largetframe$entrezgene_id) & largetframe$entrezgene_id %in% bg,"entrezgene_id"])
+
+
+delargBP <- enrichGO(l, OrgDb = org.Mm.eg.db, ont = "BP", universe = bg, pvalueCutoff=0.05, pAdjustMethod="BH")
+delargMF <- enrichGO(l, OrgDb = org.Mm.eg.db, ont = "MF", universe = bg, pvalueCutoff=0.05, pAdjustMethod="BH")
+delargCC <- enrichGO(l, OrgDb = org.Mm.eg.db, ont = "CC", universe = bg, pvalueCutoff=0.05, pAdjustMethod="BH")
+
+BPdp <- dotplot(delargBP, showCategory=30) + ggtitle("dotplot Biological Process")
+MFdp <- dotplot(delargMF, showCategory=30) + ggtitle("dotplot Molecular Function")
+CCdp <- dotplot(delargCC, showCategory=30) + ggtitle("dotplot Cell Compartment")
+
+pdf("dotplotBP.pdf", width=8, height = 12)
+BPdp
+dev.off()
+
+pdf("dotplotMF.pdf", width=8, height = 12)
+MFdp
+dev.off()
+
+pdf("dotplotCC.pdf", width=8, height = 12)
+CCdp
+dev.off()
+
+
+#complete lists
+BPdf <- as.data.frame(delargBP)
+MFdf <- as.data.frame(delargMF)
+CCdf <- as.data.frame(delargCC)
+
+write_xlsx(BPdf, "BPdf.xlsx")
+write_xlsx(MFdf, "MFdf.xlsx")
+write_xlsx(CCdf, "CCdf.xlsx")
+
+
+```
+
+
+## revigo
+process the output from the BP table at http://revigo.irb.hr/ to try to remove redundancies in the list
+```{r andreasrevigo2}
+#andreas now further curated the list and wants to use the top 25 
+arev2 <- read_xlsx("Revigo_BP_OnScreenTable_nonrelevantred_sorted_ak.xlsx")
+
+arev2r <- arev2[arev2$irrelevant=="no",]
+
+arev2BPdf <- BPdf[BPdf$ID %in% arev2r$ID,]
+
+#order
+arev2BPdf <- arev2BPdf[order(arev2BPdf$p.adjust),]
+
+arev2pdat <- arev2BPdf[1:25,]
+
+
+# Split the ratio character strings into numerator and denominator
+ratios_split <- strsplit(arev2pdat$GeneRatio, "/")
+
+# Convert the numerator and denominator strings to numeric
+numerator <- as.numeric(sapply(ratios_split, `[`, 1))
+denominator <- as.numeric(sapply(ratios_split, `[`, 2))
+
+# Calculate the ratios
+ratios_calculated <- numerator / denominator
+
+# Add the calculated ratios to the data frame as a new column
+arev2pdat$calculated_ratios <- ratios_calculated
+
+head(arev2pdat)
+
+
+# export list with old pvalues
+write_xlsx(arev2pdat, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Revigo_BP_OnScreenTable_nonrelevantred_sorted_ak_pvals.xlsx")
+
+
+
+
+# make a dotplot for the top 25 by pvalue of this data
+avrevplot <- ggplot(arev2pdat, aes(x=calculated_ratios, y=factor(Description, levels = arev2pdat[order(arev2pdat$calculated_ratios, decreasing = F),"Description"]), size=Count, colour= p.adjust)) + geom_point() +
+  theme_paper() + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        legend.position = "right") +
+  scale_colour_gradient(high=farbe2, low=farbe1)
+  
+
+avrevplot
+
+pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/reviplot_akselect.pdf", width=4, height = 6)
+avrevplot
+dev.off()
+```
+
+## revigo unmodified
+hier nochmal der unmodifizierte revigo output für die supplementary table (alte pvalues adden)
+```{r revigounmod}
+avrev_org <- read_xlsx("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Revigo_BP_Table_full.xlsx")
+
+
+arevorgBPdf <- BPdf[BPdf$ID %in% avrev_org$TermID,]
+
+# export list with old pvalues
+write_xlsx(arevorgBPdf, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Revigo_BP_Table_full_pval.xlsx")
+
+```

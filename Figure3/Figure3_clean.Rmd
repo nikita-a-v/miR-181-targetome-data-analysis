@@ -1,8 +1,18 @@
 ---
 title: "Figure3_clean"
-author: "Nikita Verheyden"
-date: "`r Sys.Date()`"
-output: html_document
+author:
+- name: Nikita Verheyden
+  affiliation: JLU Giessen
+  date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+      toc: TRUE
+      toc_float: TRUE
+      code_folding: hide
+
+header-includes:
+- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+- \usepackage{placeins}
 ---
 
 ```{r setup, include=FALSE}
