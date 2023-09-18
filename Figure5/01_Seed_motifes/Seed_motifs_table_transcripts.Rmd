@@ -37,32 +37,18 @@ library(BSgenome.Mmusculus.UCSC.mm10)
 library(Biostrings)
 library(plyranges)
 
+here <- here::here()
+
+source(paste0(here,"/Supporting_scripts/themes/theme_paper.R"))
+
 # ----------------------------------------
 # settings
 # ----------------------------------------
-out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/03_Seed_motifes/"
-source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
-source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
 
+out <- paste0(here,"/Figure5/01_Seed_motifes/")
+source(paste0(here,"/Supporting_scripts/themes/theme_paper.R"))
+source(paste0(here,"/Supporting_scripts/themes/CustomThemes.R"))
 
-# farben
-farbeneg <- "#B4B4B4"
-farbe1 <- "#0073C2FF" # WT farbe
-farbe2 <- "#EFC000FF" # mir181 enriched
-farbe3 <- "#CD534CFF" #miR181KO farbe
-farbe4 <- "#7AA6DCFF"
-farbe5 <- "#868686FF"
-farbe6 <- "#003C67FF"
-farbe7 <- "#8F7700FF"
-farbe8 <- "#3B3B3BFF"
-farbe9 <- "#A73030FF"
-farbe10 <- "#4A6990FF"
-farbe11 <- "#FF6F00FF"
-farbe12 <- "#C71000FF"
-farbe13 <- "#008EA0FF"
-farbe14 <- "#8A4198FF"
-farbe15 <- "#5A9599FF"
-farbe16 <- "#FF6348FF"
 ```
 
 # What was done?
@@ -101,7 +87,7 @@ transcript_fasta_df <- data.frame(tx_name = names(transcript_fasta), width = wid
 # MREs
 # ----------------------------------------
 
-mir181_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/02_assign_transcripts/mir181_bs_on_transcripts.rds")
+mir181_bs <- readRDS(paste0(here,"/Figure2/02_assign_transcripts/mir181_bs_on_transcripts.rds"))
 
 mir_crosslinks <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/xx_down_stream_R/01_Characterisation_of_chimeric_reads/out/mir_crosslinks_per_cond.rds")
 
