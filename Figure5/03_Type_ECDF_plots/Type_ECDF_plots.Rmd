@@ -1,0 +1,330 @@
+---
+title: "Type_ECDF_plots"
+author:
+- name: Nikita Verheyden
+  affiliation: JLU Giessen
+  date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+      toc: TRUE
+      toc_float: TRUE
+      code_folding: hide
+
+header-includes:
+- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+- \usepackage{placeins}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Setup
+
+dir
+```{r dir}
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure5/03_Type_ECDF_plots")
+```
+
+
+
+## Packages
+```{r packages}
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+library(ggplot2)
+library(rtracklayer)
+library(dplyr)
+library(tibble)
+library(Rtsne)
+library(cliProfiler)
+library(GenomicRanges)
+library(cowplot)
+library(eulerr)
+library(readxl)
+library(biomaRt)
+library(writexl)
+library(ggrastr)
+
+```
+
+## Data
+```{r data}
+#Ribo profiling
+RNA <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RNA_masterframe.csv")
+RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RPF_masterframe.csv")
+
+#load the gtf file to compare genes
+gff23path <- file.path("C:/Users/nikit/Documents/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
+
+#targets
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper_at_submission/Figure4/mir181_bs_with_seeds_transcripts.rds")
+largetframe <- as.data.frame(larget)
+table(largetframe$set)
+largetframe <- largetframe %>%
+  subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched"))
+
+
+#Translational efficiency
+TE <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+
+
+
+#melina repeats
+melrep <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/rep_on_transcripts.rds")
+MMSAT4 <- melrep[melrep$repName == "MMSAT4"]
+MurSatRep1 <- melrep[melrep$repName == "MurSatRep1"]
+```
+
+
+## colours
+```{r colours}
+#colours
+farbeneg <- "#b4b4b4"
+farbe1 <- "#0073C2FF"
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF"
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+  
+RNApcol <- "#b56504"
+RNAncol <- "#027d73"
+RPFpcol <- "#c4c404"
+RPFncol <- "#8d0391"
+```
+
+## axis limits
+```{r axislim}
+xlim <- 0.5
+zoomfac <- 0.45
+```
+
+
+
+## number of binding sites 
+```{r num}
+bsnum <- as.data.frame(table(largetframe$geneName))
+colnames(bsnum) <- c("gene_symbol", "BS_number")
+```
+
+
+
+
+## by type of MRE (wobble and non wobble combined)
+```{r MREtype}
+#RNA
+RNA$MREtype <- "Non-target"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.type),"geneName"]] <- "No seed"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_6mer","geneName"]] <- "seed_6mer"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_alt_38","geneName"]] <- "seed_alt_38"
+RNA$MREtype[RNA$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
+
+#RPF
+RPF$MREtype <- "Non-target"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.type),"geneName"]] <- "No seed"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_6mer","geneName"]] <- "seed_6mer"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_alt_38","geneName"]] <- "seed_alt_38"
+RPF$MREtype[RPF$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
+
+#TE
+TE$MREtype <- "Non-target"
+TE$MREtype[TE$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.type),"geneName"]] <- "No seed"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_6mer","geneName"]] <- "seed_6mer"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_alt_38","geneName"]] <- "seed_alt_38"
+TE$MREtype[TE$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
+
+
+# ecdf plots
+#RNA
+typeECDFRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RNA type of MRE")
+
+typeECDFRNA
+
+
+# zoom
+typeECDFRNAZ <- ggplot(RNA, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+typeECDFRNAZ
+
+#RPF
+typeECDFRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF type of MRE")
+
+typeECDFRPF
+
+# zoom
+typeECDFRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+typeECDFRPFZ
+
+
+
+
+
+#export RNA
+pdf("typeECDF_RNA.pdf", width=2, height = 2)
+typeECDFRNA
+dev.off()
+pdf("typeECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+typeECDFRNAZ
+dev.off()
+
+#export RPF
+pdf("typeECDF_RPF.pdf", width=2, height = 2)
+typeECDFRPF
+dev.off()
+pdf("typeECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+typeECDFRPFZ
+dev.off()
+
+
+
+table(RPF$MREtype)
+table(RNA$MREtype)
+table(TE$MREtype)
+
+```
+# TE density type
+```{R TEdensitytype}
+TEdenstyp <- ggplot(TE, aes(x=log2FoldChange, colour=factor(MREtype, levels = c("No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", "Multiple", "Non-target")))) +
+  geom_density() +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c( farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, "black")) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1)) +
+  ggtitle("TE")
+
+TEdenstyp
+
+pdf("TypeDensity_TE.pdf", width=2, height = 2)
+TEdenstyp
+dev.off()
+
+```
+
+## Significance
+```{r significanceType}
+RNATypeTTest1 <- t.test(RNA[RNA$MREtype=="seed_6mer", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeTTest2 <- t.test(RNA[RNA$MREtype=="seed_7mer_a1", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeTTest3 <- t.test(RNA[RNA$MREtype=="seed_7mer_m8", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeTTest4 <- t.test(RNA[RNA$MREtype=="seed_8mer", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeTTest5 <- t.test(RNA[RNA$MREtype=="seed_alt_38", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+
+RPFTypeTTest1 <- t.test(RPF[RPF$MREtype=="seed_6mer", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeTTest2 <- t.test(RPF[RPF$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeTTest3 <- t.test(RPF[RPF$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeTTest4 <- t.test(RPF[RPF$MREtype=="seed_8mer", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeTTest5 <- t.test(RPF[RPF$MREtype=="seed_alt_38", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+
+TETypeTTest1 <- t.test(TE[TE$MREtype=="seed_6mer", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeTTest2 <- t.test(TE[TE$MREtype=="seed_7mer_a1", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeTTest3 <- t.test(TE[TE$MREtype=="seed_7mer_m8", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeTTest4 <- t.test(TE[TE$MREtype=="seed_8mer", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeTTest5 <- t.test(TE[TE$MREtype=="seed_alt_38", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+
+
+
+#kolmogorov-smirnov
+RNATypeksTest1 <- ks.test(RNA[RNA$MREtype=="seed_6mer", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeksTest2 <- ks.test(RNA[RNA$MREtype=="seed_7mer_a1", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeksTest3 <- ks.test(RNA[RNA$MREtype=="seed_7mer_m8", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeksTest4 <- ks.test(RNA[RNA$MREtype=="seed_8mer", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+RNATypeksTest5 <- ks.test(RNA[RNA$MREtype=="seed_alt_38", "log2FoldChange"], RNA[RNA$MREtype=="Non-target", "log2FoldChange"])
+
+RPFTypeksTest1 <- ks.test(RPF[RPF$MREtype=="seed_6mer", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeksTest2 <- ks.test(RPF[RPF$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeksTest3 <- ks.test(RPF[RPF$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeksTest4 <- ks.test(RPF[RPF$MREtype=="seed_8mer", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+RPFTypeksTest5 <- ks.test(RPF[RPF$MREtype=="seed_alt_38", "log2FoldChange"], RPF[RPF$MREtype=="Non-target", "log2FoldChange"])
+
+TETypeksTest1 <- ks.test(TE[TE$MREtype=="seed_6mer", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeksTest2 <- ks.test(TE[TE$MREtype=="seed_7mer_a1", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeksTest3 <- ks.test(TE[TE$MREtype=="seed_7mer_m8", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeksTest4 <- ks.test(TE[TE$MREtype=="seed_8mer", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+TETypeksTest5 <- ks.test(TE[TE$MREtype=="seed_alt_38", "log2FoldChange"], TE[TE$MREtype=="Non-target", "log2FoldChange"])
+
+
+
+
+Typesig <- data.frame(c("RNA", "RNA", "RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "RPF", "RPF",
+                        "TE", "TE", "TE", "TE", "TE"),
+                        c("seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38", 
+                          "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38",
+                          "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "seed_alt_38"),
+                        c(RNATypeTTest1$p.value, RNATypeTTest2$p.value, RNATypeTTest3$p.value, RNATypeTTest4$p.value, RNATypeTTest5$p.value,
+                          RPFTypeTTest1$p.value, RPFTypeTTest2$p.value, RPFTypeTTest3$p.value, RPFTypeTTest4$p.value, RPFTypeTTest5$p.value,
+                          TETypeTTest1$p.value, TETypeTTest2$p.value, TETypeTTest3$p.value, TETypeTTest4$p.value, TETypeTTest5$p.value),
+                        c(RNATypeksTest1$p.value, RNATypeksTest2$p.value, RNATypeksTest3$p.value, RNATypeksTest4$p.value, RNATypeksTest5$p.value,
+                          RPFTypeksTest1$p.value, RPFTypeksTest2$p.value, RPFTypeksTest3$p.value, RPFTypeksTest4$p.value, RPFTypeksTest5$p.value, 
+                          TETypeksTest1$p.value, TETypeksTest2$p.value, TETypeksTest3$p.value, TETypeksTest4$p.value, TETypeksTest5$p.value))
+colnames(Typesig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Typesig
+
+#export
+write_xlsx(Typesig, "Typesignificance.xlsx")
+```
+
+
+
+# Session info
+```{r sessioninfo}
+sessionInfo()
+```
+
+

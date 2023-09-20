@@ -1,0 +1,685 @@
+---
+title: "Non_canonical_seed"
+author:
+- name: Nikita Verheyden
+  affiliation: JLU Giessen
+  date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+      toc: TRUE
+      toc_float: TRUE
+      code_folding: hide
+
+header-includes:
+- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+- \usepackage{placeins}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Setup
+
+dir
+```{r dir}
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure5/04_Non_canonical_seed")
+```
+
+
+
+## Packages
+```{r packages}
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+library(ggplot2)
+library(rtracklayer)
+library(dplyr)
+library(tibble)
+library(Rtsne)
+library(cliProfiler)
+library(GenomicRanges)
+library(cowplot)
+library(eulerr)
+library(readxl)
+library(biomaRt)
+library(writexl)
+library(ggrastr)
+
+```
+
+## Data
+```{r data}
+#Ribo profiling
+RNA <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RNA_masterframe.csv")
+RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RPF_masterframe.csv")
+
+#load the gtf file to compare genes
+gff23path <- file.path("C:/Users/nikit/Documents/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
+
+#targets
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper_at_submission/Figure4/mir181_bs_with_seeds_transcripts.rds")
+largetframe <- as.data.frame(larget)
+table(largetframe$set)
+largetframe <- largetframe %>%
+  subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched"))
+
+
+#Translational efficiency
+TE <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+
+
+
+#melina repeats
+melrep <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/rep_on_transcripts.rds")
+MMSAT4 <- melrep[melrep$repName == "MMSAT4"]
+MurSatRep1 <- melrep[melrep$repName == "MurSatRep1"]
+```
+
+
+## colours
+```{r colours}
+#colours
+farbeneg <- "#b4b4b4"
+farbe1 <- "#0073C2FF"
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF"
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+  
+RNApcol <- "#b56504"
+RNAncol <- "#027d73"
+RPFpcol <- "#c4c404"
+RPFncol <- "#8d0391"
+```
+
+## axis limits
+```{r axislim}
+xlim <- 0.5
+zoomfac <- 0.45
+```
+
+
+
+## number of binding sites 
+```{r num}
+bsnum <- as.data.frame(table(largetframe$geneName))
+colnames(bsnum) <- c("gene_symbol", "BS_number")
+```
+
+
+# wobble plot
+
+## ecdf
+```{r wobbleecdf}
+#RNA
+RNA$wobble <- "Non-target"
+RNA$wobble[RNA$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.wobble) ,"geneName"]] <- "No seed"
+RNA$wobble[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == FALSE ,"geneName"]] <- "Canonical"
+RNA$wobble[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == TRUE ,"geneName"]] <- "Non-Canonical"
+RNA$wobble[RNA$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+#RPF
+RPF$wobble <- "Non-target"
+RPF$wobble[RPF$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.wobble) ,"geneName"]] <- "No seed"
+RPF$wobble[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == FALSE ,"geneName"]] <- "Canonical"
+RPF$wobble[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == TRUE ,"geneName"]] <- "Non-Canonical"
+RPF$wobble[RPF$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
+#TE
+TE$wobble <- "Non-target"
+TE$wobble[TE$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.wobble) ,"geneName"]] <- "No seed"
+TE$wobble[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == FALSE ,"geneName"]] <- "Canonical"
+TE$wobble[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.wobble == TRUE ,"geneName"]] <- "Non-Canonical"
+TE$wobble[TE$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
+#ECDF
+
+#RNA
+wobbleecdfRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Target genes RNAseq")
+
+wobbleecdfRNA
+
+#zoom
+wobbleecdfRNAZ <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+wobbleecdfRNAZ
+
+#RPF
+wobbleecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Target genes ribosome profiling")
+
+wobbleecdfRPF
+
+#zoom
+wobbleecdfRPFZ <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(wobble, levels = c("Non-target", "No seed", "Canonical", "Non-Canonical", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbeneg, farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+wobbleecdfRPFZ
+
+
+#export RNA
+pdf("wobbleECDF_RNA.pdf", width=2, height = 2)
+wobbleecdfRNA
+dev.off()
+pdf("wobbleECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+wobbleecdfRNAZ
+dev.off()
+
+#export RPF
+pdf("wobbleECDF_RPF.pdf", width=2, height = 2)
+wobbleecdfRPF
+dev.off()
+pdf("wobbleECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+wobbleecdfRPFZ
+dev.off()
+
+
+table(RPF$wobble)
+table(RNA$wobble)
+table(TE$wobble)
+
+```
+
+# TE density wobble
+```{R TEdensitywobble}
+TEdenswob <- ggplot(TE, aes(x=log2FoldChange, colour=factor(wobble, levels = c("No seed", "Canonical", "Non-Canonical", "Multiple", "Non-target")))) +
+  geom_density() +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c( farbeneg, farbe1, farbe2, farbe3, "black")) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1)) +
+  ggtitle("TE")
+
+TEdenswob
+
+pdf("WobbleDensity_TE.pdf", width=2, height = 2)
+TEdenswob
+dev.off()
+
+```
+
+## Significance
+```{r significanceWobble}
+RNAWobbleTTest1 <- t.test(RNA[RNA$wobble=="No seed", "log2FoldChange"], RNA[RNA$wobble=="Non-target", "log2FoldChange"])
+RNAWobbleTTest2 <- t.test(RNA[RNA$wobble=="Canonical", "log2FoldChange"], RNA[RNA$wobble=="Non-target", "log2FoldChange"])
+RNAWobbleTTest3 <- t.test(RNA[RNA$wobble=="Non-Canonical", "log2FoldChange"], RNA[RNA$wobble=="Non-target", "log2FoldChange"])
+
+RPFWobbleTTest1 <- t.test(RPF[RPF$wobble=="No seed", "log2FoldChange"], RPF[RPF$wobble=="Non-target", "log2FoldChange"])
+RPFWobbleTTest2 <- t.test(RPF[RPF$wobble=="Canonical", "log2FoldChange"], RPF[RPF$wobble=="Non-target", "log2FoldChange"])
+RPFWobbleTTest3 <- t.test(RPF[RPF$wobble=="Non-Canonical", "log2FoldChange"], RPF[RPF$wobble=="Non-target", "log2FoldChange"])
+
+TEWobbleTTest1 <- t.test(TE[TE$wobble=="No seed", "log2FoldChange"], TE[TE$wobble=="Non-target", "log2FoldChange"])
+TEWobbleTTest2 <- t.test(TE[TE$wobble=="Canonical", "log2FoldChange"], TE[TE$wobble=="Non-target", "log2FoldChange"])
+TEWobbleTTest3 <- t.test(TE[TE$wobble=="Non-Canonical", "log2FoldChange"], TE[TE$wobble=="Non-target", "log2FoldChange"])
+
+
+#kolmogorov-smirnov
+RNAWobbleksTest1 <- ks.test(RNA[RNA$wobble=="No seed", "log2FoldChange"], RNA[RNA$wobble=="Non-target", "log2FoldChange"])
+RNAWobbleksTest2 <- ks.test(RNA[RNA$wobble=="Canonical", "log2FoldChange"], RNA[RNA$wobble=="Non-target", "log2FoldChange"])
+RNAWobbleksTest3 <- ks.test(RNA[RNA$wobble=="Non-Canonical", "log2FoldChange"], RNA[RNA$wobble=="Non-target", "log2FoldChange"])
+
+RPFWobbleksTest1 <- ks.test(RPF[RPF$wobble=="No seed", "log2FoldChange"], RPF[RPF$wobble=="Non-target", "log2FoldChange"])
+RPFWobbleksTest2 <- ks.test(RPF[RPF$wobble=="Canonical", "log2FoldChange"], RPF[RPF$wobble=="Non-target", "log2FoldChange"])
+RPFWobbleksTest3 <- ks.test(RPF[RPF$wobble=="Non-Canonical", "log2FoldChange"], RPF[RPF$wobble=="Non-target", "log2FoldChange"])
+
+TEWobbleksTest1 <- ks.test(TE[TE$wobble=="No seed", "log2FoldChange"], TE[TE$wobble=="Non-target", "log2FoldChange"])
+TEWobbleksTest2 <- ks.test(TE[TE$wobble=="Canonical", "log2FoldChange"], TE[TE$wobble=="Non-target", "log2FoldChange"])
+TEWobbleksTest3 <- ks.test(TE[TE$wobble=="Non-Canonical", "log2FoldChange"], TE[TE$wobble=="Non-target", "log2FoldChange"])
+
+
+
+
+Wobblesig <- data.frame(c("RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "TE", "TE", "TE"),
+                        c("No seed", "Canonical", "Non-Canonical", "No seed", "Canonical", "Non-Canonical",
+                          "No seed", "Canonical", "Non-Canonical"),
+                        c(RNAWobbleTTest1$p.value, RNAWobbleTTest2$p.value, RNAWobbleTTest3$p.value,
+                          RPFWobbleTTest1$p.value, RPFWobbleTTest2$p.value, RPFWobbleTTest3$p.value,
+                          TEWobbleTTest1$p.value, TEWobbleTTest2$p.value, TEWobbleTTest3$p.value),
+                        c(RNAWobbleksTest1$p.value, RNAWobbleksTest2$p.value, RNAWobbleksTest3$p.value,
+                          RPFWobbleksTest1$p.value, RPFWobbleksTest2$p.value, RPFWobbleksTest3$p.value, 
+                          TEWobbleksTest1$p.value, TEWobbleksTest2$p.value, TEWobbleksTest3$p.value))
+colnames(Wobblesig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Wobblesig
+
+#export
+write_xlsx(Wobblesig, "Wobblesignificance.xlsx")
+```
+
+
+## wobble bar
+```{r wobblebar}
+wobar <- as.data.frame(table(largetframe$first_seed_200down.wobble))
+wobar$y <- "MREs"
+wobarp <- ggplot(wobar, aes(y=y, x=Freq, fill=Var1)) + geom_bar(stat = "identity", position = "stack") +
+  theme_paper()
+
+wobarp
+
+pdf("Wobblebar.pdf", width = 2, height = 1)
+wobarp
+dev.off()
+```
+
+
+# Set types
+```{r MREtype}
+#RNA
+RNA$MREtype <- "Non-target"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.type),"geneName"]] <- "No seed"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_6mer","geneName"]] <- "seed_6mer"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+RNA$MREtype[RNA$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_alt_38","geneName"]] <- "seed_alt_38"
+RNA$MREtype[RNA$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
+
+#RPF
+RPF$MREtype <- "Non-target"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.type),"geneName"]] <- "No seed"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_6mer","geneName"]] <- "seed_6mer"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+RPF$MREtype[RPF$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_alt_38","geneName"]] <- "seed_alt_38"
+RPF$MREtype[RPF$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
+
+#TE
+TE$MREtype <- "Non-target"
+TE$MREtype[TE$gene_symbol %in% largetframe[is.na(largetframe$first_seed_200down.type),"geneName"]] <- "No seed"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_6mer","geneName"]] <- "seed_6mer"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_a1","geneName"]] <- "seed_7mer_a1"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_7mer_m8","geneName"]] <- "seed_7mer_m8"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_8mer","geneName"]] <- "seed_8mer"
+TE$MREtype[TE$gene_symbol %in% largetframe[largetframe$first_seed_200down.type == "seed_alt_38","geneName"]] <- "seed_alt_38"
+TE$MREtype[TE$gene_symbol %in% bsnum[bsnum$BS_number > 1, "gene_symbol"]] <- "Multiple"
+
+```
+
+
+# 8mer wobble vs non wobble ecdf
+```{r 8merwooblenonwobble}
+
+
+#RPF
+RPF8w <- RPF
+RPF8w[RPF8w$MREtype == "seed_8mer" & RPF8w$wobble == "Canonical", "MREtype"] <- "8mer AA"
+RPF8w[RPF8w$MREtype == "seed_8mer" & RPF8w$wobble == "Non-Canonical", "MREtype"] <- "8mer AU"
+table(RPF8w$MREtype)
+
+typeECDFRPF8w <- ggplot(RPF8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "8mer AA","8mer AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF type of 8mer")
+
+typeECDFRPF8w
+
+#export
+pdf("8mertypeECDF_RPF.pdf", width=2, height = 2)
+typeECDFRPF8w
+dev.off()
+
+
+
+
+```
+
+## Significance
+```{r significance8wobble}
+
+RPF8wTTest1 <- t.test(RPF8w[RPF8w$MREtype=="seed_6mer", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wTTest2 <- t.test(RPF8w[RPF8w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wTTest3 <- t.test(RPF8w[RPF8w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wTTest4 <- t.test(RPF8w[RPF8w$MREtype=="seed_alt_38", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wTTest5 <- t.test(RPF8w[RPF8w$MREtype=="8mer AA", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wTTest6 <- t.test(RPF8w[RPF8w$MREtype=="8mer AU", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+
+
+#kolmogorov-smirnov
+
+RPF8wksTest1 <- ks.test(RPF8w[RPF8w$MREtype=="seed_6mer", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wksTest2 <- ks.test(RPF8w[RPF8w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wksTest3 <- ks.test(RPF8w[RPF8w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wksTest4 <- ks.test(RPF8w[RPF8w$MREtype=="seed_alt_38", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wksTest5 <- ks.test(RPF8w[RPF8w$MREtype=="8mer AA", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+RPF8wksTest6 <- ks.test(RPF8w[RPF8w$MREtype=="8mer AU", "log2FoldChange"], RPF8w[RPF8w$MREtype=="Non-target", "log2FoldChange"])
+
+
+
+Type8wsig <- data.frame(c("RPF", "RPF", "RPF", "RPF", "RPF", "RPF"),
+                        c("seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_alt_38", "8mer AA", "8mer AU"),
+                        c(RPF8wTTest1$p.value, RPF8wTTest2$p.value, RPF8wTTest3$p.value, RPF8wTTest4$p.value, RPF8wTTest5$p.value, RPF8wTTest6$p.value),
+                        c(RPF8wksTest1$p.value, RPF8wksTest2$p.value, RPF8wksTest3$p.value, RPF8wksTest4$p.value, RPF8wksTest5$p.value, RPF8wksTest6$p.value))
+colnames(Type8wsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Type8wsig
+
+#export
+write_xlsx(Type8wsig, "8wsignificance.xlsx")
+```
+
+
+# 7merA1 wobble vs non wobble ecdf
+```{r 7merA1wooblenonwobble}
+
+
+
+#RPF
+RPF7A1w <- RPF
+RPF7A1w[RPF7A1w$MREtype == "seed_7mer_a1" & RPF7A1w$wobble == "Canonical", "MREtype"] <- "7mer_a1 AA"
+RPF7A1w[RPF7A1w$MREtype == "seed_7mer_a1" & RPF7A1w$wobble == "Non-Canonical", "MREtype"] <- "7mer_a1 AU"
+table(RPF7A1w$MREtype)
+
+typeECDFRPF7A1w <- ggplot(RPF7A1w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_8mer", "seed_7mer_m8", "7mer_a1 AA","7mer_a1 AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF type of 7mer_a1")
+
+typeECDFRPF7A1w
+
+#export
+pdf("7mer_a1typeECDF_RPF.pdf", width=2, height = 2)
+typeECDFRPF7A1w
+dev.off()
+
+
+
+table(RPF7A1w$MREtype)
+```
+
+## Significance
+```{r significance7merA1}
+
+RPF7A1wTTest1 <- t.test(RPF7A1w[RPF7A1w$MREtype=="seed_6mer", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wTTest2 <- t.test(RPF7A1w[RPF7A1w$MREtype=="seed_8mer", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wTTest3 <- t.test(RPF7A1w[RPF7A1w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wTTest4 <- t.test(RPF7A1w[RPF7A1w$MREtype=="seed_alt_38", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wTTest5 <- t.test(RPF7A1w[RPF7A1w$MREtype=="7mer_a1 AA", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wTTest6 <- t.test(RPF7A1w[RPF7A1w$MREtype=="7mer_a1 AU", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+
+
+#kolmogorov-smirnov
+
+RPF7A1wksTest1 <- ks.test(RPF7A1w[RPF7A1w$MREtype=="seed_6mer", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wksTest2 <- ks.test(RPF7A1w[RPF7A1w$MREtype=="seed_8mer", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wksTest3 <- ks.test(RPF7A1w[RPF7A1w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wksTest4 <- ks.test(RPF7A1w[RPF7A1w$MREtype=="seed_alt_38", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wksTest5 <- ks.test(RPF7A1w[RPF7A1w$MREtype=="7mer_a1 AA", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+RPF7A1wksTest6 <- ks.test(RPF7A1w[RPF7A1w$MREtype=="7mer_a1 AU", "log2FoldChange"], RPF7A1w[RPF7A1w$MREtype=="Non-target", "log2FoldChange"])
+
+
+
+Type7A1wsig <- data.frame(c("RPF", "RPF", "RPF", "RPF", "RPF", "RPF"),
+                        c("seed_6mer", "seed_8mer", "seed_7mer_m8", "seed_alt_38", "7mer_a1 AA", "7mer_a1 AU"),
+                        c(RPF7A1wTTest1$p.value, RPF7A1wTTest2$p.value, RPF7A1wTTest3$p.value, RPF7A1wTTest4$p.value, RPF7A1wTTest5$p.value, RPF7A1wTTest6$p.value),
+                        c(RPF7A1wksTest1$p.value, RPF7A1wksTest2$p.value, RPF7A1wksTest3$p.value, RPF7A1wksTest4$p.value, RPF7A1wksTest5$p.value, RPF7A1wksTest6$p.value))
+colnames(Type7A1wsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Type7A1wsig
+
+#export
+write_xlsx(Type7A1wsig, "7A1wsignificance.xlsx")
+```
+
+
+
+
+# 7mer_m8 wobble vs non wobble ecdf
+```{r 7mer_m8wooblenonwobble}
+
+
+
+
+#RPF
+RPF7m8w <- RPF
+RPF7m8w[RPF7m8w$MREtype == "seed_7mer_m8" & RPF7m8w$wobble == "Canonical", "MREtype"] <- "7mer_m8 AA"
+RPF7m8w[RPF7m8w$MREtype == "seed_7mer_m8" & RPF7m8w$wobble == "Non-Canonical", "MREtype"] <- "7mer_m8 AU"
+table(RPF7m8w$MREtype)
+
+typeECDFRPF7m8w <- ggplot(RPF7m8w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_8mer", "7mer_m8 AA","7mer_m8 AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF type of 7mer_m8")
+
+typeECDFRPF7m8w
+
+#export
+pdf("7mer_m8typeECDF_RPF.pdf", width=2, height = 2)
+typeECDFRPF7m8w
+dev.off()
+
+
+
+table(RPF7m8w$MREtype)
+```
+
+
+## Significance
+```{r significance7mer_m8}
+
+RPF7m8wTTest1 <- t.test(RPF7m8w[RPF7m8w$MREtype=="seed_6mer", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wTTest2 <- t.test(RPF7m8w[RPF7m8w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wTTest3 <- t.test(RPF7m8w[RPF7m8w$MREtype=="seed_8mer", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wTTest4 <- t.test(RPF7m8w[RPF7m8w$MREtype=="seed_alt_38", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wTTest5 <- t.test(RPF7m8w[RPF7m8w$MREtype=="7mer_m8 AA", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wTTest6 <- t.test(RPF7m8w[RPF7m8w$MREtype=="7mer_m8 AU", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+
+
+#kolmogorov-smirnov
+
+RPF7m8wksTest1 <- ks.test(RPF7m8w[RPF7m8w$MREtype=="seed_6mer", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wksTest2 <- ks.test(RPF7m8w[RPF7m8w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wksTest3 <- ks.test(RPF7m8w[RPF7m8w$MREtype=="seed_8mer", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wksTest4 <- ks.test(RPF7m8w[RPF7m8w$MREtype=="seed_alt_38", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wksTest5 <- ks.test(RPF7m8w[RPF7m8w$MREtype=="7mer_m8 AA", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+RPF7m8wksTest6 <- ks.test(RPF7m8w[RPF7m8w$MREtype=="7mer_m8 AU", "log2FoldChange"], RPF7m8w[RPF7m8w$MREtype=="Non-target", "log2FoldChange"])
+
+
+
+Type7m8wsig <- data.frame(c("RPF", "RPF", "RPF", "RPF", "RPF", "RPF"),
+                        c("seed_6mer", "seed_7mer_a1", "seed_8mer", "seed_alt_38", "7mer_m8 AA", "7mer_m8 AU"),
+                        c(RPF7m8wTTest1$p.value, RPF7m8wTTest2$p.value, RPF7m8wTTest3$p.value, RPF7m8wTTest4$p.value, RPF7m8wTTest5$p.value, RPF7m8wTTest6$p.value),
+                        c(RPF7m8wksTest1$p.value, RPF7m8wksTest2$p.value, RPF7m8wksTest3$p.value, RPF7m8wksTest4$p.value, RPF7m8wksTest5$p.value, RPF7m8wksTest6$p.value))
+colnames(Type7m8wsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Type7m8wsig
+
+#export
+write_xlsx(Type7m8wsig, "7m8wsignificance.xlsx")
+```
+
+
+
+# 6mer wobble vs non wobble ecdf
+```{r 6merwooblenonwobble}
+
+
+
+#RPF
+RPF6w <- RPF
+RPF6w[RPF6w$MREtype == "seed_6mer" & RPF6w$wobble == "Canonical", "MREtype"] <- "6mer AA"
+RPF6w[RPF6w$MREtype == "seed_6mer" & RPF6w$wobble == "Non-Canonical", "MREtype"] <- "6mer AU"
+table(RPF6w$MREtype)
+
+typeECDFRPF6w <- ggplot(RPF6w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "6mer AA","6mer AU", "seed_alt_38", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF type of 6mer")
+
+typeECDFRPF6w
+
+#export
+pdf("6mertypeECDF_RPF.pdf", width=2, height = 2)
+typeECDFRPF6w
+dev.off()
+
+
+
+table(RPF6w$MREtype)
+```
+
+## Significance
+```{r significance6mer}
+
+RPF6wTTest1 <- t.test(RPF6w[RPF6w$MREtype=="seed_8mer", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wTTest2 <- t.test(RPF6w[RPF6w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wTTest3 <- t.test(RPF6w[RPF6w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wTTest4 <- t.test(RPF6w[RPF6w$MREtype=="seed_alt_38", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wTTest5 <- t.test(RPF6w[RPF6w$MREtype=="6mer AA", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wTTest6 <- t.test(RPF6w[RPF6w$MREtype=="6mer AU", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+
+
+#kolmogorov-smirnov
+
+RPF6wksTest1 <- ks.test(RPF6w[RPF6w$MREtype=="seed_8mer", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wksTest2 <- ks.test(RPF6w[RPF6w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wksTest3 <- ks.test(RPF6w[RPF6w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wksTest4 <- ks.test(RPF6w[RPF6w$MREtype=="seed_alt_38", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wksTest5 <- ks.test(RPF6w[RPF6w$MREtype=="6mer AA", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+RPF6wksTest6 <- ks.test(RPF6w[RPF6w$MREtype=="6mer AU", "log2FoldChange"], RPF6w[RPF6w$MREtype=="Non-target", "log2FoldChange"])
+
+
+Type6wsig <- data.frame(c("RPF", "RPF", "RPF", "RPF", "RPF", "RPF"),
+                        c("seed_8mer", "seed_7mer_a1", "seed_7mer_m8", "seed_alt_38", "6mer AA", "6mer AU"),
+                        c(RPF6wTTest1$p.value, RPF6wTTest2$p.value, RPF6wTTest3$p.value, RPF6wTTest4$p.value, RPF6wTTest5$p.value, RPF6wTTest6$p.value),
+                        c(RPF6wksTest1$p.value, RPF6wksTest2$p.value, RPF6wksTest3$p.value, RPF6wksTest4$p.value, RPF6wksTest5$p.value, RPF6wksTest6$p.value))
+colnames(Type6wsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Type6wsig
+
+#export
+write_xlsx(Type6wsig, "6wsignificance.xlsx")
+```
+
+
+
+# alt_38 wobble vs non wobble ecdf
+```{r alt_38wooblenonwobble}
+
+
+
+
+#RPF
+RPFa38w <- RPF
+RPFa38w[RPFa38w$MREtype == "seed_alt_38" & RPFa38w$wobble == "Canonical", "MREtype"] <- "alt_38 AA"
+RPFa38w[RPFa38w$MREtype == "seed_alt_38" & RPFa38w$wobble == "Non-Canonical", "MREtype"] <- "alt_38 AU"
+table(RPFa38w$MREtype)
+
+typeECDFRPFa38w <- ggplot(RPFa38w, aes(as.numeric(log2FoldChange), 
+                              colour=factor(MREtype, levels = c("Non-target", "No seed", "seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "alt_38 AA","alt_38 AU", "seed_8mer", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, farbe8)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange") +
+  ggtitle("RPF type of alt_38")
+
+typeECDFRPFa38w
+
+#export
+pdf("alt_38typeECDF_RPF.pdf", width=2, height = 2)
+typeECDFRPFa38w
+dev.off()
+
+
+
+table(RPFa38w$MREtype)
+
+```
+
+
+
+## Significance
+```{r significancealt_38}
+
+RPFa38wTTest1 <- t.test(RPFa38w[RPFa38w$MREtype=="seed_6mer", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wTTest2 <- t.test(RPFa38w[RPFa38w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wTTest3 <- t.test(RPFa38w[RPFa38w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wTTest4 <- t.test(RPFa38w[RPFa38w$MREtype=="seed_8mer", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wTTest5 <- t.test(RPFa38w[RPFa38w$MREtype=="alt_38 AA", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wTTest6 <- t.test(RPFa38w[RPFa38w$MREtype=="alt_38 AU", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+
+
+#kolmogorov-smirnov
+
+RPFa38wksTest1 <- ks.test(RPFa38w[RPFa38w$MREtype=="seed_6mer", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wksTest2 <- ks.test(RPFa38w[RPFa38w$MREtype=="seed_7mer_a1", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wksTest3 <- ks.test(RPFa38w[RPFa38w$MREtype=="seed_7mer_m8", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wksTest4 <- ks.test(RPFa38w[RPFa38w$MREtype=="seed_8mer", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wksTest5 <- ks.test(RPFa38w[RPFa38w$MREtype=="alt_38 AA", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+RPFa38wksTest6 <- ks.test(RPFa38w[RPFa38w$MREtype=="alt_38 AU", "log2FoldChange"], RPFa38w[RPFa38w$MREtype=="Non-target", "log2FoldChange"])
+
+
+
+Typea38wsig <- data.frame(c("RPF", "RPF", "RPF", "RPF", "RPF", "RPF"),
+                        c("seed_6mer", "seed_7mer_a1", "seed_7mer_m8", "seed_8mer", "alt_38 AA", "alt_38 AU"),
+                        c(RPFa38wTTest1$p.value, RPFa38wTTest2$p.value, RPFa38wTTest3$p.value, RPFa38wTTest4$p.value, RPFa38wTTest5$p.value, RPFa38wTTest6$p.value),
+                        c(RPFa38wksTest1$p.value, RPFa38wksTest2$p.value, RPFa38wksTest3$p.value, RPFa38wksTest4$p.value, RPFa38wksTest5$p.value, RPFa38wksTest6$p.value))
+colnames(Typea38wsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Typea38wsig
+
+#export
+write_xlsx(Typea38wsig, "a38wsignificance.xlsx")
+```
+
+
+
+# Session info
+```{r sessioninfo}
+sessionInfo()
+```
