@@ -1,0 +1,605 @@
+---
+title: "Number_and_region_ECDF_plots"
+author:
+- name: Nikita Verheyden
+  affiliation: JLU Giessen
+  date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+      toc: TRUE
+      toc_float: TRUE
+      code_folding: hide
+
+header-includes:
+- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+- \usepackage{placeins}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Setup
+
+dir
+```{r dir}
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/02_RF_ecdf_nMRE_regionMRE")
+```
+
+## packages
+```{r packages}
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+library(ggplot2)
+library(rtracklayer)
+library(dplyr)
+library(tibble)
+library(Rtsne)
+library(cliProfiler)
+library(GenomicRanges)
+library(readxl)
+library(writexl)
+library(clusterProfiler)
+library(biomaRt)
+library(org.Mm.eg.db)
+library(msigdbr)
+library(eulerr)
+```
+
+## data
+```{r data}
+#Ribo profiling
+RNA <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RNA_masterframe.csv")
+RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RPF_masterframe.csv")
+
+#load the gtf file to compare genes
+gff23path <- file.path("C:/Users/nikit/Documents/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
+
+#targets
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_afterFigure2B.rds")
+largetframe <- as.data.frame(larget)
+table(largetframe$set)
+largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
+
+#Translational efficiency
+TE <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/deltaTE/TE_m23_genesInRNAandRPF.csv")
+
+```
+
+
+## colours
+```{r colours}
+#colours
+farbeneg <- "#b4b4b4"
+farbe1 <- "#0073C2FF"
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF"
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+  
+RNApcol <- "#b56504"
+RNAncol <- "#027d73"
+RPFpcol <- "#c4c404"
+RPFncol <- "#8d0391"
+```
+
+
+## axis limits
+```{r axislim}
+xlim <- 0.5
+zoomfac <- 0.45
+```
+
+
+# number of binding sites histogram
+```{r numHist}
+bsnum <- as.data.frame(table(largetframe$geneName))
+colnames(bsnum) <- c("gene_symbol", "BS_number")
+
+#RNA
+RNAnum <- left_join(RNA, bsnum, by="gene_symbol")
+
+RNAnumT <- RNAnum[!is.na(RNAnum$BS_number),]
+RNAnumT$BS_number[RNAnumT$BS_number > 10] <- 10
+
+# histogram
+numHist_RNA <- ggplot(RNAnumT, aes(x=BS_number)) + 
+  geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
+  theme_paper() +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous("Number of binding sites") +
+  coord_cartesian(ylim = c(0, 1250), xlim = c(1, max(RNAnumT$BS_number))) +
+  ggtitle("Number of binding sites per gene")
+
+numHist_RNA
+
+#RPF
+RPFnum <- left_join(RPF, bsnum, by="gene_symbol")
+
+RPFnumT <- RPFnum[!is.na(RPFnum$BS_number),]
+RPFnumT$BS_number[RPFnumT$BS_number > 10] <- 10
+# histogram
+numHist_RPF <- ggplot(RPFnumT, aes(x=BS_number)) + 
+  geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
+  theme_paper() +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous("Number of binding sites") +
+  coord_cartesian(ylim = c(0, 1250), xlim = c(1, max(RPFnumT$BS_number))) +
+  ggtitle("Number of binding sites per gene")
+
+numHist_RPF
+
+#TE
+TEnum <- left_join(TE, bsnum, by="gene_symbol")
+
+TEnumT <- TEnum[!is.na(TEnum$BS_number),]
+TEnumT$BS_number[TEnumT$BS_number > 10] <- 10
+# histogram
+numHist_TE <- ggplot(TEnumT, aes(x=BS_number)) + 
+  geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
+  theme_paper() +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous("Number of binding sites") +
+  coord_cartesian(ylim = c(0, 1250), xlim = c(1, max(TEnumT$BS_number))) +
+  ggtitle("Number of binding sites per gene")
+
+numHist_TE
+
+#export RPF
+pdf("NumHist_RPF.pdf", width=1.5, height = 2)
+numHist_RPF
+dev.off()
+
+
+```
+
+# number of bs ecdf
+```{r numecdf}
+RNAnum$BS_number[is.na(RNAnum$BS_number)] <- "Non-target"
+RNAnum$BS_num_plot <- ifelse(RNAnum$BS_number == "Non-target", "Non-target",
+                             ifelse(RNAnum$BS_number == 1, "One MRE",
+                                    ifelse(RNAnum$BS_number == 2, "Two MREs", "More")))
+                                    
+RPFnum$BS_number[is.na(RPFnum$BS_number)] <- "Non-target"
+RPFnum$BS_num_plot <- ifelse(RPFnum$BS_number == "Non-target", "Non-target",
+                             ifelse(RPFnum$BS_number == 1, "One MRE",
+                                    ifelse(RPFnum$BS_number == 2, "Two MREs", "More")))
+
+
+TEnum$BS_number[is.na(TEnum$BS_number)] <- "Non-target"
+TEnum$BS_num_plot <- ifelse(TEnum$BS_number == "Non-target", "Non-target",
+                             ifelse(TEnum$BS_number == 1, "One MRE",
+                                    ifelse(TEnum$BS_number == 2, "Two MREs", "More")))
+
+
+#ecdf plot
+#RNA
+numecdfRNA <- ggplot(RNAnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Number of binding sites RNAseq")
+
+numecdfRNA
+
+# zoom
+numecdfRNAZ <- ggplot(RNAnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+numecdfRNAZ
+
+#RPF
+numecdfRPF <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Number of binding sites ribosome footprint")
+
+numecdfRPF
+
+# zoom
+numecdfRPFZ <- ggplot(RPFnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+numecdfRPFZ
+
+
+#TE
+numecdfTE <- ggplot(TEnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Number of binding sites translational efficiency")
+
+numecdfTE
+
+# zoom
+numecdfTEZ <- ggplot(TEnum, aes(as.numeric(log2FoldChange), colour=factor(BS_num_plot, levels = c("Non-target", "One MRE", "Two MREs", "More")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+
+
+numecdfTEZ
+
+
+# export
+#RNA
+pdf("NumECDF_RNA.pdf", width=2, height = 2)
+numecdfRNA
+dev.off()
+pdf("NumECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+numecdfRNAZ
+dev.off()
+
+#RPF
+pdf("NumECDF_RPF.pdf", width=2, height = 2)
+numecdfRPF
+dev.off()
+pdf("NumECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+numecdfRPFZ
+dev.off()
+
+
+
+table(RPFnum$BS_num_plot)
+table(RNAnum$BS_num_plot)
+table(TEnum$BS_num_plot)
+```
+
+# TE density num
+```{R TEdensityNum}
+TEdensNum <- ggplot(TEnum, aes(x=log2FoldChange, colour=factor(BS_num_plot, levels = c("One MRE", "Two MREs", "More", "Non-target")))) + 
+  geom_density() +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c(farbe1, farbe2, farbe3, "black")) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1)) +
+  ggtitle("TE")
+
+TEdensNum
+
+pdf("NumDensity_TE.pdf", width=2, height = 2)
+TEdensNum
+dev.off()
+
+```
+## Significance
+```{r significanceNum}
+RNANumTTest1 <- t.test(RNAnum[RNAnum$BS_num_plot=="One MRE", "log2FoldChange"], RNAnum[RNAnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RNANumTTest2 <- t.test(RNAnum[RNAnum$BS_num_plot=="Two MREs", "log2FoldChange"], RNAnum[RNAnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RNANumTTest3 <- t.test(RNAnum[RNAnum$BS_num_plot=="More", "log2FoldChange"], RNAnum[RNAnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+RPFNumTTest1 <- t.test(RPFnum[RPFnum$BS_num_plot=="One MRE", "log2FoldChange"], RPFnum[RPFnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RPFNumTTest2 <- t.test(RPFnum[RPFnum$BS_num_plot=="Two MREs", "log2FoldChange"], RPFnum[RPFnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RPFNumTTest3 <- t.test(RPFnum[RPFnum$BS_num_plot=="More", "log2FoldChange"], RPFnum[RPFnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+TENumTTest1 <- t.test(TEnum[TEnum$BS_num_plot=="One MRE", "log2FoldChange"], TEnum[TEnum$BS_num_plot=="Non-target", "log2FoldChange"])
+TENumTTest2 <- t.test(TEnum[TEnum$BS_num_plot=="Two MREs", "log2FoldChange"], TEnum[TEnum$BS_num_plot=="Non-target", "log2FoldChange"])
+TENumTTest3 <- t.test(TEnum[TEnum$BS_num_plot=="More", "log2FoldChange"], TEnum[TEnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+
+#kolmogorov-smirnov
+RNANumksTest1 <- ks.test(RNAnum[RNAnum$BS_num_plot=="One MRE", "log2FoldChange"], RNAnum[RNAnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RNANumksTest2 <- ks.test(RNAnum[RNAnum$BS_num_plot=="Two MREs", "log2FoldChange"], RNAnum[RNAnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RNANumksTest3 <- ks.test(RNAnum[RNAnum$BS_num_plot=="More", "log2FoldChange"], RNAnum[RNAnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+RPFNumksTest1 <- ks.test(RPFnum[RPFnum$BS_num_plot=="One MRE", "log2FoldChange"], RPFnum[RPFnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RPFNumksTest2 <- ks.test(RPFnum[RPFnum$BS_num_plot=="Two MREs", "log2FoldChange"], RPFnum[RPFnum$BS_num_plot=="Non-target", "log2FoldChange"])
+RPFNumksTest3 <- ks.test(RPFnum[RPFnum$BS_num_plot=="More", "log2FoldChange"], RPFnum[RPFnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+TENumksTest1 <- ks.test(TEnum[TEnum$BS_num_plot=="One MRE", "log2FoldChange"], TEnum[TEnum$BS_num_plot=="Non-target", "log2FoldChange"])
+TENumksTest2 <- ks.test(TEnum[TEnum$BS_num_plot=="Two MREs", "log2FoldChange"], TEnum[TEnum$BS_num_plot=="Non-target", "log2FoldChange"])
+TENumksTest3 <- ks.test(TEnum[TEnum$BS_num_plot=="More", "log2FoldChange"], TEnum[TEnum$BS_num_plot=="Non-target", "log2FoldChange"])
+
+
+
+Numsig <- data.frame(c("RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "TE", "TE", "TE"),
+                        c("One MRE", "Two MREs", "More", "One MRE", "Two MREs", "More",
+                          "One MRE", "Two MREs", "More"),
+                        c(RNANumTTest1$p.value, RNANumTTest2$p.value, RNANumTTest3$p.value,
+                          RPFNumTTest1$p.value, RPFNumTTest2$p.value, RPFNumTTest3$p.value,
+                          TENumTTest1$p.value, TENumTTest2$p.value, TENumTTest3$p.value),
+                        c(RNANumksTest1$p.value, RNANumksTest2$p.value, RNANumksTest3$p.value,
+                          RPFNumksTest1$p.value, RPFNumksTest2$p.value, RPFNumksTest3$p.value, 
+                          TENumksTest1$p.value, TENumksTest2$p.value, TENumksTest3$p.value))
+colnames(Numsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Numsig
+
+#export
+write_xlsx(Numsig, "Numsignificance.xlsx")
+```
+
+#  metaGeneProfile
+
+```{r metaGeneProfile}
+glarget <- makeGRangesFromDataFrame(largetframe, keep.extra.columns = F)
+meta <- metaGeneProfile(object = glarget, annotation = gff23path)
+
+meta
+
+
+pdf("metagene_profile.pdf", width=2, height = 2)
+meta
+dev.off()
+```
+
+
+# position in gene ECDF
+```{r posecdf}
+# majority votes region
+
+# add data to RNA/RPF frames
+utr5 <- as.data.frame(table(largetframe[largetframe$region == "utr5","geneName"]))
+colnames(utr5) <- c("gene_symbol", "num_5UTR")
+cds <- as.data.frame(table(largetframe[largetframe$region == "cds","geneName"]))
+colnames(cds) <- c("gene_symbol", "num_CDS")
+utr3 <- as.data.frame(table(largetframe[largetframe$region == "utr3","geneName"]))
+colnames(utr3) <- c("gene_symbol", "num_3UTR")
+
+#RNA
+RNAnumr <- left_join(RNAnum, utr5, by="gene_symbol")
+RNAnumr <- left_join(RNAnumr, cds, by="gene_symbol")
+RNAnumr <- left_join(RNAnumr, utr3, by="gene_symbol")
+
+RNAnumr[is.na(RNAnumr$num_5UTR), "num_5UTR"] <- 0
+RNAnumr[is.na(RNAnumr$num_CDS), "num_CDS"] <- 0
+RNAnumr[is.na(RNAnumr$num_3UTR), "num_3UTR"] <- 0
+
+# make majority id
+RNAnumr$region_majority <- "Equal"
+RNAnumr$region_majority[RNAnumr$num_5UTR > RNAnumr$num_CDS & RNAnumr$num_5UTR > RNAnumr$num_3UTR] <- "5'UTR" 
+RNAnumr$region_majority[RNAnumr$num_CDS > RNAnumr$num_5UTR & RNAnumr$num_CDS > RNAnumr$num_3UTR] <- "CDS" 
+RNAnumr$region_majority[RNAnumr$num_3UTR > RNAnumr$num_5UTR & RNAnumr$num_3UTR > RNAnumr$num_CDS] <- "3'UTR" 
+RNAnumr$region_majority[RNAnumr$num_5UTR == 0 & RNAnumr$num_CDS == 0 & RNAnumr$num_3UTR == 0] <- "Non-target"
+
+# make single id
+RNAnumr$region_single <- RNAnumr$region_majority
+RNAnumr$region_single[as.numeric(RNAnumr$BS_number) > 1] <- "Multiple"
+
+#RPF
+RPFnumr <- left_join(RPFnum, utr5, by="gene_symbol")
+RPFnumr <- left_join(RPFnumr, cds, by="gene_symbol")
+RPFnumr <- left_join(RPFnumr, utr3, by="gene_symbol")
+
+RPFnumr[is.na(RPFnumr$num_5UTR), "num_5UTR"] <- 0
+RPFnumr[is.na(RPFnumr$num_CDS), "num_CDS"] <- 0
+RPFnumr[is.na(RPFnumr$num_3UTR), "num_3UTR"] <- 0
+
+# make majority id
+RPFnumr$region_majority <- "Equal"
+RPFnumr$region_majority[RPFnumr$num_5UTR > RPFnumr$num_CDS & RPFnumr$num_5UTR > RPFnumr$num_3UTR] <- "5'UTR" 
+RPFnumr$region_majority[RPFnumr$num_CDS > RPFnumr$num_5UTR & RPFnumr$num_CDS > RPFnumr$num_3UTR] <- "CDS" 
+RPFnumr$region_majority[RPFnumr$num_3UTR > RPFnumr$num_5UTR & RPFnumr$num_3UTR > RPFnumr$num_CDS] <- "3'UTR" 
+RPFnumr$region_majority[RPFnumr$num_5UTR == 0 & RPFnumr$num_CDS == 0 & RPFnumr$num_3UTR == 0] <- "Non-target"
+
+# make single id
+RPFnumr$region_single <- RPFnumr$region_majority
+RPFnumr$region_single[as.numeric(RPFnumr$BS_number) > 1] <- "Multiple"
+
+
+#TE
+TEnumr <- left_join(TEnum, utr5, by="gene_symbol")
+TEnumr <- left_join(TEnumr, cds, by="gene_symbol")
+TEnumr <- left_join(TEnumr, utr3, by="gene_symbol")
+
+TEnumr[is.na(TEnumr$num_5UTR), "num_5UTR"] <- 0
+TEnumr[is.na(TEnumr$num_CDS), "num_CDS"] <- 0
+TEnumr[is.na(TEnumr$num_3UTR), "num_3UTR"] <- 0
+
+# make majority id
+TEnumr$region_majority <- "Equal"
+TEnumr$region_majority[TEnumr$num_5UTR > TEnumr$num_CDS & TEnumr$num_5UTR > TEnumr$num_3UTR] <- "5'UTR" 
+TEnumr$region_majority[TEnumr$num_CDS > TEnumr$num_5UTR & TEnumr$num_CDS > TEnumr$num_3UTR] <- "CDS" 
+TEnumr$region_majority[TEnumr$num_3UTR > TEnumr$num_5UTR & TEnumr$num_3UTR > TEnumr$num_CDS] <- "3'UTR" 
+TEnumr$region_majority[TEnumr$num_5UTR == 0 & TEnumr$num_CDS == 0 & TEnumr$num_3UTR == 0] <- "Non-target"
+
+# make single id
+TEnumr$region_single <- TEnumr$region_majority
+TEnumr$region_single[as.numeric(TEnumr$BS_number) > 1] <- "Multiple"
+
+
+
+#ECDF
+
+#RNA
+
+#single
+regMAJecdfRNAS <- ggplot(RNAnumr, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Region single RNAseq")
+
+regMAJecdfRNAS
+
+
+regMAJecdfRNASZ <- ggplot(RNAnumr, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+regMAJecdfRNASZ
+
+
+pdf("region_singleECDF_RNA.pdf", width=2, height = 2)
+regMAJecdfRNAS
+dev.off()
+
+pdf("region_singleECDF_RNA_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+regMAJecdfRNASZ
+dev.off()
+
+table(RNAnumr$region_single)
+
+#RPF
+
+#single
+regMAJecdfRPFS <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Region single ribosome footprint")
+
+regMAJecdfRPFS
+
+
+regMAJecdfRPFSZ <- ggplot(RPFnumr, aes(as.numeric(log2FoldChange), colour=factor(region_single, levels = c("Non-target", "5'UTR", "CDS", "3'UTR", "Multiple")))) + 
+  stat_ecdf(geom="step", linewidth=2*zoomfac) +
+  geom_vline(xintercept = 0, linewidth=1*zoomfac, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4)) +
+  coord_cartesian(xlim = c(-(xlim/8), (xlim/8)), ylim = c(0.5-1/16, 0.5+1/16)) + 
+  theme_bw() +
+  theme(legend.position = "none", axis.text = element_blank(), panel.grid = element_blank(), 
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA)) +
+  scale_y_continuous("") + scale_x_continuous("")
+regMAJecdfRPFSZ
+
+
+pdf("region_singleECDF_RPF.pdf", width=2, height = 2)
+regMAJecdfRPFS
+dev.off()
+
+pdf("region_singleECDF_RPF_zoom.pdf", width=2*zoomfac, height = 2*zoomfac)
+regMAJecdfRPFSZ
+dev.off()
+
+table(RPFnumr$region_single)
+table(TEnumr$region_single)
+table(RNAnumr$region_single)
+
+```
+
+
+# TE density position
+```{R TEdensityregion}
+TEdensPos <- ggplot(TEnumr, aes(x=log2FoldChange, colour=factor(region_single, levels = c( "5'UTR", "CDS", "3'UTR", "Multiple", "Non-target")))) +
+  geom_density() +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c(farbe1, farbe2, farbe3, farbe4, "black")) +
+  theme_paper() +
+  coord_cartesian(xlim = c(-1,1)) +
+  ggtitle("TE")
+
+TEdensPos
+
+pdf("PosDensity_TE.pdf", width=2, height = 2)
+TEdensPos
+dev.off()
+
+```
+
+
+## Significance
+```{r significanceRegion}
+RNARegTTest1 <- t.test(RNAnumr[RNAnumr$region_single=="5'UTR", "log2FoldChange"], RNAnumr[RNAnumr$region_single=="Non-target", "log2FoldChange"])
+RNARegTTest2 <- t.test(RNAnumr[RNAnumr$region_single=="CDS", "log2FoldChange"], RNAnumr[RNAnumr$region_single=="Non-target", "log2FoldChange"])
+RNARegTTest3 <- t.test(RNAnumr[RNAnumr$region_single=="3'UTR", "log2FoldChange"], RNAnumr[RNAnumr$region_single=="Non-target", "log2FoldChange"])
+
+RPFRegTTest1 <- t.test(RPFnumr[RPFnumr$region_single=="5'UTR", "log2FoldChange"], RPFnumr[RPFnumr$region_single=="Non-target", "log2FoldChange"])
+RPFRegTTest2 <- t.test(RPFnumr[RPFnumr$region_single=="CDS", "log2FoldChange"], RPFnumr[RPFnumr$region_single=="Non-target", "log2FoldChange"])
+RPFRegTTest3 <- t.test(RPFnumr[RPFnumr$region_single=="3'UTR", "log2FoldChange"], RPFnumr[RPFnumr$region_single=="Non-target", "log2FoldChange"])
+
+TERegTTest1 <- t.test(TEnumr[TEnumr$region_single=="5'UTR", "log2FoldChange"], TEnumr[TEnumr$region_single=="Non-target", "log2FoldChange"])
+TERegTTest2 <- t.test(TEnumr[TEnumr$region_single=="CDS", "log2FoldChange"], TEnumr[TEnumr$region_single=="Non-target", "log2FoldChange"])
+TERegTTest3 <- t.test(TEnumr[TEnumr$region_single=="3'UTR", "log2FoldChange"], TEnumr[TEnumr$region_single=="Non-target", "log2FoldChange"])
+
+
+
+#kolmogorov-smirnov
+RNARegksTest1 <- ks.test(RNAnumr[RNAnumr$region_single=="5'UTR", "log2FoldChange"], RNAnumr[RNAnumr$region_single=="Non-target", "log2FoldChange"])
+RNARegksTest2 <- ks.test(RNAnumr[RNAnumr$region_single=="CDS", "log2FoldChange"], RNAnumr[RNAnumr$region_single=="Non-target", "log2FoldChange"])
+RNARegksTest3 <- ks.test(RNAnumr[RNAnumr$region_single=="3'UTR", "log2FoldChange"], RNAnumr[RNAnumr$region_single=="Non-target", "log2FoldChange"])
+
+RPFRegksTest1 <- ks.test(RPFnumr[RPFnumr$region_single=="5'UTR", "log2FoldChange"], RPFnumr[RPFnumr$region_single=="Non-target", "log2FoldChange"])
+RPFRegksTest2 <- ks.test(RPFnumr[RPFnumr$region_single=="CDS", "log2FoldChange"], RPFnumr[RPFnumr$region_single=="Non-target", "log2FoldChange"])
+RPFRegksTest3 <- ks.test(RPFnumr[RPFnumr$region_single=="3'UTR", "log2FoldChange"], RPFnumr[RPFnumr$region_single=="Non-target", "log2FoldChange"])
+
+TERegksTest1 <- ks.test(TEnumr[TEnumr$region_single=="5'UTR", "log2FoldChange"], TEnumr[TEnumr$region_single=="Non-target", "log2FoldChange"])
+TERegksTest2 <- ks.test(TEnumr[TEnumr$region_single=="CDS", "log2FoldChange"], TEnumr[TEnumr$region_single=="Non-target", "log2FoldChange"])
+TERegksTest3 <- ks.test(TEnumr[TEnumr$region_single=="3'UTR", "log2FoldChange"], TEnumr[TEnumr$region_single=="Non-target", "log2FoldChange"])
+
+
+
+
+Regsig <- data.frame(c("RNA", "RNA", "RNA", "RPF", "RPF", "RPF", "TE", "TE", "TE"),
+                        c("5'UTR", "CDS", "3'UTR", "5'UTR", "CDS", "3'UTR",
+                          "5'UTR", "CDS", "3'UTR"),
+                        c(RNARegTTest1$p.value, RNARegTTest2$p.value, RNARegTTest3$p.value,
+                          RPFRegTTest1$p.value, RPFRegTTest2$p.value, RPFRegTTest3$p.value,
+                          TERegTTest1$p.value, TERegTTest2$p.value, TERegTTest3$p.value),
+                        c(RNARegksTest1$p.value, RNARegksTest2$p.value, RNARegksTest3$p.value,
+                          RPFRegksTest1$p.value, RPFRegksTest2$p.value, RPFRegksTest3$p.value, 
+                          TERegksTest1$p.value, TERegksTest2$p.value, TERegksTest3$p.value))
+colnames(Regsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
+Regsig
+
+#export
+write_xlsx(Regsig, "Regsignificance.xlsx")
+```
+
+
+
+# Session info
+```{r sessioninfo}
+sessionInfo()
+```
+
+
+
