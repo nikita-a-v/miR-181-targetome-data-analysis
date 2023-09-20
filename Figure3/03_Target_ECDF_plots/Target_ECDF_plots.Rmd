@@ -53,7 +53,7 @@ RNA <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/
 RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RPF_masterframe.csv")
 
 #targets
-larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_afterFigure2B.rds")
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/02_compare_miR_enriched_to_Ago_binding_sites/mir181_bs.rds")
 largetframe <- as.data.frame(larget)
 table(largetframe$set)
 largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
@@ -272,7 +272,6 @@ RPFTargetTTest <- t.test(RPF[RPF$target=="Target", "log2FoldChange"], RPF[RPF$ta
 
 TETargetTTest <- t.test(TE[TE$target=="Target", "log2FoldChange"], TE[TE$target=="Non-target", "log2FoldChange"])
 
-MSTargetTTest <- t.test(MS[MS$target=="Target", "log2FoldChange"], MS[MS$target=="Non-target", "log2FoldChange"])
 
 #kolmogorov-smirnov
 RNATargetksTest <- ks.test(RNA[RNA$target=="Target", "log2FoldChange"], RNA[RNA$target=="Non-target", "log2FoldChange"])
@@ -281,13 +280,12 @@ RPFTargetksTest <- ks.test(RPF[RPF$target=="Target", "log2FoldChange"], RPF[RPF$
 
 TETargetksTest <- ks.test(TE[TE$target=="Target", "log2FoldChange"], TE[TE$target=="Non-target", "log2FoldChange"])
 
-MSTargetksTest <- ks.test(MS[MS$target=="Target", "log2FoldChange"], MS[MS$target=="Non-target", "log2FoldChange"])
 
 
-Targetsig <- data.frame(c("RNA", "RPF", "TE", "MS"),
-                        c("Target", "Target", "Target", "Target"),
-                        c(RNATargetTTest$p.value, RPFTargetTTest$p.value, TETargetTTest$p.value, MSTargetTTest$p.value),
-                        c(RNATargetksTest$p.value, RPFTargetksTest$p.value, TETargetksTest$p.value, MSTargetksTest$p.value))
+Targetsig <- data.frame(c("RNA", "RPF", "TE"),
+                        c("Target", "Target", "Target"),
+                        c(RNATargetTTest$p.value, RPFTargetTTest$p.value, TETargetTTest$p.value),
+                        c(RNATargetksTest$p.value, RPFTargetksTest$p.value, TETargetksTest$p.value))
 colnames(Targetsig) <- c("Experiment", "Subset", "Welch Two Sample t-test", "Asymptotic two-sample Kolmogorov-Smirnov test")
 Targetsig
 

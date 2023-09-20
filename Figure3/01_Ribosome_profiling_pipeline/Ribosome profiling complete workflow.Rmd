@@ -291,7 +291,7 @@ RPFdat$baseMean[RPFdat$baseMean > xlim] <- xlim
 import targeting data from previous figures to be able to mark miR-181 targets in MA plots
 ```{r targets}
 #targets
-larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_afterFigure2B.rds")
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/02_compare_miR_enriched_to_Ago_binding_sites/mir181_bs.rds")
 largetframe <- as.data.frame(larget)
 table(largetframe$set)
 largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]

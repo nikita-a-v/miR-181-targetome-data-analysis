@@ -56,7 +56,7 @@ RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/
 gff23path <- file.path("C:/Users/nikit/Documents/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
 
 #targets
-larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_afterFigure2B.rds")
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/01_MRE_bound_gene_and_bound_region/mir181_bs_afterFigure4B.rds")
 largetframe <- as.data.frame(larget)
 table(largetframe$set)
 largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
@@ -102,7 +102,7 @@ zoomfac <- 0.45
 ```
 
 
-# number of binding sites histogram
+# number of binding sites
 ```{r numHist}
 bsnum <- as.data.frame(table(largetframe$geneName))
 colnames(bsnum) <- c("gene_symbol", "BS_number")
@@ -113,53 +113,21 @@ RNAnum <- left_join(RNA, bsnum, by="gene_symbol")
 RNAnumT <- RNAnum[!is.na(RNAnum$BS_number),]
 RNAnumT$BS_number[RNAnumT$BS_number > 10] <- 10
 
-# histogram
-numHist_RNA <- ggplot(RNAnumT, aes(x=BS_number)) + 
-  geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
-  theme_paper() +
-  scale_y_continuous(expand = c(0,0)) +
-  scale_x_continuous("Number of binding sites") +
-  coord_cartesian(ylim = c(0, 1250), xlim = c(1, max(RNAnumT$BS_number))) +
-  ggtitle("Number of binding sites per gene")
 
-numHist_RNA
 
 #RPF
 RPFnum <- left_join(RPF, bsnum, by="gene_symbol")
 
 RPFnumT <- RPFnum[!is.na(RPFnum$BS_number),]
 RPFnumT$BS_number[RPFnumT$BS_number > 10] <- 10
-# histogram
-numHist_RPF <- ggplot(RPFnumT, aes(x=BS_number)) + 
-  geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
-  theme_paper() +
-  scale_y_continuous(expand = c(0,0)) +
-  scale_x_continuous("Number of binding sites") +
-  coord_cartesian(ylim = c(0, 1250), xlim = c(1, max(RPFnumT$BS_number))) +
-  ggtitle("Number of binding sites per gene")
 
-numHist_RPF
 
 #TE
 TEnum <- left_join(TE, bsnum, by="gene_symbol")
 
 TEnumT <- TEnum[!is.na(TEnum$BS_number),]
 TEnumT$BS_number[TEnumT$BS_number > 10] <- 10
-# histogram
-numHist_TE <- ggplot(TEnumT, aes(x=BS_number)) + 
-  geom_histogram(fill=farbeneg, binwidth = 1, colour="black", linewidth = 0.1) +
-  theme_paper() +
-  scale_y_continuous(expand = c(0,0)) +
-  scale_x_continuous("Number of binding sites") +
-  coord_cartesian(ylim = c(0, 1250), xlim = c(1, max(TEnumT$BS_number))) +
-  ggtitle("Number of binding sites per gene")
 
-numHist_TE
-
-#export RPF
-pdf("NumHist_RPF.pdf", width=1.5, height = 2)
-numHist_RPF
-dev.off()
 
 
 ```
