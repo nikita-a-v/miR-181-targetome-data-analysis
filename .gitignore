@@ -4,6 +4,5 @@
 .Ruserdata
 .DS_Store
 /*/*/*.xlsx
-/*/*/*.rds
 /*/*/*.db
 /*/*/*.csv

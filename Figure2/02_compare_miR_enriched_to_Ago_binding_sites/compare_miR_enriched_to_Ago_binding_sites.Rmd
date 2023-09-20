@@ -40,7 +40,7 @@ library(ggpubr)
 # settings
 # ----------------------------------------
 here <- here::here()
-out <- paste0(here,"/Figure2/01_mir181-enriched_binding_site_definition/")
+out <- paste0(here,"/Figure2/02_compare_miR_enriched_to_Ago_binding_sites/")
 
 source(paste0(here,"/Supporting_scripts/themes/theme_paper.R"))
 source(paste0(here,"/Supporting_scripts/themes/CustomThemes.R"))
