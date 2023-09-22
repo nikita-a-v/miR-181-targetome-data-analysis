@@ -3,18 +3,18 @@ title: "Expressed RNAs from RNAseq (TPM calculation)"
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  # BiocStyle::html_document:
-  # toc_float: TRUE
-  # code_folding: hide
-  # toc: TRUE
-  # number_sections: yes
-  # fig_caption: yes
-  pdf_document:
-    fig_caption: true
-    fig_crop: true
-    toc: true
-    toc_depth: 1
-    number_sections: true
+  BiocStyle::html_document:
+  toc_float: TRUE
+  code_folding: hide
+  toc: TRUE
+  number_sections: yes
+  fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -37,7 +37,7 @@ here <- here::here()
 # ----------------------------------------
 # settings
 # ----------------------------------------
-out <- paste0(here,"/Figure5/TPMs-RNAseq/")
+out <- paste0(here,"/Supporting_scripts/TPMs-RNAseq/")
 
 ```
 
@@ -50,7 +50,7 @@ out <- paste0(here,"/Figure5/TPMs-RNAseq/")
 
 # Files
 ```{r}
-RNAseq_read_counts <- read_csv(paste0(here,"/Figure3/RNAadjusted_countmatrix_15112022.csv"))
+RNAseq_read_counts <- read_csv(paste0(here,"/Figure3/01_Ribosome_profiling_pipeline/RNAadjusted_countmatrix_15112022.csv"))
 
 #annotation
 anno <- readRDS(paste0(here,"/Supporting_scripts/annotation_preprocessing/annotation.rds"))
@@ -102,4 +102,9 @@ ggplot(tpm, aes(x = log2(tpm_wt)))+
 expressed_genes <- tpm %>% subset(tpm_wt >= 1) %>% pull(gene_id)
 
 saveRDS(expressed_genes, paste0(out, "expressed_genes.rds"))
+```
+
+# Session Info
+```{r}
+sessionInfo()
 ```
