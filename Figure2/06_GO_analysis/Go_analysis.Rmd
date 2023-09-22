@@ -55,11 +55,39 @@ RNA <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/
 RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RPF_masterframe.csv")
 
 #targets
-larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/mir181_bs_afterFigure2B.rds")
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure2/02_compare_miR_enriched_to_Ago_binding_sites/mir181_bs.rds")
 largetframe <- as.data.frame(larget)
 table(largetframe$set)
 largetframe <- largetframe[!(largetframe$set == "ago_bs_mir181_chi"),]
 ```
+
+## colours
+```{r colours}
+#colours
+farbeneg <- "#b4b4b4"
+farbe1 <- "#0073C2FF"
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF"
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+  
+RNApcol <- "#b56504"
+RNAncol <- "#027d73"
+RPFpcol <- "#c4c404"
+RPFncol <- "#8d0391"
+```
+
 
 
 # GO analysis
@@ -157,7 +185,7 @@ head(arev2pdat)
 
 
 # export list with old pvalues
-write_xlsx(arev2pdat, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Revigo_BP_OnScreenTable_nonrelevantred_sorted_ak_pvals.xlsx")
+write_xlsx(arev2pdat, "Revigo_BP_OnScreenTable_nonrelevantred_sorted_ak_pvals.xlsx")
 
 
 
@@ -172,7 +200,7 @@ avrevplot <- ggplot(arev2pdat, aes(x=calculated_ratios, y=factor(Description, le
 
 avrevplot
 
-pdf("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/reviplot_akselect.pdf", width=4, height = 6)
+pdf("reviplot_akselect.pdf", width=4, height = 6)
 avrevplot
 dev.off()
 ```
@@ -180,12 +208,12 @@ dev.off()
 ## revigo unmodified
 hier nochmal der unmodifizierte revigo output für die supplementary table (alte pvalues adden)
 ```{r revigounmod}
-avrev_org <- read_xlsx("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Revigo_BP_Table_full.xlsx")
+avrev_org <- read_xlsx("Revigo_BP_Table_full.xlsx")
 
 
 arevorgBPdf <- BPdf[BPdf$ID %in% avrev_org$TermID,]
 
 # export list with old pvalues
-write_xlsx(arevorgBPdf, "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/Fig3_2/Revigo_BP_Table_full_pval.xlsx")
+write_xlsx(arevorgBPdf, "Revigo_BP_Table_full_pval.xlsx")
 
 ```

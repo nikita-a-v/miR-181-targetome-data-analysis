@@ -75,29 +75,6 @@ Zfp36L1: total: chr12:80108008-80108895    181bs:chr12:80108023-80108,242    oth
 # genome axis
 gatrack <- GenomeAxisTrack()
 
-# gene track---------------------------this is not working yet
-# data(cpgIslands)
-# class(cpgIslands)
-# ## [1] "GRanges"
-# ## attr(,"package")
-# ## [1] "GenomicRanges"
-# chr <- as.character(unique(seqnames(cpgIslands)))
-# gen <- genome(cpgIslands)
-# atrack <- AnnotationTrack(cpgIslands, name = "CpG")
-# 
-# data(geneModels)
-# 
-# gff <- import.gff3("D:/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome/gencode.vM23.annotation.gff3.gz")
-# 
-# gffloc <- as.data.frame(gff)
-# 
-# gffloc <- gffloc[gffloc$seqnames==tchr,]
-# 
-# grtrack <- GeneRegionTrack(gffloc, genome = "mm10", chromosome = tchr, 
-#                            name = "Gene")
-# 
-# grtrack <- GeneRegionTrack(geneModels, genome = BSgenome.Mmusculus.UCSC.mm10, chromosome = tchr, 
-#                            name = "foo")
 ```
 
 
@@ -133,33 +110,6 @@ WT181m <- makeGRangesFromDataFrame(WT181m, keep.extra.columns = T)
 WT181mT <- DataTrack(WT181m, name="WT181-", ylim = c(0,clim))
 
 
-# +
-
-# #KO plus
-# KOp <- as.data.frame(IPKOplus)
-# KOp <- KOp[KOp$seqnames == tchr & KOp$start >= scoord & KOp$end <= ecoord,]
-# KOp$seqnames <- as.character(KOp$seqnames)
-# KOp <- makeGRangesFromDataFrame(KOp, keep.extra.columns = T)
-# 
-# KOpT <- DataTrack(KOp, name="KO+", ylim = c(0,clim))
-# 
-# #WT plus
-# WTp <- as.data.frame(IPWTplus)
-# WTp <- WTp[WTp$seqnames == tchr & WTp$start >= scoord & WTp$end <= ecoord,]
-# WTp$seqnames <- as.character(WTp$seqnames)
-# WTp <- makeGRangesFromDataFrame(WTp, keep.extra.columns = T)
-# 
-# WTpT <- DataTrack(WTp, name="WT+", ylim = c(0,clim))
-
-# #181 WT plus
-# WT181p <- as.data.frame(IP181WTplus)
-# WT181p <- WT181p[WT181p$seqnames == tchr & WT181p$start >= scoord & WT181p$end <= ecoord,]
-# WT181p$seqnames <- as.character(WT181p$seqnames)
-# WT181p <- makeGRangesFromDataFrame(WT181p, keep.extra.columns = T)
-# 
-# WT181pT <- DataTrack(WT181p, name="WT181+", ylim = c(0,clim))
-
-
 ```
 
 
@@ -174,13 +124,6 @@ chim181m <- makeGRangesFromDataFrame(chim181m, keep.extra.columns = T)
 
 chim181mT <- DataTrack(chim181m, name="WT181rich-", ylim = c(0,clim))
 
-# #plus
-# chim181p <- as.data.frame(IP181chimWTplus)
-# chim181p <- chim181p[chim181p$seqnames == tchr & chim181p$start >= scoord & chim181p$end <= ecoord,]
-# chim181p$seqnames <- as.character(chim181p$seqnames)
-# chim181p <- makeGRangesFromDataFrame(chim181p, keep.extra.columns = T)
-# 
-# chim181pT <- DataTrack(chim181p, name="WT181rich-", ylim = c(0,clim))
 
 ```
 
@@ -199,11 +142,7 @@ diffresT <- AnnotationTrack(diffresf, name = "dBS", id=diffresf$name)
 # plot
 
 ```{r plottracks}
-# # +
-# plotTracks(list(WTpT, KOpT, WT181pT, chim181pT, diffresT,  gatrack), from = scoord, to= ecoord, type="histogram", featureAnnotation = "id", 
-#            fontsize.feature=10, fontcolor.feature = "black")
 
-# -
 plotTracks(list(WTmT, KOmT,WT181mT, diffresT,  gatrack), from = scoord, to= ecoord, type="histogram", featureAnnotation = "id", 
            fontsize.feature=10, fontcolor.feature = "black")
 ``` 

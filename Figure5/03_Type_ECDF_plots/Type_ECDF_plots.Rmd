@@ -57,7 +57,7 @@ RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/
 gff23path <- file.path("C:/Users/nikit/Documents/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
 
 #targets
-larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper_at_submission/Figure4/mir181_bs_with_seeds_transcripts.rds")
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/03_assign_transcripts/mir181_bs_on_transcripts.rds")
 largetframe <- as.data.frame(larget)
 table(largetframe$set)
 largetframe <- largetframe %>%
@@ -70,7 +70,7 @@ TE <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/S
 
 
 #melina repeats
-melrep <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/rep_on_transcripts.rds")
+melrep <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/04_MMsat4/rep_on_transcripts.rds")
 MMSAT4 <- melrep[melrep$repName == "MMSAT4"]
 MurSatRep1 <- melrep[melrep$repName == "MurSatRep1"]
 ```
