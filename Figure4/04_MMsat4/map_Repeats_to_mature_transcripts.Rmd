@@ -3,18 +3,18 @@ title: "MMSAT4 & MurSatRep1"
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  BiocStyle::html_document:
-    toc_float: TRUE
-    code_folding: hide
-    toc: TRUE
-    number_sections: yes
-    fig_caption: yes
-  # pdf_document:
-  #   fig_caption: true
-  #   fig_crop: true
-  #   toc: true
-  #   toc_depth: 1
-  #   number_sections: true
+  # BiocStyle::html_document:
+  #   toc_float: TRUE
+  #   code_folding: hide
+  #   toc: TRUE
+  #   number_sections: yes
+  #   fig_caption: yes
+  pdf_document:
+    fig_caption: true
+    fig_crop: true
+    toc: true
+    toc_depth: 1
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -155,6 +155,26 @@ repeat_masker_tx <- as.data.frame(repeat_masker_tx) %>%
 
 
 saveRDS(repeat_masker_tx, paste0(out, "rep_on_transcripts.rds"))
+
+# ------------------------
+# overlap to mir181 binding sites
+# ------------------------
+
+
+i <- findOverlaps(repeat_masker_tx, mir181_enriched_set) 
+
+m <- c(mcols(mir181_enriched_set[subjectHits(i)]),
+       mcols(repeat_masker_tx[queryHits(i), c("repName", "rep_id")]))
+
+mcols(mir181_enriched_set) <- NULL
+mcols(mir181_enriched_set) <- m
+
+mir181_enriched_set$on_rep <- F
+mir181_enriched_set[unique(subjectHits(i))]$on_rep <- T 
+
+bs_with_rep <- mir181_enriched_set %>% subset(on_rep == T)
+
+saveRDS(bs_with_rep, paste0(out, "bs_with_rep_transcript.rds"))
 
 ```
 

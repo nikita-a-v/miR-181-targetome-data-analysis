@@ -3,18 +3,18 @@ title: "RNAduplex on all binding sites, (236nt window)"
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  BiocStyle::html_document:
-    toc_float: TRUE
-    code_folding: hide
-    toc: TRUE
-    number_sections: yes
-    fig_caption: yes
-  # pdf_document:
-  #   fig_caption: true
-  #   fig_crop: true
-  #   toc: true
-  #   toc_depth: 1
-  #   number_sections: true
+  # BiocStyle::html_document:
+  #   toc_float: TRUE
+  #   code_folding: hide
+  #   toc: TRUE
+  #   number_sections: yes
+  #   fig_caption: yes
+  pdf_document:
+    fig_caption: true
+    fig_crop: true
+    toc: true
+    toc_depth: 1
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -46,7 +46,7 @@ here <- here::here()
 # settings
 # ----------------------------------------
 
-out <- paste0(here,"/Figure5/01_Seed_motifes/")
+out <- paste0(here,"/Figure6/01_RNAduplex/")
 source(paste0(here,"/Supporting_scripts/themes/theme_paper.R"))
 source(paste0(here,"/Supporting_scripts/themes/CustomThemes.R"))
 
@@ -85,13 +85,13 @@ transcript_fasta <- readDNAStringSet("/Users/melinaklostermann/Documents/project
 anno <- readRDS(paste0(here,"/Supporting_scripts/annotation_preprocessing/annotation.rds"))
 
 # expressed_genes
-expressed_genes <- readRDS(paste0(here, "/Supporting_scripts/TPMs-RNAseq"))
+expressed_genes <- readRDS(paste0(here, "/Supporting_scripts/TPMs-RNAseq/expressed_genes.rds"))
 
 # seeds
-seeds <- readRDS(paste0(here,"/Figure5/01_Seed_motifes/seeds_transcripts.rds"))
+seeds <- read.csv(paste0(here,"/Figure3/01_Ribosome_profiling_pipeline/RPF_masterframe.csv"))
 
 # Ribofootprint
-rfp <- read.csv("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure3/RPF_masterframe.csv") 
+rfp <- read.csv(paste0(here,"/Figure3/01_Ribosome_profiling_pipeline/RPF_masterframe.csv") )
 rfp <- rfp %>% mutate(Gene = sub("\\..*", "", Gene))
 
 ```
@@ -178,7 +178,7 @@ t <- table(seed_from_237nt$Seeds_200down.type == "seed_6mer")
 t
 t / sum(t)
 
-ggsave(p, filename = paste0(out, "Figure5A_MRE_with_seed_bar.pdf"), width = 6, height = 6, units = "cm")
+ggsave(p, filename = paste0(out, "SuppFigure6A_MRE_with_seed_bar.pdf"), width = 6, height = 6, units = "cm")
 ```
 
 
@@ -189,7 +189,7 @@ ggsave(p, filename = paste0(out, "Figure5A_MRE_with_seed_bar.pdf"), width = 6, h
 # Read in RNAduplex output and clean
 # --------------------
 
-struct <- read_table("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure5/RNAduplex/mir181_enriched_set_237nt.struct", col_names = c("seq", "mir", "structure", "position_seq", "x", "position_mir", "min_free_energy"), col_types = "ccccccc")
+struct <- read_table(paste0(out,"/mir181_enriched_set_237nt.struct"), col_names = c("seq", "mir", "structure", "position_seq", "x", "position_mir", "min_free_energy"), col_types = "ccccccc")
 
 
 struct <- struct %>% 
@@ -240,13 +240,13 @@ struct_bound_mir_df <- as.data.frame(struct_bound_mir_mat)
 
 st <- struct %>% 
   as.data.frame(.) %>% 
-  select( min_free_energy, start_target, end_target, end_target_bound, norm_free_energy, mir181BS_ID)
+  dplyr::select( min_free_energy, start_target, end_target, end_target_bound, norm_free_energy, mir181BS_ID)
 
 struct_bound_mir_df <- cbind(struct_bound_mir_df, struct)
 
 # info from mir binding sites
 s <- seed_from_237nt %>% 
-  select( seqnames, scoreMax, region, resBs.log2FoldChange, Seeds_200down.type, Seeds_200down.start, Seeds_200down.end, mir181BS_ID, geneID, start)
+  dplyr::select( seqnames, scoreMax, region, resBs.log2FoldChange, Seeds_200down.type, Seeds_200down.start, Seeds_200down.end, mir181BS_ID, geneID, start)
 
 struct_bound_mir_df <- left_join(struct_bound_mir_df, s, by = "mir181BS_ID")
 
@@ -273,7 +273,7 @@ p1 <- ggplot(struct_bound_mir_df_6mer, aes(x = end_target_bound_rel_seed ))+
 
 p1
 
-ggsave(p1, filename = paste0(out, "Figure5C_duplex_start_position.pdf"), width = 6, height = 4, units = "cm")
+ggsave(p1, filename = paste0(out, "SuppFigure6C_duplex_start_position.pdf"), width = 6, height = 4, units = "cm")
 
 ```
 
@@ -299,7 +299,7 @@ t <- table(struct_bound_mir_df_6mer$canonical_duplex)
 t
 t/sum(t)
 
-ggsave(p2, filename = paste0(out, "Figure5D_canonical_duplex_seeds_bar.pdf"), width = 6, height = 6, units = "cm")
+ggsave(p2, filename = paste0(out, "SuppFigure6C_canonical_duplex_seeds_bar.pdf"), width = 6, height = 6, units = "cm")
 
 ```
 
@@ -311,7 +311,7 @@ ggsave(p2, filename = paste0(out, "Figure5D_canonical_duplex_seeds_bar.pdf"), wi
 
 # get mir181 pairing of canonical bound RNAs
 can_seed <- struct_bound_mir_df_6mer %>% subset(canonical_duplex == T)
-mat_can_seed <- can_seed %>% select(V2:V24) %>%
+mat_can_seed <- can_seed %>% dplyr::select(V2:V24) %>%
   as.matrix()
 
 # color for heatmap
@@ -331,6 +331,7 @@ mat_can_seed_cons[1:10,]
 
 set.seed(2)
 k <- kmeans(mat_can_seed_cons, centers = 8)
+can_seed$kmeans <- k$cluster
 
 # side annotations
 col1 = colorRamp2(colors = c("white", "darkred"), breaks = c(0, 1))
@@ -356,137 +357,13 @@ ra <- rowAnnotation(binding_strength = binding_top_20,
 Heatmap(mat_can_seed_cons, cluster_rows = F, cluster_columns = F, col = col_fun, split = k$cluster, right_annotation = ra)
 
 
-pdf(file = paste0(out,"Heatmap_with_seed.pdf"))
+pdf(file = paste0(out,"Figure6C_Heatmap_with_seed.pdf"))
 Heatmap(mat_can_seed_cons, cluster_rows = F, cluster_columns = F, col = col_fun, split = k$cluster, right_annotation = ra,  use_raster = T, raster_device = "png", raster_quality = 10)
 dev.off()
 ```
 
 
-```{r eval=FALSE, include=FALSE}
 
-col_sum <- colSums(struct_bound_mir_mat)
-
-# 2mer and 3mer contribution
-cntr_2 <- apply(struct_bound_mir_mat,1, function(x) gregexpr2(paste0(x, collapse = ""), pattern = "11")) 
-
-cntr_2_sum <- cntr_2 %>% 
-  unlist(.) %>% 
-  table(.)
-
-cntr_2_sum <- c(NA, cntr_2_sum, NA)
-
-
-cntr_3 <- apply(struct_bound_mir_mat,1, function(x) gregexpr2(paste0(x, collapse = ""), pattern = "111"))
-
-cntr_3_sum <- cntr_3 %>% 
-  unlist(.) %>% 
-  table(.)
-
-cntr_3_sum <- c(NA, cntr_3_sum, NA, NA)
-
-
-
-
-column_ha = HeatmapAnnotation(cntr_1mer = anno_barplot(col_sum / nrow(struct_bound_mir_mat)),
-                              cntr_2mer = anno_barplot(cntr_2_sum / (nrow(struct_bound_mir_mat) )),
-                              cntr_3mer = anno_barplot(cntr_3_sum / (nrow(struct_bound_mir_mat))))
-
-Heatmap(struct_bound_mir_mat, cluster_rows = T, cluster_columns = F, col = col_fun,
-        top_annotation = column_ha,)
-
-```
-
-
-
-### Positional contributions in the clusters
-
-```{r fig.height=6, fig.width=6 }
-#---------------------
-# 1mer contribution
-#----------------------
-
-can_seed$kmeans <- k$cluster
-
-cntr_k <- can_seed %>% group_by(kmeans) %>% 
-  summarise(across(V1:V24, ~(sum(.x) / length(.x))), .groups = "keep")
-
-cntr_k_gg <- reshape2::melt(cntr_k, id.vars = "kmeans")
-
-p <- ggplot(cntr_k_gg, aes(x = variable, y = value))+
-  geom_col()+ facet_wrap(~kmeans, ncol = 1, scales = "free_y")+
-  theme_paper()+
-  theme(
-  strip.background = element_blank(),
-  strip.text.x = element_blank()
-)
-p + ggtitle("1mer contribution")
-
-ggsave(p, filename = paste0(out, "Figure5E_can_contributions_bar.pdf"), width = 6, height = 8, units = "cm")
-
-#---------------------
-# 2mer contribution
-#----------------------
-cntr_2 <- apply(mat_can_seed, 1, function(x) gregexpr2(paste0(x, collapse = ""), pattern = "11")) 
-cntr_2_sum <- cntr_2 %>% 
-  unlist(.) %>% 
-  table(.)
-cntr_2_sum <- c(NA, cntr_2_sum, NA)
-
-
-cntr_2_k <- split(cntr_2, k$cluster)
-cntr_2_k <- lapply(cntr_2_k, function(x) {
-  t = unlist(x) %>% unlist(.) %>% table(.)
-  d = as.data.frame(t)
-  d$'.' = as.numeric(d$'.')
-  d2 = data.frame(pos = 1:24) %>% left_join(., d, by = c(pos = "."))
-  return(d2)
-}
-
-  )
-
-names(cntr_2_k) <- 1:length(unique(k$cluster))
-cntr_2_k <- map_dfc(cntr_2_k, ~.x$Freq)
-cntr_2_k$pos <- 1:24
-
-cntr_2_k_gg <- reshape2::melt(cntr_2_k, id.vars= c("pos"))
-
-ggplot(cntr_2_k_gg, aes(x = pos, y = value))+
-  geom_col()+ facet_wrap(~variable, ncol = 1, scales = "free_y")+
-  theme_paper()+
-  ggtitle("2mer contribution")
-
-#---------------------
-# 3mer contribution
-#----------------------
-cntr_3 <- apply(struct_bound_mir_mat,1, function(x) gregexpr2(paste0(x, collapse = ""), pattern = "111"))
-cntr_3_sum <- cntr_3 %>% 
-  unlist(.) %>% 
-  table(.)
-
-cntr_3_sum <- c(NA, cntr_3_sum, NA, NA)
-cntr_3_k <- split(cntr_3 , k$cluster)
-cntr_3_k <- lapply(cntr_3_k, function(x) {
-  t = unlist(x) %>% unlist(.) %>% table(.)
-  d = as.data.frame(t)
-  d$'.' = as.numeric(d$'.')
-  d2 = data.frame(pos = 1:24) %>% left_join(., d, by = c(pos = "."))
-  return(d2)
-}
-
-  )
-
-names(cntr_3_k) <- 1:length(unique(k$cluster))
-cntr_3_k <- map_dfc(cntr_3_k, ~.x$Freq)
-cntr_3_k$pos <- 1:24
-
-cntr_3_k_gg <- reshape2::melt(cntr_3_k, id.vars= c("pos"))
-
-ggplot(cntr_3_k_gg, aes(x = pos, y = value))+
-  geom_col()+ facet_wrap(~variable, ncol = 1, scales = "free_y")+
-  theme_paper()+
-  ggtitle("3mer contribution")
-
-```
 
 ## Bindingsite strength per cluster
 
@@ -504,7 +381,7 @@ ggplot(can_seed, aes(as.character(reordered_cluster), log10(scoreMax)))+
   ylab("binding site strength (log10,max pureclip score)")
 
 
-ggsave( filename = paste0(out, "FigureS5x_pureclip_score_per_cluster_can.pdf"), width = 6, height = 5, units = "cm")
+ggsave( filename = paste0(out, "SuppFigureH_pureclip_score_per_cluster_can.pdf"), width = 6, height = 5, units = "cm")
 
 
 ```
@@ -519,32 +396,11 @@ ggplot(can_seed, aes(as.character(kmeans), norm_free_energy))+
   coord_cartesian(ylim= c(-0.9,0))+
   xlab("cluster")
 
-ggsave( filename = paste0(out, "FigureS5x_min_free_energy_per_cluster_can.pdf"), width = 6, height = 5, units = "cm")
+ggsave( filename = paste0(out, "FigureS6E_min_free_energy_per_cluster_can.pdf"), width = 6, height = 5, units = "cm")
 
 
 ```
 
-## in relation to pureclip score
-
-```{r}
-ggplot(can_seed, aes(log10(scoreMax), norm_free_energy))+
-  geom_point()+
-  ggpointdensity::geom_pointdensity()+
-  theme_paper()+
-  stat_cor()
-
-# bins energy
-can_seed$bin_free_energy <- cut_interval(can_seed$norm_free_energy, length = 0.1)
-
-ggplot(can_seed, aes(x = bin_free_energy, y =log10(scoreMax)))+
-  gghalves::geom_half_boxplot()+
-  gghalves::geom_half_point()+
-  theme_paper()+
-  geom_hline(yintercept = 1)
-
-table(can_seed$bin_free_energy)
-
-```
 ## N per cluster
 
 ```{r}
@@ -578,17 +434,17 @@ t <- table(noncan_seed$no_8mer_pairing)
 t
 t/sum(t)
 
-ggsave(p2, filename = paste0(out, "FigureS5X_no_seed_seed_binding_bar.pdf"), width = 6, height = 6, units = "cm")
+ggsave(p2, filename = paste0(out, "SuppFigure6B_no_seed_seed_binding_bar.pdf"), width = 6, height = 6, units = "cm")
 ```
 
 ## Heamap with no binding in first 7 nt
 
 ```{r fig.width=8, fig.height=8}
 
-# get mir181 pairing of canonical bound RNAs
+# get mir181 pairing of no bound RNAs
 mat_noncan_seed_1 <- noncan_seed %>% 
   subset(no_8mer_pairing) %>%
-  select(V2:V24) %>%
+  dplyr::select(V2:V24) %>%
   as.matrix()
 
 # color for heatmap
@@ -636,21 +492,21 @@ Heatmap(mat_noncan_seed_cons_1, cluster_rows = F, cluster_columns = F, col = col
 
 
 
-pdf(file = paste0(out,"Heatmap_without_seed.pdf"))
+pdf(file = paste0(out,"Figure6G_Heatmap_without_seed.pdf"))
 Heatmap(mat_noncan_seed_cons_1, cluster_rows = F, cluster_columns = F, col = col_fun, split = k2$cluster, right_annotation = ra,  use_raster = T, raster_device = "png", raster_quality = 10)
 dev.off()
 
 ```
 
 
-## Heamap with no binding in first 7 nt
+## Heamap with parital binding in first 7 nt
 
 ```{r fig.width=8, fig.height=8}
 
 # get mir181 pairing of canonical bound RNAs
 mat_noncan_seed_2 <- noncan_seed %>% 
   subset(!no_8mer_pairing) %>%
-  select(V2:V24) %>%
+  dplyr::select(V2:V24) %>%
   as.matrix()
 
 # color for heatmap
@@ -698,7 +554,7 @@ Heatmap(mat_noncan_seed_cons_2, cluster_rows = F, cluster_columns = F, col = col
 
 
 
-pdf(file = paste0(out,"Heatmap_without_seed.pdf"))
+pdf(file = paste0(out,"Figure6E_Heatmap_without_seed.pdf"))
 Heatmap(mat_noncan_seed_cons_2, cluster_rows = F, cluster_columns = F, col = col_fun, split = k3$cluster, right_annotation = ra,  use_raster = T, raster_device = "png", raster_quality = 10)
 dev.off()
 
@@ -722,7 +578,7 @@ ggplot(noncan_seed[noncan_seed$no_8mer_pairing == T,], aes(as.character(kmeans),
   ylab("binding site strength (log10,max pureclip score)")
 
 
-ggsave( filename = paste0(out, "FigureS5x_pureclip_score_per_cluster_noncan_noseed.pdf"), width = 6, height = 5, units = "cm")
+ggsave( filename = paste0(out, "SuppFigure6I_pureclip_score_per_cluster_noncan_noseed.pdf"), width = 6, height = 5, units = "cm")
 
 
 ggplot(noncan_seed[noncan_seed$no_8mer_pairing == F,], aes(as.character(kmeans), log10(scoreMax)))+
@@ -733,7 +589,7 @@ ggplot(noncan_seed[noncan_seed$no_8mer_pairing == F,], aes(as.character(kmeans),
   ylab("binding site strength (log10,max pureclip score)")
 
 
-ggsave( filename = paste0(out, "FigureS5x_pureclip_score_per_cluster_noncan_partseed.pdf"), width = 6, height = 5, units = "cm")
+ggsave( filename = paste0(out, "SuppFigureS6J_pureclip_score_per_cluster_noncan_partseed.pdf"), width = 6, height = 5, units = "cm")
 
 ggplot(noncan_seed[noncan_seed$no_8mer_pairing == T,], aes(as.character(kmeans), norm_free_energy))+
   geom_boxplot()+
@@ -741,7 +597,7 @@ ggplot(noncan_seed[noncan_seed$no_8mer_pairing == T,], aes(as.character(kmeans),
   theme_paper()+
   xlab("cluster")
 
-ggsave( filename = paste0(out, "FigureS5x_min_free_energy_per_cluster_noncan_noseed.pdf"), width = 6, height = 5, units = "cm")
+ggsave( filename = paste0(out, "SuppFigureS6F_min_free_energy_per_cluster_noncan_noseed.pdf"), width = 6, height = 5, units = "cm")
 
 ggplot(noncan_seed[noncan_seed$no_8mer_pairing == F,], aes(as.character(kmeans), norm_free_energy))+
   geom_boxplot()+
@@ -749,7 +605,7 @@ ggplot(noncan_seed[noncan_seed$no_8mer_pairing == F,], aes(as.character(kmeans),
   theme_paper()+
   xlab("cluster")
 
-ggsave( filename = paste0(out, "FigureS5x_min_free_energy_per_cluster_noncan_partseed.pdf"), width = 6, height = 5, units = "cm")
+ggsave( filename = paste0(out, "SuppFigureS6G_min_free_energy_per_cluster_noncan_partseed.pdf"), width = 6, height = 5, units = "cm")
 
 
 ```
@@ -762,19 +618,12 @@ ggsave( filename = paste0(out, "FigureS5x_min_free_energy_per_cluster_noncan_par
 # seed vs no seed
 # ------------------------
 rfp <- rfp %>%
-  select(c(log2FoldChange, Gene)) %>%
+  dplyr::select(c(log2FoldChange, Gene)) %>%
   mutate(seed_group = case_when(
     Gene %in% can_seed$geneID ~ "can_seed",
     Gene %in% noncan_seed$geneID ~ "non_can_seed",
     T ~ "no_target"
   ))
-
-
-ggplot(rfp, aes(x = log2FoldChange, color = seed_group ))+
-  stat_ecdf( )+
-  scale_color_manual( values = c("goldenrod",  "darkgrey", "dodgerblue3"))+
-  coord_cartesian(xlim = c(-0.5, 0.5))+
-  theme_paper()
 
 
 
@@ -795,7 +644,7 @@ ggplot(rfp %>% subset(seed_group != "non_can_seed"), aes(x = log2FoldChange, col
   theme_paper()+
   theme(legend.position = "top")
 
-ggsave( filename = paste0(out, "FigureS5x_ecdf_canonical_vs_non_canonical_duplex.pdf"), width = 5, height = 6, units = "cm")
+ggsave( filename = paste0(out, "SuppFigureS6d_ecdf_canonical_vs_non_canonical_duplex.pdf"), width = 5, height = 6, units = "cm")
 
 ks.test(x = rfp %>% subset(seed_group == "no_target") %>% pull (log2FoldChange) %>% ecdf(.) %>% knots(.) , 
        y = rfp %>% subset(seed_group == "can_seed" & duplex_binds_seed == "canonical_duplex") %>% pull (log2FoldChange) %>% ecdf(.) %>% knots(.))
@@ -834,7 +683,7 @@ ks.test(x = rfp %>% subset(seed_group == "no_target") %>% pull (log2FoldChange) 
 ks.test(x = rfp %>% subset(seed_group == "no_target") %>% pull (log2FoldChange) %>% ecdf(.) %>% knots(.) , 
        y = rfp %>% subset(seed_group == "can_seed") %>% pull (log2FoldChange) %>% ecdf(.) %>% knots(.))
 
-ggsave( filename = paste0(out, "FigureS5x_ecdf_partil_vs_no_seed_binding.pdf"), width = 5, height = 6, units = "cm")
+ggsave( filename = paste0(out, "Figure6B_ecdf_partil_vs_no_seed_binding.pdf"), width = 5, height = 6, units = "cm")
 ```
 
 
@@ -890,7 +739,7 @@ ggplot(rfp_can, aes(x = log2FoldChange))+
   strip.text.x = element_blank()
 )
 
-ggsave( filename = paste0(out, "FigureS5x_ecdf_clusters_can.pdf"), width = 5, height = 8, units = "cm")
+ggsave( filename = paste0(out, "Figure6d_ecdf_clusters_can.pdf"), width = 5, height = 8, units = "cm")
 
 for(x in 1:8){
   print(x)
@@ -946,7 +795,7 @@ geom_vline(xintercept = 0)+
   strip.text.x = element_blank()
 )
 
-ggsave( filename = paste0(out, "Figure5x_ecdf_clusters_nocan_noseed.pdf"), width = 9, height = 5, units = "cm")
+ggsave( filename = paste0(out, "Figure6H_ecdf_clusters_nocan_noseed.pdf"), width = 9, height = 5, units = "cm")
 
 # zoom-ins
 ggplot(rfp_nocan_noseed, aes(x = log2FoldChange, colour = as.character(rfp_nocan_noseed$kmeans.noncan)))+
@@ -967,7 +816,7 @@ geom_vline(xintercept = 0)+
   strip.text.x = element_blank()
 )
 
-ggsave( filename = paste0(out, "Figure5x_ecdf_clusters_nocan_noseed_zoomIn.pdf"), width = 9, height = 5, units = "cm")
+ggsave( filename = paste0(out, "Figure6H_ecdf_clusters_nocan_noseed_zoomIn.pdf"), width = 9, height = 5, units = "cm")
 
 
 
@@ -1032,7 +881,7 @@ geom_vline(xintercept = 0)+
   theme(
   strip.text.x = element_blank()
 )
-ggsave( filename = paste0(out, "Figure5x_ecdf_clusters_nocan_partseed.pdf"), width = 7, height = 5, units = "cm")
+ggsave( filename = paste0(out, "Figure6F_ecdf_clusters_nocan_partseed.pdf"), width = 7, height = 5, units = "cm")
 
 # zoom ins
 ggplot(rfp_nocan_partseed, aes(x = log2FoldChange))+
@@ -1052,7 +901,7 @@ geom_vline(xintercept = 0)+
   theme(
   strip.text.x = element_blank())
 
-ggsave( filename = paste0(out, "Figure5x_ecdf_clusters_nocan_partseed_zoomIns.pdf"), width = 7, height = 5, units = "cm")
+ggsave( filename = paste0(out, "Figure6F_ecdf_clusters_nocan_partseed_zoomIns.pdf"), width = 7, height = 5, units = "cm")
 
 # kmogornov test
 
@@ -1071,135 +920,12 @@ table(rfp_nocan_partseed$kmeans)
 
 
 
-## Select target RNAs with mismatches in seed (but no bulges)
-
-```{r}
-noncan_seed_some_pair <- noncan_seed %>% subset(no_8mer_pairing == F)
-
-find_pairing_mode <- function(df, x){
-  mir = df[x,]$struct_mir_8mer %>% str_split_1(., pattern = "")
-  target = df[x,]$struct_target 
-  
-  # remove dangeling ends from target
-  temp = str_split_1(target, "[(]")
-  n_temp = nchar(temp[[length(temp)]])
-  
-  target = target %>% str_split_1(., pattern = "")
-  target = target[(1+n_temp): length(target)]
-  
-  
-  m_mode = c()
-  t_mode = c()
-  start = T
-  j = 1
-  i = 1
-  
-    while (i < 9){
-      # print(start)
-      # print(mir)
-      # print(j)
-      # print(target)
-      
-      if ((mir[i] == ".") & (start == T)){
-        # dangling end
-        m_mode <- c(m_mode,"d")
-        i = i + 1
-      }else if ((mir[i] == ".") & (start == F)){
-        # unpaired
-        if(target[j] == "."){
-          m_mode <- c(m_mode, "m")
-          t_mode <- c(t_mode, "m")
-          i = i + 1
-          j = j + 1
-        }else{
-          m_mode = c(m_mode,"bm")
-          i = i + 1
-        }
-      }else if (mir[i] == ")" ){
-        # paired
-        if(target[j] == "."){
-          m_mode = c(m_mode)
-          t_mode = c(t_mode, "bt")
-          j = j+1
-        }else{
-          m_mode= c(m_mode,"p")
-          t_mode = c(t_mode,"p")
-          j = j + 1
-          i = i + 1
-        }
-        start = F
-      }
-      
-# 
-#       print(m_mode)
-#       print(t_mode)
-      
-    }
-  
-  
-  res = list(m_mode = m_mode, t_mode = t_mode)
-  
-  # print("RESULT")
-  #       print(mir)
-  #     print(target)
-  #     print(res)
-      
-  return(res)
-}
-
-modes <- lapply(as.list(1:nrow(noncan_seed_some_pair)), function(x) find_pairing_mode(df = noncan_seed_some_pair, x = x))
-
-M_modes <- lapply(modes, function(x) x$m_mode) 
-T_modes <- lapply(modes, function(x) x$t_mode) 
-
-noncan_seed_some_pair$m_mode <- M_modes
-noncan_seed_some_pair$t_mode <- T_modes
-
-noncan_seed_some_pair <- noncan_seed_some_pair %>%
-  rowwise(.) %>%
-  mutate(
-  bulge_mir = any(m_mode == "bm"),
-  bulge_target = any(t_mode == "bt"),
-  bulge = any(bulge_mir, bulge_target)
-)
-
-table(noncan_seed_some_pair$bulge_mir)
-table(noncan_seed_some_pair$bulge_target)
-table(noncan_seed_some_pair$bulge)
-
-```
-
-# Get weblogo from target first 8 if no bulge
-
-```{r}
-
-noncan_seed_no_bulge <- noncan_seed_some_pair %>%
-  subset(bulge = F) %>%
-  rowwise() %>%
-  mutate(end_target_adj = start + end_target + sum(m_mode == "d") - 1,
-         start_target_adj = end_target_adj - 7)
-
-gr_noncan_seed_no_bulge <- 
-  GRanges(seqnames = noncan_seed_no_bulge$seqnames, IRanges(
-          start = noncan_seed_no_bulge$start_target_adj,
-          end = noncan_seed_no_bulge$end_target_adj),
-          strand = "*")
-
-logo_seq <- getSeq(x = transcript_fasta, names = gr_noncan_seed_no_bulge) %>% RNAStringSet()
-
-logo_seq <- as.data.frame(logo_seq)
-
-ggseqlogo::ggseqlogo(logo_seq$x, seq_type = "rna")
-
-
-```
-
 
 # Check MMSAT4 / MurSatRep1 3'contribution
 
 ```{r}
 
-bs_on_rep <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure4/find_Satelites/bs_with_rep_transcript.rds")
+bs_on_rep <- readRDS(paste0(here, "/Figure4/04_MMsat4/bs_with_rep_transcript.rds"))
 
 mmsat4 <- bs_on_rep[bs_on_rep$repName == "MMSAT4"]
 mursatrep1 <- bs_on_rep[bs_on_rep$repName == "MurSatRep1"]
@@ -1219,7 +945,7 @@ ca <- HeatmapAnnotation(percent_bound = anno_barplot(contr_mmsat4))
 
 Heatmap(mat_mmsat4, cluster_rows = T, cluster_columns = F, col = col_fun, top_annotation = ca )
 
-pdf(file = paste0(out,"Heatmap_mmsat4.pdf"))
+pdf(file = paste0(out,"SuppFigureS6K_Heatmap_mmsat4.pdf"))
 Heatmap(mat_mmsat4, cluster_rows = T, cluster_columns = F, col = col_fun, top_annotation = ca )
 dev.off()
 ```
@@ -1235,7 +961,7 @@ ca <- HeatmapAnnotation(percent_bound = anno_barplot(contr_mursatrep1))
 
 Heatmap(mat_mursatrep1, cluster_rows = T, cluster_columns = F, col = col_fun, top_annotation = ca)
 
-pdf(file = paste0(out,"Heatmap_mursatrep1.pdf"))
+pdf(file = paste0(out,"SuppFigureS6L_Heatmap_mursatrep1.pdf"))
 Heatmap(mat_mursatrep1, cluster_rows = T, cluster_columns = F, col = col_fun, top_annotation = ca)
 dev.off()
 
