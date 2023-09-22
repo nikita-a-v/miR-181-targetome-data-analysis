@@ -1,0 +1,169 @@
+---
+title: "MMSAT4 & MurSatRep1"
+author: "Melina Klostermann"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  # BiocStyle::html_document:
+  #   toc_float: TRUE
+  #   code_folding: hide
+  #   toc: TRUE
+  #   number_sections: yes
+  #   fig_caption: yes
+  pdf_document:
+    fig_caption: true
+    fig_crop: true
+    toc: true
+    toc_depth: 1
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+require("knitr")
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=F, cache.lazy = FALSE)
+tidy.opts=list(width.cutoff=80,tidy=TRUE, echo=FALSE)
+```
+
+# Libraries and settings
+
+```{r libraries}
+# ----------------------------------------
+# libraries
+# ----------------------------------------
+library(tidyverse)
+library(GenomicRanges)
+library(colorspace)
+library(gghalves)
+library(BSgenome.Mmusculus.UCSC.mm10)
+library(Biostrings)
+library(plyranges)
+library(AnnotationHub)
+library(GenomicFeatures)
+
+# ----------------------------------------
+# settings
+# ----------------------------------------
+
+here <- here::here()
+
+source(paste0(here,"/Supporting_scripts/themes/theme_paper.R"))
+source(paste0(here,"/Supporting_scripts/themes/CustomThemes.R"))
+
+
+out <- paste0(here,"/Figure4/04_MMSAT4/")
+
+```
+
+# What was done?
+
+The repeats from Repeat masker are mapped onto mature transcripts.
+
+
+# Files
+```{r}
+# -----------------------------------
+# transcript sequences
+# ------------------------------------
+transcript_fasta <- readDNAStringSet("/Users/melinaklostermann/Documents/projects/anno/gencodevM23/gencode.vM23.transcripts.fa.gz") %>% RNAStringSet()
+
+transcript_anno_meta <- names(transcript_fasta)
+transcript_anno_meta <- data.frame(all = transcript_anno_meta) %>%
+  tidyr::separate(., col = all,
+                  into = c("transcript_id", "gene_id", "a", "b", "isoform_name", "gene_name", "entrez_gene_id", "gene_type"), sep = "\\|")
+
+names_transcript_fasta <- sub("\\..*", "", transcript_anno_meta$transcript_id)
+
+# add N in beginning in end to not run out of transcripts when search motif
+n200 <- c(rep("N",200)) %>%
+  paste(., collapse = "") %>%
+  RNAStringSet()
+
+transcript_fasta <- xscat(n200, transcript_fasta, n200)
+names(transcript_fasta) <- names_transcript_fasta
+
+transcript_fasta_df <- data.frame(tx_name = names(transcript_fasta), width = width(transcript_fasta))
+
+# ----------------------------------------
+# MREs
+# ----------------------------------------
+
+# mir181_bs <- readRDS(paste0(here, "Figure4/03_assign_transcripts/mir181_bs_on_transcripts.rds"))
+# 
+# mir181_enriched_set <- mir181_bs %>% 
+#   subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")) %>%
+#   makeGRangesFromDataFrame(., keep.extra.columns = T)
+# 
+# 
+# mir181_bs_gene_anno <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/01_MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+
+# ----------------------------------------
+# annotation
+# ----------------------------------------
+
+anno <- readRDS(paste0(here,"/Supporting_scripts/annotation_preprocessing/annotation.rds"))
+anno$gene_id <- sub("\\..*", "", anno$gene_id)
+anno$transcript_id <- sub("\\..*", "", anno$transcript_id)
+
+
+```
+
+# Overlap of mir181 binding sites to Satelite sequences
+
+```{r}
+# ------------------------
+# Get repeat Masker annotation for mouse
+# ------------------------
+ah = AnnotationHub()
+repeat_masker <- ah[["AH99012"]]
+
+# ------------------------
+# map repeats to transcripts
+# ------------------------
+
+# prepare a txdb of expressed transcripts
+anno_transcripts_exons <- anno[anno$type != "gene"] 
+anno_transcripts_exons$transcript_id <- sub("\\..*", "", anno_transcripts_exons$transcript_id)
+anno_transcripts_GR_list <- anno_transcripts_exons %>%
+  splitAsList(., f = .$transcript_id) %>%
+  GRangesList(.) 
+
+txdb <- makeTxDbFromGRanges(unlist(anno_transcripts_GR_list))
+
+# prepare a transcript mapper (contains transcript ids and names together with genomic positions of transcripts)
+transcripts_txdb_mapper <- transcripts(txdb)
+
+# get transcript-relative coordinates of BS
+repeat_masker_tx <- mapToTranscripts(repeat_masker, txdb, extractor.fun = GenomicFeatures::exonsBy, ignore.strand=T)
+# Mapped position is computed by counting from the transcription start site (TSS) and is not affected by the value of ignore.strand.
+
+# readd metadata
+elementMetadata(repeat_masker_tx) <- c(elementMetadata(repeat_masker_tx), elementMetadata(repeat_masker[repeat_masker_tx$xHits]))
+
+# change the seqnames to the transcript names
+names(repeat_masker_tx) <- 1: NROW(repeat_masker_tx)
+repeat_masker_tx <- as.data.frame(repeat_masker_tx)
+repeat_masker_tx$seqnames <- transcripts_txdb_mapper$tx_name[repeat_masker_tx$transcriptsHits] 
+
+
+repeat_masker_tx <- makeGRangesFromDataFrame(repeat_masker_tx, keep.extra.columns = T) 
+repeat_masker_tx$rep_id <-  paste0(repeat_masker_tx$repName, "-", 1:NROW(repeat_masker_tx))
+
+gene_id_mapper <- anno[anno$type == "transcript"] %>%
+  as.data.frame(.) %>%
+  dplyr::select(gene_id, transcript_id)
+
+repeat_masker_tx <- as.data.frame(repeat_masker_tx) %>%
+  left_join(., gene_id_mapper, by = c(seqnames = "transcript_id")) %>%
+  makeGRangesFromDataFrame(., keep.extra.columns = T)
+
+
+saveRDS(repeat_masker_tx, paste0(out, "rep_on_transcripts.rds"))
+
+```
+
+
+# Session Info
+
+```{r}
+sessionInfo()
+
+```
