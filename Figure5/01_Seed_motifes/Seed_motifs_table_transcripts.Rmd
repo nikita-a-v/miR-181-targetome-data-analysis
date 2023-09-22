@@ -362,7 +362,7 @@ nrow(a)/b
 
 
 
-ggsave(p, filename = paste0(out, "SuppFigure5C_seed_versions_SupFigureX.pdf"), width = 6, height = 6, units = "cm"  )
+ggsave(p, filename = paste0(out, "SuppFigure5C_seed_versions.pdf"), width = 6, height = 6, units = "cm"  )
 ggsave(p1, filename = paste0(out, "Figure5B_seed_versions.pdf"), width = 6, height = 6, units = "cm"  )
 ggsave(p2, filename = paste0(out, "Figure5C_seed_position_after_BS.pdf"), width = 6, height = 6, units = "cm"  )
 ggsave(p3, filename = paste0(out, "Figure5H_wobbleseed_position_after_BS.pdf"), width = 6, height = 4, units = "cm"  )

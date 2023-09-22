@@ -3,18 +3,18 @@ title: "MMSAT4 & MurSatRep1"
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  # BiocStyle::html_document:
-  #   toc_float: TRUE
-  #   code_folding: hide
-  #   toc: TRUE
-  #   number_sections: yes
-  #   fig_caption: yes
-  pdf_document:
-    fig_caption: true
-    fig_crop: true
-    toc: true
-    toc_depth: 1
-    number_sections: true
+  BiocStyle::html_document:
+    toc_float: TRUE
+    code_folding: hide
+    toc: TRUE
+    number_sections: yes
+    fig_caption: yes
+  # pdf_document:
+  #   fig_caption: true
+  #   fig_crop: true
+  #   toc: true
+  #   toc_depth: 1
+  #   number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -86,14 +86,12 @@ transcript_fasta_df <- data.frame(tx_name = names(transcript_fasta), width = wid
 # MREs
 # ----------------------------------------
 
-# mir181_bs <- readRDS(paste0(here, "Figure4/03_assign_transcripts/mir181_bs_on_transcripts.rds"))
-# 
-# mir181_enriched_set <- mir181_bs %>% 
-#   subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")) %>%
-#   makeGRangesFromDataFrame(., keep.extra.columns = T)
-# 
-# 
-# mir181_bs_gene_anno <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/01_MRE_bound_gene_and_bound_region/mir181_bs_afterFigure2B.rds")
+mir181_bs <- readRDS(paste0(here, "/Figure4/03_assign_transcripts/mir181_bs_on_transcripts.rds"))
+
+mir181_enriched_set <- mir181_bs %>%
+  subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched")) %>%
+  makeGRangesFromDataFrame(., keep.extra.columns = T)
+
 
 # ----------------------------------------
 # annotation
@@ -160,6 +158,30 @@ saveRDS(repeat_masker_tx, paste0(out, "rep_on_transcripts.rds"))
 
 ```
 
+# Number of MREs overlapping with repeat elements
+
+```{r}
+bound_repeats <- subsetByOverlaps(repeat_masker_tx, mir181_enriched_set)
+
+df <- table(bound_repeats$repName) %>% t() %>%
+  as.data.frame() %>% 
+  arrange(desc(Freq)) %>%
+  .[1:10,]
+
+df <- df %>%
+  arrange(Freq)
+
+df$Var2 <- factor(df$Var2, levels = df$Var2)
+  
+
+ggplot(df,  aes(x = Var2, y = Freq  ))+
+  geom_col()+
+  coord_flip()+
+  theme_paper()
+
+ggsave(paste0(out, "Figure4G_MREs_overlapping_with_repeat_elements.pdf"), width = 4, height = 6, units = "cm")
+
+```
 
 # Session Info
 
