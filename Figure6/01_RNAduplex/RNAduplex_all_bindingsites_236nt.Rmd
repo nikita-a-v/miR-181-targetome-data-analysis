@@ -39,12 +39,16 @@ library(ComplexHeatmap)
 library(ggpubr)
 library(circlize)
 
+
+here <- here::here()
+
 # ----------------------------------------
 # settings
 # ----------------------------------------
-out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure5/RNAduplex/"
-source("/Users/melinaklostermann/Documents/projects/R_general_functions/theme_paper.R")
-source("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/mirko_files/mirECLIP/DifferentialBinding/CustomThemes.R")
+
+out <- paste0(here,"/Figure5/01_Seed_motifes/")
+source(paste0(here,"/Supporting_scripts/themes/theme_paper.R"))
+source(paste0(here,"/Supporting_scripts/themes/CustomThemes.R"))
 
 set.seed(2)
 
@@ -68,7 +72,7 @@ set.seed(2)
 # MREs
 # ----------------------------------------
 
-mir181_bs <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/03_Seed_motifes/mir181_bs_with_seeds_transcripts.rds")
+mir181_bs <- readRDS(paste0(here, "/Figure5/01_Seed_motifes/mir181_bs_with_seeds_transcripts.rds"))
 
 mir181_enriched_set <- mir181_bs %>% 
   as.data.frame(.) %>%
@@ -78,13 +82,13 @@ mir181_enriched_set <- mir181_bs %>%
 transcript_fasta <- readDNAStringSet("/Users/melinaklostermann/Documents/projects/anno/gencodevM23/gencode.vM23.transcripts.fa.gz")
 
 # annotation
-anno <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/annotation.rds")
+anno <- readRDS(paste0(here,"/Supporting_scripts/annotation_preprocessing/annotation.rds"))
 
 # expressed_genes
-expressed_genes <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure5/TPMs-RNAseq/expressed_genes.rds")
+expressed_genes <- readRDS(paste0(here, "/Supporting_scripts/TPMs-RNAseq"))
 
 # seeds
-seeds <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure2/03_Seed_motifes/seeds_transcripts.rds")
+seeds <- readRDS(paste0(here,"/Figure5/01_Seed_motifes/seeds_transcripts.rds"))
 
 # Ribofootprint
 rfp <- read.csv("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure3/RPF_masterframe.csv") 

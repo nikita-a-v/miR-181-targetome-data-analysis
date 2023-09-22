@@ -32,10 +32,12 @@ tidy.opts=list(width.cutoff=80,tidy=TRUE, echo=FALSE)
 library(tidyverse)
 library(GenomicFeatures)
 library(GenomicRanges)
+
+here <- here::here()
 # ----------------------------------------
 # settings
 # ----------------------------------------
-out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure5/TPMs-RNAseq/"
+out <- paste0(here,"/Figure5/TPMs-RNAseq/")
 
 ```
 
@@ -48,10 +50,10 @@ out <- "/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR1
 
 # Files
 ```{r}
-RNAseq_read_counts <- read_csv("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Figure3/RNAadjusted_countmatrix_15112022.csv")
+RNAseq_read_counts <- read_csv(paste0(here,"/Figure3/RNAadjusted_countmatrix_15112022.csv"))
 
 #annotation
-anno <- readRDS("/Users/melinaklostermann/Documents/projects/AgoCLIP_miR181/R_github/miR181_paper/Methods/01_Annotation_preprocessing/annotation.rds")
+anno <- readRDS(paste0(here,"/Supporting_scripts/annotation_preprocessing/annotation.rds"))
 
 ```
 
