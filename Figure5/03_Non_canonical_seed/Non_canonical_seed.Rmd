@@ -23,7 +23,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 dir
 ```{r dir}
-setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure5/04_Non_canonical_seed")
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure5/03_Non_canonical_seed")
 ```
 
 
@@ -57,7 +57,7 @@ RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/
 gff23path <- file.path("C:/Users/nikit/Documents/Krueger_Lab/Ribo_Profiling/run15112022M23/ref_genome", "gencode.vM23.annotation.gff3.gz")
 
 #targets
-larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/03_assign_transcripts/mir181_bs_on_transcripts.rds")
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure5/01_Seed_motifes/mir181_bs_with_seeds_transcripts.rds")
 largetframe <- as.data.frame(larget)
 table(largetframe$set)
 largetframe <- largetframe %>%
