@@ -44,6 +44,7 @@ library(readxl)
 library(biomaRt)
 library(writexl)
 library(ggrastr)
+library(AnnotationHub)
 
 ```
 
@@ -69,10 +70,19 @@ TE <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/S
 
 
 
-#melina repeats
+
+# Get repeat Masker annotation for mouse (for metagene plot)
+ah = AnnotationHub()
+repeat_masker <- ah[["AH99012"]]
+repMMSAT4 <- repeat_masker[repeat_masker$repName == "MMSAT4"]
+repMurSatRep1 <- repeat_masker[repeat_masker$repName == "MurSatRep1"]
+
+#repeats by transcript (for ECDF plots)
 melrep <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/04_MMsat4/rep_on_transcripts.rds")
 MMSAT4 <- melrep[melrep$repName == "MMSAT4"]
 MurSatRep1 <- melrep[melrep$repName == "MurSatRep1"]
+
+
 ```
 
 
@@ -404,14 +414,14 @@ write_xlsx(tvsMurSatRep1sig, "tvsMurSatRep1significance.xlsx")
 
 ## metagene plot
 ```{r metageneplot}
-MMSAT4$id <- "MMsat4"
-MurSatRep1$id <- "MurSatRep1"
+repMMSAT4$id <- "MMsat4"
+repMurSatRep1$id <- "MurSatRep1"
 
-metaob <- c(MMSAT4, MurSatRep1)
+metaob <- c(repMMSAT4, repMurSatRep1)
 
 metael <- metaGeneProfile(object = metaob, annotation = gff23path, group = "id")
-metasat4 <- metaGeneProfile(object = MMSAT4, annotation = gff23path)
-metamur <- metaGeneProfile(object = MurSatRep1, annotation = gff23path)
+metasat4 <- metaGeneProfile(object = repMMSAT4, annotation = gff23path)
+metamur <- metaGeneProfile(object = repMurSatRep1, annotation = gff23path)
 
 metasat4
 metamur
