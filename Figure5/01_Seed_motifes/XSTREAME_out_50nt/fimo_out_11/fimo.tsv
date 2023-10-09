@@ -1,0 +1,4 @@
+
+# FIMO (Find Individual Motif Occurrences): Version 5.5.4 compiled on Aug 28 2023 at 09:08:20
+# The format of this file is described at https://meme-suite.org/meme/doc/fimo-output-format.html#tsv_results.
+# fimo --verbosity 1 --oc fimo_out_11 --bgfile ./background --motif 11-CAUCGU streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta

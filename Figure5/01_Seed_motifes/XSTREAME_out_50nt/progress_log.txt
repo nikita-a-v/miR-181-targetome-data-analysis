@@ -1,0 +1,122 @@
+Invoking:
+  getsize mirBS_50_both_sides_transcripts.fasta 1> $metrics
+Finished invoke:
+  name: count_primary_seqs  status: 0  time: 0.012698
+Invoking:
+  fasta-get-markov -nostatus -nosummary -rna -m 2 -pseudo 1 mirBS_50_both_sides_transcripts.fasta ./background
+Finished invoke:
+  name: bg  status: 0  time: 0.00909
+Invoking:
+  streme --verbosity 1 --oc streme_out -rna --minw 5 --maxw 10 --order 2 --bfile ./background --seed 0 --align center --time 4740 --totallength 4000000 --evalue --nmotifs 20 --p mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: streme  status: 0  time: 65.533088
+Invoking:
+  meme -oc meme_out -mod zoops -minw 5 -maxw 10 -bfile ./background -markov_order 2 -seed 0 -rna -evt 0.05 -nostatus -time 7107 -searchsize 100000 mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: meme  status: 0  time: 1293.075393
+Invoking:
+  sea --verbosity 1 --oc sea_disc_out --qvalue --thresh 1 --order 2 --bfile ./background --seed 0 --align center --motif-pseudo 0.01 --noseqs --m meme_out/meme.xml --m streme_out/streme.xml --p mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: sea_disc  status: 0  time: 3.167636
+Invoking:
+  sea --verbosity 1 --oc sea_out --thresh 0.05 --order 2 --bfile ./background --seed 0 --align center --motif-pseudo 0.01 --m meme_out/meme.xml --m streme_out/streme.xml --m motifs.meme --p mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: sea  status: 0  time: 3.511067
+Invoking:
+  sea --verbosity 1 --oc distr_out --pvalue --thresh 1 --hofract 0 --order 2 --bfile ./background --seed 0 --motif-pseudo 0.01 --p mirBS_50_both_sides_transcripts.fasta --m ./combined.meme
+Finished invoke:
+  name: distr_sea  status: 0  time: 3.94976
+Invoking:
+  tomtom -verbosity 1 -oc streme_tomtom_out -min-overlap 5 -dist ed -evalue -thresh 1 -no-ssc streme_out/streme.xml motifs.meme
+Finished invoke:
+  name: streme_tomtom  status: 0  time: 0.119694
+Invoking:
+  tomtom -verbosity 1 -oc meme_tomtom_out -min-overlap 5 -dist ed -evalue -thresh 1 -no-ssc meme_out/meme.xml motifs.meme
+Finished invoke:
+  name: meme_tomtom  status: 0  time: 0.103759
+Invoking:
+  tomtom -verbosity 1 -text -thresh 0.1 ./combined.meme ./combined.meme 1> ./motif_alignment.txt
+Finished invoke:
+  name: align_tomtom  status: 0  time: 0.15125
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_1 --bgfile ./background --motif 1-UWUGAWUGU streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo1  status: 0  time: 0.212248
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_2 --bgfile ./background --motif 4-GAGAGAAACC streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo2  status: 0  time: 0.208369
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_3 --bgfile ./background --motif CAAUGUGGUA meme_out/meme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo3  status: 0  time: 0.207135
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_4 --bgfile ./background --motif GAACWCAUAC meme_out/meme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo4  status: 0  time: 0.204479
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_5 --bgfile ./background --motif 8-GGGGYGGGGR streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo5  status: 0  time: 0.208547
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_6 --bgfile ./background --motif 3-GCCUUUGCAM streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo6  status: 0  time: 0.206472
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_7 --bgfile ./background --motif 9-GAGGAGGMG streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo7  status: 0  time: 0.208191
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_8 --bgfile ./background --motif 12-GAAGAUGA streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo8  status: 0  time: 0.205186
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_9 --bgfile ./background --motif 18-UWUWUAUUUU streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo9  status: 0  time: 0.207579
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_10 --bgfile ./background --motif 5-CACCGACA streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo10  status: 0  time: 0.209952
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_11 --bgfile ./background --motif 11-CAUCGU streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo11  status: 0  time: 0.195017
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_12 --bgfile ./background --motif 14-CUACAAGAC streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo12  status: 0  time: 0.20622
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_13 --bgfile ./background --motif 17-GCAGCAG streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo13  status: 0  time: 0.203664
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_14 --bgfile ./background --motif 13-CGGCGGCSGC streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo14  status: 0  time: 0.205842
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_15 --bgfile ./background --motif 15-ACGCUGCU streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo15  status: 0  time: 0.202888
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_16 --bgfile ./background --motif 6-CAUCCCCA streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo16  status: 0  time: 0.206293
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_17 --bgfile ./background --motif 19-CCUGUGGAGM streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo17  status: 0  time: 0.207733
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_18 --bgfile ./background --motif 20-UUACACUA streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo18  status: 0  time: 0.207077
+Invoking:
+  fimo --verbosity 1 --oc fimo_out_19 --bgfile ./background --motif 16-GUCUCUGG streme_out/streme.xml mirBS_50_both_sides_transcripts.fasta
+Finished invoke:
+  name: fimo19  status: 0  time: 0.209419
+Writing output
+Invoking:
+  xstreme_html_to_tsv ./xstreme.html ./xstreme.tsv "xstreme --oc . --time 240 --streme-totallength 4000000 --meme-searchsize 100000 --rna --evt 0.05 --minw 5 --maxw 10 --align center --streme-nmotifs 20 --meme-mod zoops --m motifs.meme --p mirBS_50_both_sides_transcripts.fasta" 5.5.4 "Fri Jun 16 12\:19\:08 2023 -0700"
+Finished invoke:
+  name: summary  status: 0  time: 0.129407
+Done
