@@ -427,6 +427,11 @@ RNAexp <- resdataadj[resdataadj$baseMean >= xmin,]
 
 RPFexp <- resdataRPFadj[resdataRPFadj$baseMean >= xmin,]
 
+RNAexpnolim <- resdataadj
+
+RPFexpnolim <- resdataRPFadj
+
+
 head(RNAexp)
 head(RPFexp)
 ```
@@ -441,6 +446,15 @@ RPFexp <- merge(RPFexp,G_list,by="Gene")
 head(RNAexp)
 head(RPFexp)
 
+#no cutoff
+genesnolim <- RNAexpnolim$Gene
+G_listnolim <- getBM(filters= "ensembl_gene_id_version", attributes= c("ensembl_gene_id_version","mgi_symbol"),values=genesnolim,mart= mart)
+colnames(G_listnolim) <- c("Gene", "gene_symbol")
+RNAexpnolim <- left_join(RNAexpnolim,G_listnolim,by="Gene")
+RPFexpnolim <- merge(RPFexpnolim,G_listnolim,by="Gene")
+head(RNAexpnolim)
+head(RPFexpnolim)
+
 ```
 
 
@@ -450,6 +464,9 @@ save master DFs
 ```{r}
 write.csv(RNAexp, "RNA_masterframe.csv")
 write.csv(RPFexp, "RPF_masterframe.csv")
+
+write.csv(RNAexpnolim, "RNA_masterframe_nocutoff.csv")
+write.csv(RPFexpnolim, "RPF_masterframe_nocutoff.csv")
 
 # and as xlsx for supplementary
 write_xlsx(RNAexp, "RNA_masterframe.xlsx")
