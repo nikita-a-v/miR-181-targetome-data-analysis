@@ -105,6 +105,7 @@ gns$geneID = names(gns)
 
 # save genes
 saveRDS(gns, paste0(out, "gene_annotation.rds"))
+rtracklayer::export.bed(gns, paste0(out, "gene_annotation.bed"))
 
 
 kable(head(gns))  %>%

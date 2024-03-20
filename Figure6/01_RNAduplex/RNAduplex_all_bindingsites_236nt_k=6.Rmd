@@ -45,12 +45,16 @@ here <- here::here()
 # ----------------------------------------
 # settings
 # ----------------------------------------
+K = 6
 
 out <- paste0(here,"/Figure6/01_RNAduplex/")
+
 source(paste0(here,"/Supporting_scripts/themes/theme_paper.R"))
 source(paste0(here,"/Supporting_scripts/themes/CustomThemes.R"))
 
 set.seed(2)
+
+
 
 ```
 
@@ -301,11 +305,15 @@ t/sum(t)
 
 ggsave(p2, filename = paste0(out, "SuppFigure6C_canonical_duplex_seeds_bar.pdf"), width = 6, height = 6, units = "cm")
 
+saveRDS(struct_bound_mir_df, paste0(out, "struct_bound_mir_df.rds" ))
+saveRDS(struct_bound_mir_df_6mer, paste0(out, "struct_bound_mir_df_6mer.rds" ))
+
 ```
 
 
 
 # Heatmap of canonical seed pairing
+
 
 ```{r fig.width=6, fig.height=6}
 
@@ -330,8 +338,10 @@ mat_can_seed_cons[1:10,]
 
 
 set.seed(2)
-k <- kmeans(mat_can_seed_cons, centers = 8)
+k <- kmeans(mat_can_seed_cons, centers = K)
 can_seed$kmeans <- k$cluster
+
+#fviz_cluster(k, data = mat_can_seed_cons)
 
 # side annotations
 col1 = colorRamp2(colors = c("white", "darkred"), breaks = c(0, 1))
@@ -357,7 +367,7 @@ ra <- rowAnnotation(binding_strength = binding_top_20,
 Heatmap(mat_can_seed_cons, cluster_rows = F, cluster_columns = F, col = col_fun, split = k$cluster, right_annotation = ra)
 
 
-pdf(file = paste0(out,"Figure6C_Heatmap_with_seed.pdf"))
+pdf(file = paste0(out,"F6C_HM_with_seed_k=", K,".pdf"))
 Heatmap(mat_can_seed_cons, cluster_rows = F, cluster_columns = F, col = col_fun, split = k$cluster, right_annotation = ra,  use_raster = T, raster_device = "png", raster_quality = 10)
 dev.off()
 ```
@@ -369,11 +379,11 @@ dev.off()
 
 ```{r}
 
-names_reordered_clusters <- data.frame( cluster = c(1,2,3,4,5,6,7,8), reordered_cluster  = c(5,6,7,2,1,8,4,3))
+#names_reordered_clusters <- data.frame( cluster = c(1,2,3,4,5,6,7,8), reordered_cluster  = c(5,6,7,2,1,8,4,3))
 
-can_seed <- left_join(can_seed, names_reordered_clusters, by = c(kmeans = "cluster") )
+#can_seed <- left_join(can_seed, names_reordered_clusters, by = c(kmeans = "cluster") )
 
-ggplot(can_seed, aes(as.character(reordered_cluster), log10(scoreMax)))+
+ggplot(can_seed, aes(as.character(kmeans), log10(scoreMax)))+
   geom_boxplot()+
   coord_cartesian(ylim = c(-2,3))+
   theme_paper()+
@@ -381,7 +391,7 @@ ggplot(can_seed, aes(as.character(reordered_cluster), log10(scoreMax)))+
   ylab("binding site strength (log10,max pureclip score)")
 
 
-ggsave( filename = paste0(out, "SuppFigureH_pureclip_score_per_cluster_can.pdf"), width = 6, height = 5, units = "cm")
+ggsave( filename = paste0(out, "SuppFigureH_pureclip_score_per_cluster_can_k=", K, ".pdf"), width = 6, height = 5, units = "cm")
 
 
 ```
@@ -396,12 +406,12 @@ ggplot(can_seed, aes(as.character(kmeans), norm_free_energy))+
   coord_cartesian(ylim= c(-0.9,0))+
   xlab("cluster")
 
-ggsave( filename = paste0(out, "FigureS6E_min_free_energy_per_cluster_can.pdf"), width = 6, height = 5, units = "cm")
+ggsave( filename = paste0(out, "FigureS6E_min_free_energy_per_cluster_can_k=", K, ".pdf"), width = 6, height = 5, units = "cm")
 
 
 ```
 
-## N per cluster
+### N per cluster
 
 ```{r}
 table(can_seed$reordered_cluster)
@@ -463,7 +473,7 @@ mat_noncan_seed_cons_1[1:10,]
 
 
 set.seed(2)
-k2 <- kmeans(mat_noncan_seed_cons_1, centers = 8)
+k2 <- kmeans(mat_noncan_seed_cons_1, centers = K)
 
 
 # side annotations
@@ -492,7 +502,7 @@ Heatmap(mat_noncan_seed_cons_1, cluster_rows = F, cluster_columns = F, col = col
 
 
 
-pdf(file = paste0(out,"Figure6G_Heatmap_without_seed.pdf"))
+pdf(file = paste0(out,"Figure6G_Heatmap_without_seed_k=", K, ".pdf"))
 Heatmap(mat_noncan_seed_cons_1, cluster_rows = F, cluster_columns = F, col = col_fun, split = k2$cluster, right_annotation = ra,  use_raster = T, raster_device = "png", raster_quality = 10)
 dev.off()
 
@@ -525,7 +535,7 @@ mat_noncan_seed_cons_2[1:10,]
 
 
 set.seed(2)
-k3 <- kmeans(mat_noncan_seed_cons_2, centers = 6)
+k3 <- kmeans(mat_noncan_seed_cons_2, centers = K)
 
 
 # side annotations
@@ -554,7 +564,7 @@ Heatmap(mat_noncan_seed_cons_2, cluster_rows = F, cluster_columns = F, col = col
 
 
 
-pdf(file = paste0(out,"Figure6E_Heatmap_without_seed.pdf"))
+pdf(file = paste0(out,"Figure6E_Heatmap_without_seed_k=", K, ".pdf"))
 Heatmap(mat_noncan_seed_cons_2, cluster_rows = F, cluster_columns = F, col = col_fun, split = k3$cluster, right_annotation = ra,  use_raster = T, raster_device = "png", raster_quality = 10)
 dev.off()
 
@@ -578,7 +588,7 @@ ggplot(noncan_seed[noncan_seed$no_8mer_pairing == T,], aes(as.character(kmeans),
   ylab("binding site strength (log10,max pureclip score)")
 
 
-ggsave( filename = paste0(out, "SuppFigure6I_pureclip_score_per_cluster_noncan_noseed.pdf"), width = 6, height = 5, units = "cm")
+ggsave( filename = paste0(out, "SuppFigure6I_pureclip_score_per_cluster_noncan_noseed_k=", K, ".pdf"), width = 6, height = 5, units = "cm")
 
 
 ggplot(noncan_seed[noncan_seed$no_8mer_pairing == F,], aes(as.character(kmeans), log10(scoreMax)))+
@@ -589,7 +599,7 @@ ggplot(noncan_seed[noncan_seed$no_8mer_pairing == F,], aes(as.character(kmeans),
   ylab("binding site strength (log10,max pureclip score)")
 
 
-ggsave( filename = paste0(out, "SuppFigureS6J_pureclip_score_per_cluster_noncan_partseed.pdf"), width = 6, height = 5, units = "cm")
+ggsave( filename = paste0(out, "SuppFigureS6J_pureclip_score_per_cluster_noncan_partseed_k=", K, ".pdf"), width = 6, height = 5, units = "cm")
 
 ggplot(noncan_seed[noncan_seed$no_8mer_pairing == T,], aes(as.character(kmeans), norm_free_energy))+
   geom_boxplot()+
@@ -597,7 +607,7 @@ ggplot(noncan_seed[noncan_seed$no_8mer_pairing == T,], aes(as.character(kmeans),
   theme_paper()+
   xlab("cluster")
 
-ggsave( filename = paste0(out, "SuppFigureS6F_min_free_energy_per_cluster_noncan_noseed.pdf"), width = 6, height = 5, units = "cm")
+ggsave( filename = paste0(out, "SuppFigureS6F_min_free_energy_per_cluster_noncan_noseed_k=", K, ".pdf"), width = 6, height = 5, units = "cm")
 
 ggplot(noncan_seed[noncan_seed$no_8mer_pairing == F,], aes(as.character(kmeans), norm_free_energy))+
   geom_boxplot()+
@@ -605,7 +615,7 @@ ggplot(noncan_seed[noncan_seed$no_8mer_pairing == F,], aes(as.character(kmeans),
   theme_paper()+
   xlab("cluster")
 
-ggsave( filename = paste0(out, "SuppFigureS6G_min_free_energy_per_cluster_noncan_partseed.pdf"), width = 6, height = 5, units = "cm")
+ggsave( filename = paste0(out, "SuppFigureS6G_min_free_energy_per_cluster_noncan_partseed_k=", K, ".pdf"), width = 6, height = 5, units = "cm")
 
 
 ```
@@ -704,8 +714,7 @@ rfp_can_bg_gg_3 <- rfp_can %>% subset(kmeans == 3)
 rfp_can_bg_gg_4 <- rfp_can %>% subset(kmeans == 4)
 rfp_can_bg_gg_5 <- rfp_can %>% subset(kmeans == 5)
 rfp_can_bg_gg_6 <- rfp_can %>% subset(kmeans == 6)
-rfp_can_bg_gg_7 <- rfp_can %>% subset(kmeans == 7)
-rfp_can_bg_gg_8 <- rfp_can %>% subset(kmeans == 8)
+
 
 rfp_can_bg_gg_1$kmeans <- NULL
 rfp_can_bg_gg_2$kmeans <- NULL
@@ -713,8 +722,6 @@ rfp_can_bg_gg_3$kmeans <- NULL
 rfp_can_bg_gg_4$kmeans <- NULL
 rfp_can_bg_gg_5$kmeans <- NULL
 rfp_can_bg_gg_6$kmeans <- NULL
-rfp_can_bg_gg_7$kmeans <- NULL
-rfp_can_bg_gg_8$kmeans <- NULL
 rfp_non_targets$kmeans <- NULL
 
 
@@ -728,8 +735,6 @@ ggplot(rfp_can, aes(x = log2FoldChange))+
   stat_ecdf(data = rfp_can_bg_gg_4, aes(x = log2FoldChange), color = "grey")+
   stat_ecdf(data = rfp_can_bg_gg_5, aes(x = log2FoldChange), color = "grey")+
   stat_ecdf(data = rfp_can_bg_gg_6, aes(x = log2FoldChange), color = "grey")+
-  stat_ecdf(data = rfp_can_bg_gg_7, aes(x = log2FoldChange), color = "grey")+
-  stat_ecdf(data = rfp_can_bg_gg_8, aes(x = log2FoldChange), color = "grey")+
   stat_ecdf( color = "darkred" )+
   facet_wrap(~kmeans, ncol = 2)+
   coord_cartesian(xlim = c(-0.5, 1))+
@@ -739,9 +744,9 @@ ggplot(rfp_can, aes(x = log2FoldChange))+
   strip.text.x = element_blank()
 )
 
-ggsave( filename = paste0(out, "Figure6d_ecdf_clusters_can.pdf"), width = 5, height = 8, units = "cm")
+ggsave( filename = paste0(out, "Figure6d_ecdf_clusters_can_k=", K, ".pdf"), width = 5, height = 8, units = "cm")
 
-for(x in 1:8){
+for(x in 1:K){
   print(x)
   print(ks.test(x = rfp_non_targets %>% pull (log2FoldChange) %>% ecdf(.) %>% knots(.) , 
        y = rfp_can %>% subset(kmeans == x) %>% pull (log2FoldChange) %>% ecdf(.) %>% knots(.)))
@@ -777,6 +782,7 @@ rfp_nocan_noseed_bg_gg_5$kmeans <- NULL
 rfp_nocan_noseed_bg_gg_6$kmeans <- NULL
 
 
+
 ggplot(rfp_nocan_noseed, aes(x = log2FoldChange, colour = as.character(rfp_nocan_noseed$kmeans.noncan)))+
 geom_vline(xintercept = 0)+
   stat_ecdf(data = rfp_non_targets , aes(x = log2FoldChange), color = "black")+
@@ -795,7 +801,7 @@ geom_vline(xintercept = 0)+
   strip.text.x = element_blank()
 )
 
-ggsave( filename = paste0(out, "Figure6H_ecdf_clusters_nocan_noseed.pdf"), width = 9, height = 5, units = "cm")
+ggsave( filename = paste0(out, "Figure6H_ecdf_clusters_nocan_noseed_k=", K, ".pdf"), width = 9, height = 5, units = "cm")
 
 # zoom-ins
 ggplot(rfp_nocan_noseed, aes(x = log2FoldChange, colour = as.character(rfp_nocan_noseed$kmeans.noncan)))+
@@ -816,12 +822,12 @@ geom_vline(xintercept = 0)+
   strip.text.x = element_blank()
 )
 
-ggsave( filename = paste0(out, "Figure6H_ecdf_clusters_nocan_noseed_zoomIn.pdf"), width = 9, height = 5, units = "cm")
+ggsave( filename = paste0(out, "Figure6H_ecdf_clusters_nocan_noseed_zoomIn_k=", K, ".pdf"), width = 9, height = 5, units = "cm")
 
 
 
 # komogronov test
-for(i in 1:8){
+for(i in 1:K){
   print(i)
   print(ks.test(x = rfp_non_targets %>% pull (log2FoldChange) %>% ecdf(.) %>% knots(.) , 
        y = rfp_nocan_noseed %>% subset(kmeans == i) %>% pull (log2FoldChange) %>% ecdf(.) %>% knots(.)))
@@ -850,8 +856,6 @@ rfp_nocan_partseed_bg_gg_3 <- rfp_nocan_partseed %>% subset(kmeans == 3)
 rfp_nocan_partseed_bg_gg_4 <- rfp_nocan_partseed %>% subset(kmeans == 4)
 rfp_nocan_partseed_bg_gg_5 <- rfp_nocan_partseed %>% subset(kmeans == 5)
 rfp_nocan_partseed_bg_gg_6 <- rfp_nocan_partseed %>% subset(kmeans == 6)
-rfp_nocan_partseed_bg_gg_7 <- rfp_nocan_partseed %>% subset(kmeans == 7)
-rfp_nocan_partseed_bg_gg_8 <- rfp_nocan_partseed %>% subset(kmeans == 8)
 
 
 rfp_nocan_partseed_bg_gg_1$kmeans <- NULL
@@ -860,8 +864,7 @@ rfp_nocan_partseed_bg_gg_3$kmeans <- NULL
 rfp_nocan_partseed_bg_gg_4$kmeans <- NULL
 rfp_nocan_partseed_bg_gg_5$kmeans <- NULL
 rfp_nocan_partseed_bg_gg_6$kmeans <- NULL
-rfp_nocan_partseed_bg_gg_7$kmeans <- NULL
-rfp_nocan_partseed_bg_gg_8$kmeans <- NULL
+
 
 
 ggplot(rfp_nocan_partseed, aes(x = log2FoldChange))+
@@ -881,7 +884,7 @@ geom_vline(xintercept = 0)+
   theme(
   strip.text.x = element_blank()
 )
-ggsave( filename = paste0(out, "Figure6F_ecdf_clusters_nocan_partseed.pdf"), width = 7, height = 5, units = "cm")
+ggsave( filename = paste0(out, "Figure6F_ecdf_clusters_nocan_partseed_k=", K, ".pdf"), width = 7, height = 5, units = "cm")
 
 # zoom ins
 ggplot(rfp_nocan_partseed, aes(x = log2FoldChange))+
@@ -901,7 +904,7 @@ geom_vline(xintercept = 0)+
   theme(
   strip.text.x = element_blank())
 
-ggsave( filename = paste0(out, "Figure6F_ecdf_clusters_nocan_partseed_zoomIns.pdf"), width = 7, height = 5, units = "cm")
+ggsave( filename = paste0(out, "Figure6F_ecdf_clusters_nocan_partseed_zoomIns_k=", K, ".pdf"), width = 7, height = 5, units = "cm")
 
 # kmogornov test
 

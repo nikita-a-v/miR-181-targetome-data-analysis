@@ -2,19 +2,16 @@
 title: "Seed motifs on transcripts"
 author: "Melina Klostermann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: 
-  # BiocStyle::html_document:
-  #   toc_float: TRUE
-  #   code_folding: hide
-  #   toc: TRUE
-  #   number_sections: yes
-  #   fig_caption: yes
-  pdf_document:
-    fig_caption: true
-    fig_crop: true
-    toc: true
-    toc_depth: 1
-    number_sections: true
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+  BiocStyle::html_document:
+    toc_float: yes
+    code_folding: hide
+    toc: yes
+    number_sections: yes
+    fig_caption: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -476,58 +473,7 @@ seeds_tx <- resize(seeds_tx, width = seeds_tx$Seeds_200down.width, fix = "start"
 
 ```
 
-# For revision
 
-## 500nt on both sides of the binding site
-
-```{r}
-#######################
-# get seed in 200er window
-#######################
-
-mir181_bs_500down <- as.data.frame(mir181_enriched_set) %>%
-  left_join(transcript_fasta_df, by= c(seqnames = "tx_name"), suffix = c(".bs", ".tx")) %>% 
-  mutate(end = end + 500) %>%
-  mutate(start = start - 500) %>%
-  dplyr::filter((end <  width.tx)  & (start > 0)) %>%
-  makeGRangesFromDataFrame(., keep.extra.columns =T) 
-
-mir181_bs_500down_seq <- getSeq(mir181_bs_500down, x = transcript_fasta) %>% 
-  RNAStringSet()
-
-# count occurences of all seed variations
-Seeds_500down <- lapply(seed_list, function(x) {
-  vmatchPattern(pattern = x, mir181_bs_500down_seq) %>% 
-  lapply(., function(x) as.data.frame(x))})
-
-# add the binding site id to the seeds and make a df per seed type
-BS_ID_list <- as.list(mir181_bs_500down$mir181BS_ID)
-
-Seeds_500down <- map(Seeds_500down, 
-                     ~map2(.x, BS_ID_list, ~mutate(.x, mir181BS_ID = .y) ) %>% 
-               map_dfr(~.x))
-
-
-# add the seed type names and make one df of all
-Seeds_500down <- map2(Seeds_500down, seed_names_list, ~mutate(.x, seed = .y) ) %>% map_dfr(~.x)
-
-
-# extract wobble positions
-Seeds_500down <- Seeds_500down %>% 
-  mutate(wobble = grepl("wobble", seed),
-         seed = case_when(wobble  ~ substr(seed, 1, nchar(seed)-7), T ~ seed))
-
-
-
-ggplot(Seeds_500down %>% subset(seed = "seed_6mer"), aes(x = start))+
-  geom_rect(inherit.aes=FALSE, aes(xmin=500, xmax=700, ymin = 0, ymax = 0.0025), color="transparent", fill="orange", alpha=0.01)+
-  geom_density()+
-  theme_bw()+
-  scale_x_continuous(breaks = c(100,300, 500, 700, 900), labels = c("-400", "-200", "0", "200", "400"))
-
-ggsave(paste0(out, "Revision_seed_densito_around_bs.pdf"), height = 6, width = 8, units ="cm")
-
-```
 
 ```{r}
 ###################
@@ -627,7 +573,109 @@ ggsave(p3, filename = paste0(out, "Figure5H_wobbleseed_position_after_BS.pdf"), 
 ```
 
 
+# For revision
 
+## 500nt on both sides of the binding site
+
+```{r}
+#######################
+# get seed in 200er window
+#######################
+
+mir181_bs_500down <- as.data.frame(mir181_enriched_set) %>%
+  left_join(transcript_fasta_df, by= c(seqnames = "tx_name"), suffix = c(".bs", ".tx")) %>% 
+  mutate(end = end + 500) %>%
+  mutate(start = start - 500) %>%
+  dplyr::filter((end <  width.tx)  & (start > 0)) %>%
+  makeGRangesFromDataFrame(., keep.extra.columns =T) 
+
+mir181_bs_500down_seq <- getSeq(mir181_bs_500down, x = transcript_fasta) %>% 
+  RNAStringSet()
+
+# count occurences of all seed variations
+Seeds_500down <- lapply(seed_list, function(x) {
+  vmatchPattern(pattern = x, mir181_bs_500down_seq) %>% 
+  lapply(., function(x) as.data.frame(x))})
+
+# add the binding site id to the seeds and make a df per seed type
+BS_ID_list <- as.list(mir181_bs_500down$mir181BS_ID)
+
+Seeds_500down <- map(Seeds_500down, 
+                     ~map2(.x, BS_ID_list, ~mutate(.x, mir181BS_ID = .y) ) %>% 
+               map_dfr(~.x))
+
+
+# add the seed type names and make one df of all
+Seeds_500down <- map2(Seeds_500down, seed_names_list, ~mutate(.x, seed = .y) ) %>% map_dfr(~.x)
+
+
+# extract wobble positions
+Seeds_500down <- Seeds_500down %>% 
+  mutate(wobble = grepl("wobble", seed),
+         seed = case_when(wobble  ~ substr(seed, 1, nchar(seed)-7), T ~ seed))
+
+
+
+ggplot(Seeds_500down %>% subset(seed = "seed_6mer"), aes(x = start))+
+  geom_rect(inherit.aes=FALSE, aes(xmin=500, xmax=700, ymin = 0, ymax = 0.0025), color="transparent", fill="orange", alpha=0.01)+
+  geom_density()+
+  theme_bw()+
+  scale_x_continuous(breaks = c(100,300, 500, 700, 900), labels = c("-400", "-200", "0", "200", "400"))
+
+p <- ggplot(Seeds_500down %>% subset(seed = "seed_6mer"), aes(x = start))+
+      geom_rect(inherit.aes=FALSE, aes(xmin=500, xmax=700, ymin = 0, ymax = 250), color="transparent", fill="orange", alpha=0.01)+
+  geom_histogram(binwidth = 1)+
+  theme_paper()+
+  scale_x_continuous(breaks = c(100,300, 500, 700, 900), labels = c("-400", "-200", "0", "200", "400"))
+
+p
+
+ggplot(Seeds_500down %>% subset(seed = "seed_6mer"), aes(x = start))+
+      geom_rect(inherit.aes=FALSE, aes(xmin=500, xmax=700, ymin = 0, ymax = 600), color="transparent", fill="orange", alpha=0.01)+
+  geom_histogram(binwidth = 5)+
+  theme_bw()+
+  scale_x_continuous(breaks = c(100,300, 500, 700, 900), labels = c("-400", "-200", "0", "200", "400"))
+
+ggplot(Seeds_500down %>% subset(seed = "seed_6mer"), aes(x = start))+
+      geom_rect(inherit.aes=FALSE, aes(xmin=400, xmax=600, ymin = 0, ymax = 600), color="transparent", fill="lightblue", alpha=0.01)+
+  geom_histogram(binwidth = 5)+
+  theme_paper()+
+  scale_x_continuous(breaks = c(100,300, 500, 700, 900), labels = c("-400", "-200", "0", "200", "400"))
+
+ggsave(p, filename = paste0(out, "Revision_seed_around_bs.pdf"), height = 6, width = 8, units ="cm")
+
+```
+
+## Compare RFP 50nt to 200nt
+
+```{r}
+
+rfp <- read.csv(paste0(here,"/Figure3/01_Ribosome_profiling_pipeline/RPF_masterframe.csv") )
+rfp <- rfp %>% mutate(Gene = sub("\\..*", "", Gene))
+  
+df_plot <- mir181_bs %>% 
+  mutate(seed_dist_group = case_when(first_seed_200down.start <= 50 ~ "0-50",
+                                     first_seed_200down.start > 50 ~ "150-200",
+                                     T ~ "No seed in window")) %>%
+  group_by(geneID) %>%
+  arrange(scoreMean, .by_group = T) %>%
+  slice(1)
+
+df_plot <- df_plot %>% left_join(rfp, by = c(geneID = "Gene" ))
+
+
+ggplot(df_plot, aes(x = log2FoldChange, color = seed_dist_group))+
+  geom_vline(xintercept = 0)+
+  stat_ecdf()+
+  coord_cartesian(xlim = c(-0.5, 0.5))+
+  theme_paper()
+
+ggsave( filename = paste0(out, "Revision_rfp_50_200_seed_window.pdf"), height = 6, width = 8, units ="cm")
+
+
+
+
+```
 
 
 # Save tables
