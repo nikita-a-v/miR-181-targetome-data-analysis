@@ -1,0 +1,1517 @@
+---
+title: "TS-MT_revisions"
+author:
+- name: Nikita Verheyden
+  affiliation: JLU Giessen
+  date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+      toc: TRUE
+      toc_float: TRUE
+      code_folding: hide
+
+header-includes:
+- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+- \usepackage{placeins}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+dir
+```{r dir}
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper_revisions/TS-MT_plots")
+```
+
+## packages
+```{r packages}
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+library(readxl)
+library(eulerr)
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(biomaRt)
+```
+
+
+## data
+```{r data}
+# Targetscan
+TS <- as.data.frame(read_xlsx("TargetScan7.2__miR-181-5p.predicted_targets.xlsx"))
+
+head(TS)
+# miRTarBase
+MT <- read.csv("all-miR-181_mirtarbase.csv")
+#only use a and b
+MTab <- MT[MT$miRNA %in% c("mmu-miR-181a", "mmu-miR-181b", "mmu-miR-181a-5p", "mmu-miR-181b-5p"),]
+
+head(MTab)
+
+# miR-eCLIP
+larget <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure5/01_Seed_motifes/mir181_bs_with_seeds_transcripts.rds")
+largetframe <- as.data.frame(larget)
+largetframenf <- largetframe
+table(largetframe$set)
+largetframe <- largetframe %>%
+  subset(set %in% c("ago_bs_mir181_chi&mir181_enriched", "mir181_enriched"))
+head(largetframe)
+
+#Ribo profiling
+RNA <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RNA_masterframe.csv")
+RPF <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RPF_masterframe.csv")
+
+
+RNAnolim <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RNA_masterframe_nocutoff.csv")
+RPFnolim <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure3/01_Ribosome_profiling_pipeline/RPF_masterframe_nocutoff.csv")
+```
+
+
+
+## colours
+```{r colours}
+#colours
+farbeneg <- "#b4b4b4"
+farbe1 <- "#0073C2FF"
+farbe2 <- "#EFC000FF"
+farbe3 <- "#CD534CFF"
+farbe4 <- "#7AA6DCFF"
+farbe5 <- "#868686FF"
+farbe6 <- "#003C67FF"
+farbe7 <- "#8F7700FF"
+farbe8 <- "#3B3B3BFF"
+farbe9 <- "#A73030FF"
+farbe10 <- "#4A6990FF"
+farbe11 <- "#FF6F00FF"
+farbe12 <- "#C71000FF"
+farbe13 <- "#008EA0FF"
+farbe14 <- "#8A4198FF"
+farbe15 <- "#5A9599FF"
+farbe16 <- "#FF6348FF"
+  
+RNApcol <- "#b56504"
+RNAncol <- "#027d73"
+RPFpcol <- "#c4c404"
+RPFncol <- "#8d0391"
+```
+
+
+# Overlap miRTarBase and TargetScan
+
+## Make overlap list
+```{r tsmtlist}
+ollist <- list(TS[!duplicated(TS$`Target gene`), "Target gene"],
+               MTab[!duplicated(MTab$Target), "Target"])
+names(ollist) <- c("TargetScan", "miRTarBase")
+
+```
+
+## Plot
+```{r olplot}
+plot(euler(ollist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2), main = "Overlap TargetScan and miRTarBase all")
+
+pdf("Venn_Overlap TargetScan and miRTarBase all.pdf", width = 3, height = 3)
+plot(euler(ollist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2), main = "Overlap TargetScan and miRTarBase all")
+dev.off()
+
+```
+
+# Overlap databases with miR-eCLIP
+
+## List
+```{r genelistseclip}
+cliplist <- list(TS[!duplicated(TS$`Target gene`), "Target gene"],
+               MTab[!duplicated(MTab$Target), "Target"],
+               largetframe[!duplicated(largetframe$geneName), "geneName"])
+names(cliplist) <- c("TargetScan", "miRTarBase", "miR-eCLIP")
+
+TSlist <- list(TS[!duplicated(TS$`Target gene`), "Target gene"],
+               largetframe[!duplicated(largetframe$geneName), "geneName"])
+names(TSlist) <- c("TargetScan", "miR-eCLIP")
+
+MTlist <- list(MTab[!duplicated(MTab$Target), "Target"],
+               largetframe[!duplicated(largetframe$geneName), "geneName"])
+names(MTlist) <- c("miRTarBase", "miR-eCLIP")
+
+```
+
+
+## Venn diagram
+```{r eclipplot}
+# all 3
+plot(euler(cliplist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP")
+
+pdf("Venn_Overlap TargetScan miRTarBase and miR-eCLIP all.pdf", width = 3, height = 3)
+plot(euler(cliplist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP")
+dev.off()
+
+# eclip+targetscan
+plot(euler(TSlist, shape="ellipse"), quantities = T, fills=c(farbe1,  farbe3), main = "Overlap TargetScan miR-eCLIP")
+
+pdf("Venn_Overlap TargetScan and miR-eCLIP all.pdf", width = 3, height = 3)
+plot(euler(TSlist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe3), main = "Overlap TargetScan miR-eCLIP")
+dev.off()
+
+# eclip+mirtarbase
+plot(euler(MTlist, shape="ellipse"), quantities = T, fills=c(farbe2, farbe3), main = "Overlap miRTarBase miR-eCLIP")
+
+pdf("Venn_Overlap miRTarBase and miR-eCLIP all.pdf", width = 3, height = 3)
+plot(euler(MTlist, shape="ellipse"), quantities = T, fills=c(farbe2, farbe3), main = "Overlap miRTarBase miR-eCLIP")
+dev.off()
+```
+
+# overlap venn plot without any filters (also includes all sets of targets we had)
+we removed one set initially, if we dont want to see that (ask kathi), the previous plot is already the correct one
+```{r nofiltervenn}
+cliplistnf <- list(TS[!duplicated(TS$`Target gene`), "Target gene"],
+               MTab[!duplicated(MTab$Target), "Target"],
+               largetframenf[!duplicated(largetframenf$geneName), "geneName"])
+names(cliplistnf) <- c("TargetScan", "miRTarBase", "miR-eCLIP")
+
+plot(euler(cliplistnf, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP no filter")
+
+pdf("Venn_Overlap TargetScan miRTarBase and miR-eCLIP all no filter.pdf", width = 3, height = 3)
+plot(euler(cliplistnf, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP no filter")
+dev.off()
+
+```
+
+
+
+
+## ECDF plots
+
+### No duplicates
+
+### partial lists
+```{r ecdfeclipIDs}
+MTo <- MTab[!duplicated(MTab$Target) & 
+              !(MTab$Target %in% largetframe$geneName) & 
+              !(MTab$Target %in% TS$`Target gene`), "Target"]
+
+eclipo <- largetframe[!duplicated(largetframe$geneName) & 
+              !(largetframe$geneName %in% TS$`Target gene`) & 
+              !(largetframe$geneName %in% MTab$Target), "geneName"]
+
+TSo <- TS[!duplicated(TS$`Target gene`) &
+            !(TS$`Target gene` %in% largetframe$geneName) &
+            !(TS$`Target gene` %in% MTab$Target), "Target gene"]
+
+elcipTS <- largetframe[!duplicated(largetframe$geneName) & 
+              (largetframe$geneName %in% TS$`Target gene`) & 
+              !(largetframe$geneName %in% MTab$Target), "geneName"]
+
+eclipMT <- largetframe[!duplicated(largetframe$geneName) & 
+              !(largetframe$geneName %in% TS$`Target gene`) & 
+              (largetframe$geneName %in% MTab$Target), "geneName"]
+
+TSMT <- TS[!duplicated(TS$`Target gene`) &
+            !(TS$`Target gene` %in% largetframe$geneName) &
+            (TS$`Target gene` %in% MTab$Target), "Target gene"]
+
+eclipTSMT<- largetframe[!duplicated(largetframe$geneName) & 
+              (largetframe$geneName %in% TS$`Target gene`) & 
+              (largetframe$geneName %in% MTab$Target), "geneName"]
+
+```
+
+### Add IDs to RNA and RF
+```{r idrnarf}
+RNA$Overlap_all <- "Non-target"
+RNA$Overlap_all[RNA$gene_symbol %in% MTo] <- "MT"
+RNA$Overlap_all[RNA$gene_symbol %in% eclipo] <- "eCLIP"
+RNA$Overlap_all[RNA$gene_symbol %in% TSo] <- "TS"
+RNA$Overlap_all[RNA$gene_symbol %in% elcipTS] <- "eCLIP & TS"
+RNA$Overlap_all[RNA$gene_symbol %in% eclipMT] <- "eCLIP & MT"
+RNA$Overlap_all[RNA$gene_symbol %in% TSMT] <- "TS & MT"
+RNA$Overlap_all[RNA$gene_symbol %in% eclipTSMT] <- "eCLIP, TS & MT"
+
+RPF$Overlap_all <- "Non-target"
+RPF$Overlap_all[RPF$gene_symbol %in% MTo] <- "MT"
+RPF$Overlap_all[RPF$gene_symbol %in% eclipo] <- "eCLIP"
+RPF$Overlap_all[RPF$gene_symbol %in% TSo] <- "TS"
+RPF$Overlap_all[RPF$gene_symbol %in% elcipTS] <- "eCLIP & TS"
+RPF$Overlap_all[RPF$gene_symbol %in% eclipMT] <- "eCLIP & MT"
+RPF$Overlap_all[RPF$gene_symbol %in% TSMT] <- "TS & MT"
+RPF$Overlap_all[RPF$gene_symbol %in% eclipTSMT] <- "eCLIP, TS & MT"
+
+```
+
+
+### ECDF plots
+```{r ecdfplots2}
+#limits
+xlim <- 0.5
+#RNA
+OLaecdfRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(Overlap_all, 
+                                                                        levels = c("Non-target", "TS", "MT", "eCLIP", "eCLIP & TS", "eCLIP & MT", "TS & MT", "eCLIP, TS & MT")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Databases vs eCLIP all RNAseq")
+
+OLaecdfRNA
+
+
+OLaecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(Overlap_all, 
+                                                                        levels = c("Non-target", "TS", "MT", "eCLIP", "eCLIP & TS", "eCLIP & MT", "TS & MT", "eCLIP, TS & MT")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Databases vs eCLIP all RF")
+
+OLaecdfRPF
+
+
+pdf("TS_MT_eCLIP_all_ECDF_RNA.pdf", width=2, height = 2)
+OLaecdfRNA
+dev.off()
+
+pdf("TS_MT_eCLIP_all_ECDF_RF.pdf", width=2, height = 2)
+OLaecdfRPF
+dev.off()
+```
+
+# no duplicates split by MT and TS
+
+### partial lists
+```{r ecdfeclipIDsnodup}
+#MT
+MTomt <- MTab[!duplicated(MTab$Target) &
+                !(MTab$Target %in% largetframe$geneName), "Target"]
+
+eclipomt <- largetframe[!duplicated(largetframe$geneName) &
+                     !(largetframe$geneName %in% MTab$Target), "geneName"]
+
+mtclipmt <- largetframe[!duplicated(largetframe$geneName) &
+                     largetframe$geneName %in% MTab$Target, "geneName"]
+
+#TS
+TSots <- TS[!duplicated(TS$`Target gene`) &
+                !(TS$`Target gene` %in% largetframe$geneName), "Target gene"]
+
+eclipots <- largetframe[!duplicated(largetframe$geneName) &
+                     !(largetframe$geneName %in% TS$`Target gene`), "geneName"]
+
+tsclipts <- largetframe[!duplicated(largetframe$geneName) &
+                     largetframe$geneName %in% TS$`Target gene`, "geneName"]
+
+
+```
+
+### Add IDs to RNA and RF
+```{r idrnarfmtb}
+RNA$mirtarbase <- "Non-target"
+RNA$mirtarbase[RNA$gene_symbol %in% MTomt] <- "MT"
+RNA$mirtarbase[RNA$gene_symbol %in% eclipomt] <- "miR-eCLIP"
+RNA$mirtarbase[RNA$gene_symbol %in% mtclipmt] <- "Both"
+
+RNA$targetscan <- "Non-target"
+RNA$targetscan[RNA$gene_symbol %in% TSots] <- "TS"
+RNA$targetscan[RNA$gene_symbol %in% eclipots] <- "miR-eCLIP"
+RNA$targetscan[RNA$gene_symbol %in% tsclipts] <- "Both"
+
+
+RPF$mirtarbase <- "Non-target"
+RPF$mirtarbase[RPF$gene_symbol %in% MTomt] <- "MT"
+RPF$mirtarbase[RPF$gene_symbol %in% eclipomt] <- "miR-eCLIP"
+RPF$mirtarbase[RPF$gene_symbol %in% mtclipmt] <- "Both"
+
+RPF$targetscan <- "Non-target"
+RPF$targetscan[RPF$gene_symbol %in% TSots] <- "TS"
+RPF$targetscan[RPF$gene_symbol %in% eclipots] <- "miR-eCLIP"
+RPF$targetscan[RPF$gene_symbol %in% tsclipts] <- "Both"
+
+
+
+
+
+```
+
+
+### ECDF plots
+```{r ecdfplots1}
+#limits
+xlim <- 0.5
+
+#RNA
+##MT
+
+MTRNAplot <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(mirtarbase, 
+                                                                        levels = c("MT", "miR-eCLIP", "Both", "Non-target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c(farbe2, farbe1, RNApcol, "black")) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("miRTarBase RNA")
+
+MTRNAplot
+
+##TS
+TSRNAplot <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(targetscan, 
+                                                                        levels = c("TS", "miR-eCLIP", "Both", "Non-target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c(farbe3, farbe1, RPFncol, "black")) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("TargetScan RNA")
+
+TSRNAplot
+
+
+#RPF
+##MT
+
+MTRPFplot <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(mirtarbase, 
+                                                                        levels = c("MT", "miR-eCLIP", "Both", "Non-target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c(farbe2, farbe1, RNApcol, "black")) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("miRTarBase RF")
+
+MTRPFplot
+
+##TS
+TSRPFplot <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(targetscan, 
+                                                                        levels = c("TS", "miR-eCLIP", "Both", "Non-target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c(farbe3, farbe1, RPFncol, "black")) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("TargetScan RF")
+
+TSRPFplot
+
+
+
+
+
+pdf("MT_ECDF_RNA.pdf", width=2, height = 2)
+MTRNAplot
+dev.off()
+
+pdf("TS_ECDF_RNA.pdf", width=2, height = 2)
+TSRNAplot
+dev.off()
+
+pdf("MT_ECDF_RPF.pdf", width=2, height = 2)
+MTRPFplot
+dev.off()
+
+pdf("TS_ECDF_RPF.pdf", width=2, height = 2)
+TSRPFplot
+dev.off()
+```
+
+
+
+
+### Each line with all targets, duplicates!!
+
+### partial lists
+```{r ecdfeclipIDsdup}
+MTod <- MTab[!duplicated(MTab$Target), "Target"]
+
+eclipod <- largetframe[!duplicated(largetframe$geneName), "geneName"]
+
+TSod <- TS[!duplicated(TS$`Target gene`), "Target gene"]
+
+elcipTSd <- largetframe[!duplicated(largetframe$geneName) & 
+              (largetframe$geneName %in% TS$`Target gene`), "geneName"]
+
+eclipMTd <- largetframe[!duplicated(largetframe$geneName) & 
+              (largetframe$geneName %in% MTab$Target), "geneName"]
+
+TSMTd <- TS[!duplicated(TS$`Target gene`) &
+            (TS$`Target gene` %in% MTab$Target), "Target gene"]
+
+eclipTSMTd <- largetframe[!duplicated(largetframe$geneName) & 
+              (largetframe$geneName %in% TS$`Target gene`) & 
+              (largetframe$geneName %in% MTab$Target), "geneName"]
+
+```
+
+### Add IDs to RNA and RF
+```{r idrnarfdup}
+#RNA
+MTofRNA <- RNA[RNA$gene_symbol %in% MTod,]
+MTofRNA$vennfraction <- "MT"
+
+eclipofRNA <- RNA[RNA$gene_symbol %in% eclipod,]
+eclipofRNA$vennfraction <- "eCLIP"
+
+TSofRNA <- RNA[RNA$gene_symbol %in% TSod,]
+TSofRNA$vennfraction <- "TS"
+
+elcipTSfRNA <- RNA[RNA$gene_symbol %in% elcipTSd,]
+elcipTSfRNA$vennfraction <- "eCLIP & TS"
+
+eclipMTfRNA <- RNA[RNA$gene_symbol %in% eclipMTd,]
+eclipMTfRNA$vennfraction <- "eCLIP & MT"
+
+TSMTfRNA <- RNA[RNA$gene_symbol %in% TSMTd,]
+TSMTfRNA$vennfraction <- "TS & MT"
+
+eclipTSMTfRNA <- RNA[RNA$gene_symbol %in% eclipTSMTd,]
+eclipTSMTfRNA$vennfraction <- "eCLIP, TS & MT"
+
+nontargetsRNA <- RNA[!(RNA$gene_symbol %in% MTod) &
+                       !(RNA$gene_symbol %in% eclipod) &
+                       !(RNA$gene_symbol %in% TSod),]
+nontargetsRNA$vennfraction <- "Non-target"
+
+RNAtotal <- rbind(MTofRNA, eclipofRNA, TSofRNA, elcipTSfRNA, eclipMTfRNA, TSMTfRNA, eclipTSMTfRNA, nontargetsRNA)
+table(RNAtotal$vennfraction)
+
+
+#RPF
+MTofRPF <- RPF[RPF$gene_symbol %in% MTod,]
+MTofRPF$vennfraction <- "MT"
+
+eclipofRPF <- RPF[RPF$gene_symbol %in% eclipod,]
+eclipofRPF$vennfraction <- "eCLIP"
+
+TSofRPF <- RPF[RPF$gene_symbol %in% TSod,]
+TSofRPF$vennfraction <- "TS"
+
+elcipTSfRPF <- RPF[RPF$gene_symbol %in% elcipTSd,]
+elcipTSfRPF$vennfraction <- "eCLIP & TS"
+
+eclipMTfRPF <- RPF[RPF$gene_symbol %in% eclipMTd,]
+eclipMTfRPF$vennfraction <- "eCLIP & MT"
+
+TSMTfRPF <- RPF[RPF$gene_symbol %in% TSMTd,]
+TSMTfRPF$vennfraction <- "TS & MT"
+
+eclipTSMTfRPF <- RPF[RPF$gene_symbol %in% eclipTSMTd,]
+eclipTSMTfRPF$vennfraction <- "eCLIP, TS & MT"
+
+nontargetsRPF <- RPF[!(RPF$gene_symbol %in% MTod) &
+                       !(RPF$gene_symbol %in% eclipod) &
+                       !(RPF$gene_symbol %in% TSod),]
+nontargetsRPF$vennfraction <- "Non-target"
+
+RPFtotal <- rbind(MTofRPF, eclipofRPF, TSofRPF, elcipTSfRPF, eclipMTfRPF, TSMTfRPF, eclipTSMTfRPF, nontargetsRPF)
+table(RPFtotal$vennfraction)
+
+
+
+```
+
+
+### ECDF plots
+```{r ecdfplots1dup}
+#limits
+xlim <- 0.5
+#RNA
+OLaecdfRNAd <- ggplot(RNAtotal, aes(as.numeric(log2FoldChange), colour=factor(vennfraction, 
+                                                                        levels = c("TS", "MT", "eCLIP", "eCLIP & TS", "eCLIP & MT", "TS & MT", "eCLIP, TS & MT", "Non-target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c(farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, "black")) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Databases vs eCLIP all RNAseq with duplicates!")
+
+OLaecdfRNAd
+
+
+OLaecdfRPFd <- ggplot(RPFtotal, aes(as.numeric(log2FoldChange), colour=factor(vennfraction, 
+                                                                        levels = c("TS", "MT", "eCLIP", "eCLIP & TS", "eCLIP & MT", "TS & MT", "eCLIP, TS & MT", "Non-target")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c(farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7, "black")) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Databases vs eCLIP all RF with duplicates!")
+
+OLaecdfRPFd
+
+
+pdf("TS_MT_eCLIP_all_ECDF_RNA_with_duplicates.pdf", width=2, height = 2)
+OLaecdfRNAd
+dev.off()
+
+pdf("TS_MT_eCLIP_all_ECDF_RF_with_duplicates.pdf", width=2, height = 2)
+OLaecdfRPFd
+dev.off()
+```
+
+
+
+
+# 3'UTR
+Overlap of only 3'UTRs from eCLIP with databases
+
+## number of MREs by region
+Since we want to only genes with single MREs, we calculate the numbers here
+```{r num}
+numframe <- as.data.frame(table(largetframe$geneName))
+colnames(numframe) <- c("geneName", "number_MREs_total")
+num3utr <-  as.data.frame(table(largetframe[largetframe$region == "utr3" , "geneName"]))
+colnames(num3utr) <- c("geneName", "number_MREs_3utr")
+numcds <-  as.data.frame(table(largetframe[largetframe$region == "cds" , "geneName"]))
+colnames(numcds) <- c("geneName", "number_MREs_cds")
+
+
+numframe <- left_join(numframe, num3utr, by="geneName")
+numframe <- left_join(numframe, numcds, by="geneName")
+
+head(numframe)
+
+singframe <- numframe[numframe$number_MREs_total == 1,]
+singframe$region[singframe$number_MREs_3utr == 1] <- "utr3"
+singframe$region[singframe$number_MREs_cds == 1] <- "cds"
+
+singframe$geneName <- as.character(singframe$geneName)
+singframe <- singframe[!(singframe$geneName=="NA"),]
+head(singframe)
+
+```
+
+
+## Venn lists 3'UTR
+```{r 3utrlist}
+utr3list <- list(TS[!duplicated(TS$`Target gene`), "Target gene"],
+               MTab[!duplicated(MTab$Target), "Target"],
+               singframe[singframe$region %in% c("utr3"), "geneName"])
+names(utr3list) <- c("TargetScan", "miRTarBase", "miR-eCLIP")
+
+```
+
+## Venn 3'UTR
+```{r 3utrvenn}
+plot(euler(utr3list, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP only 3'UTR")
+
+pdf("Venn_Overlap TargetScan miRTarBase and miR-eCLIP 3UTR.pdf", width = 3, height = 3)
+plot(euler(utr3list, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP only 3'UTR")
+dev.off()
+```
+
+## ID for ECDf 3'UTR
+
+
+```{r 3utrecdfID}
+# easiert to replace like this
+largetframe3utr <- singframe[singframe$region %in% c("utr3"),]
+
+
+MTo3utr <- MTab[!duplicated(MTab$Target) & 
+              !(MTab$Target %in% largetframe3utr$geneName) & 
+              !(MTab$Target %in% TS$`Target gene`), "Target"]
+
+eclipo3utr <- largetframe3utr[!duplicated(largetframe3utr$geneName) & 
+              !(largetframe3utr$geneName %in% TS$`Target gene`) & 
+              !(largetframe3utr$geneName %in% MTab$Target), "geneName"]
+
+TSo3utr <- TS[!duplicated(TS$`Target gene`) &
+            !(TS$`Target gene` %in% largetframe3utr$geneName) &
+            !(TS$`Target gene` %in% MTab$Target), "Target gene"]
+
+elcipTS3utr <- largetframe3utr[!duplicated(largetframe3utr$geneName) & 
+              (largetframe3utr$geneName %in% TS$`Target gene`) & 
+              !(largetframe3utr$geneName %in% MTab$Target), "geneName"]
+
+eclipMT3utr <- largetframe3utr[!duplicated(largetframe3utr$geneName) & 
+              !(largetframe3utr$geneName %in% TS$`Target gene`) & 
+              (largetframe3utr$geneName %in% MTab$Target), "geneName"]
+
+TSMT3utr <- TS[!duplicated(TS$`Target gene`) &
+            !(TS$`Target gene` %in% largetframe3utr$geneName) &
+            (TS$`Target gene` %in% MTab$Target), "Target gene"]
+
+eclipTSMT3utr<- largetframe3utr[!duplicated(largetframe3utr$geneName) & 
+              (largetframe3utr$geneName %in% TS$`Target gene`) & 
+              (largetframe3utr$geneName %in% MTab$Target), "geneName"]
+
+
+# Add IDS to RNA and RF
+RNA$Overlap_3utr <- "Non-target"
+RNA$Overlap_3utr[RNA$gene_symbol %in% MTo3utr] <- "MT"
+RNA$Overlap_3utr[RNA$gene_symbol %in% eclipo3utr] <- "eCLIP"
+RNA$Overlap_3utr[RNA$gene_symbol %in% TSo3utr] <- "TS"
+RNA$Overlap_3utr[RNA$gene_symbol %in% elcipTS3utr] <- "eCLIP & TS"
+RNA$Overlap_3utr[RNA$gene_symbol %in% eclipMT3utr] <- "eCLIP & MT"
+RNA$Overlap_3utr[RNA$gene_symbol %in% TSMT3utr] <- "TS & MT"
+RNA$Overlap_3utr[RNA$gene_symbol %in% eclipTSMT3utr] <- "eCLIP, TS & MT"
+
+RPF$Overlap_3utr <- "Non-target"
+RPF$Overlap_3utr[RPF$gene_symbol %in% MTo3utr] <- "MT"
+RPF$Overlap_3utr[RPF$gene_symbol %in% eclipo3utr] <- "eCLIP"
+RPF$Overlap_3utr[RPF$gene_symbol %in% TSo3utr] <- "TS"
+RPF$Overlap_3utr[RPF$gene_symbol %in% elcipTS3utr] <- "eCLIP & TS"
+RPF$Overlap_3utr[RPF$gene_symbol %in% eclipMT3utr] <- "eCLIP & MT"
+RPF$Overlap_3utr[RPF$gene_symbol %in% TSMT3utr] <- "TS & MT"
+RPF$Overlap_3utr[RPF$gene_symbol %in% eclipTSMT3utr] <- "eCLIP, TS & MT"
+
+```
+
+## ECDF 3'UTR
+```{r 3utrecdf}
+#RNA
+OL3utrecdfRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(Overlap_3utr, 
+                                                                        levels = c("Non-target", "TS", "MT", "eCLIP", "eCLIP & TS", "eCLIP & MT", "TS & MT", "eCLIP, TS & MT")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Databases vs eCLIP 3UTR RNAseq")
+
+OL3utrecdfRNA
+
+
+OL3utrecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(Overlap_3utr, 
+                                                                        levels = c("Non-target", "TS", "MT", "eCLIP", "eCLIP & TS", "eCLIP & MT", "TS & MT", "eCLIP, TS & MT")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Databases vs eCLIP 3UTR RF")
+
+OL3utrecdfRPF
+
+
+pdf("TS_MT_eCLIP_3utr_ECDF_RNA.pdf", width=2, height = 2)
+OL3utrecdfRNA
+dev.off()
+
+pdf("TS_MT_eCLIP_3utr_ECDF_RF.pdf", width=2, height = 2)
+OL3utrecdfRPF
+dev.off()
+```
+
+# CDS
+Overlap of only CDSs from eCLIP with databases
+
+
+## Venn lists CDS
+```{r cdslist}
+cdslist <- list(TS[!duplicated(TS$`Target gene`), "Target gene"],
+               MTab[!duplicated(MTab$Target), "Target"],
+               singframe[singframe$region %in% c("cds"), "geneName"])
+names(cdslist) <- c("TargetScan", "miRTarBase", "miR-eCLIP")
+
+```
+
+## Venn CDS
+```{r cdsvenn}
+plot(euler(cdslist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP only CDS")
+
+pdf("Venn_Overlap TargetScan miRTarBase and miR-eCLIP CDS.pdf", width = 3, height = 3)
+plot(euler(cdslist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP only CDS")
+dev.off()
+```
+
+## ID for ECDf CDS
+
+
+```{r cdsecdfID}
+# easiert to replace like this
+largetframecds <- singframe[singframe$region %in% c("cds"),]
+
+
+MTocds <- MTab[!duplicated(MTab$Target) & 
+              !(MTab$Target %in% largetframecds$geneName) & 
+              !(MTab$Target %in% TS$`Target gene`), "Target"]
+
+eclipocds <- largetframecds[!duplicated(largetframecds$geneName) & 
+              !(largetframecds$geneName %in% TS$`Target gene`) & 
+              !(largetframecds$geneName %in% MTab$Target), "geneName"]
+
+TSocds <- TS[!duplicated(TS$`Target gene`) &
+            !(TS$`Target gene` %in% largetframecds$geneName) &
+            !(TS$`Target gene` %in% MTab$Target), "Target gene"]
+
+elcipTScds <- largetframecds[!duplicated(largetframecds$geneName) & 
+              (largetframecds$geneName %in% TS$`Target gene`) & 
+              !(largetframecds$geneName %in% MTab$Target), "geneName"]
+
+eclipMTcds <- largetframecds[!duplicated(largetframecds$geneName) & 
+              !(largetframecds$geneName %in% TS$`Target gene`) & 
+              (largetframecds$geneName %in% MTab$Target), "geneName"]
+
+TSMTcds <- TS[!duplicated(TS$`Target gene`) &
+            !(TS$`Target gene` %in% largetframecds$geneName) &
+            (TS$`Target gene` %in% MTab$Target), "Target gene"]
+
+eclipTSMTcds<- largetframecds[!duplicated(largetframecds$geneName) & 
+              (largetframecds$geneName %in% TS$`Target gene`) & 
+              (largetframecds$geneName %in% MTab$Target), "geneName"]
+
+
+# Add IDS to RNA and RF
+RNA$Overlap_cds <- "Non-target"
+RNA$Overlap_cds[RNA$gene_symbol %in% MTocds] <- "MT"
+RNA$Overlap_cds[RNA$gene_symbol %in% eclipocds] <- "eCLIP"
+RNA$Overlap_cds[RNA$gene_symbol %in% TSocds] <- "TS"
+RNA$Overlap_cds[RNA$gene_symbol %in% elcipTScds] <- "eCLIP & TS"
+RNA$Overlap_cds[RNA$gene_symbol %in% eclipMTcds] <- "eCLIP & MT"
+RNA$Overlap_cds[RNA$gene_symbol %in% TSMTcds] <- "TS & MT"
+RNA$Overlap_cds[RNA$gene_symbol %in% eclipTSMTcds] <- "eCLIP, TS & MT"
+
+RPF$Overlap_cds <- "Non-target"
+RPF$Overlap_cds[RPF$gene_symbol %in% MTocds] <- "MT"
+RPF$Overlap_cds[RPF$gene_symbol %in% eclipocds] <- "eCLIP"
+RPF$Overlap_cds[RPF$gene_symbol %in% TSocds] <- "TS"
+RPF$Overlap_cds[RPF$gene_symbol %in% elcipTScds] <- "eCLIP & TS"
+RPF$Overlap_cds[RPF$gene_symbol %in% eclipMTcds] <- "eCLIP & MT"
+RPF$Overlap_cds[RPF$gene_symbol %in% TSMTcds] <- "TS & MT"
+RPF$Overlap_cds[RPF$gene_symbol %in% eclipTSMTcds] <- "eCLIP, TS & MT"
+
+```
+
+## ECDF CDS
+```{r cdsecdf}
+#RNA
+OLcdsecdfRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(Overlap_cds, 
+                                                                        levels = c("Non-target", "TS", "MT", "eCLIP", "eCLIP & TS", "eCLIP & MT", "TS & MT", "eCLIP, TS & MT")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Databases vs eCLIP CDS RNAseq")
+
+OLcdsecdfRNA
+
+
+OLcdsecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(Overlap_cds, 
+                                                                        levels = c("Non-target", "TS", "MT", "eCLIP", "eCLIP & TS", "eCLIP & MT", "TS & MT", "eCLIP, TS & MT")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3, farbe4, farbe5, farbe6, farbe7)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("Databases vs eCLIP CDS RF")
+
+OLcdsecdfRPF
+
+
+pdf("TS_MT_eCLIP_cds_ECDF_RNA.pdf", width=2, height = 2)
+OLcdsecdfRNA
+dev.off()
+
+pdf("TS_MT_eCLIP_cds_ECDF_RF.pdf", width=2, height = 2)
+OLcdsecdfRPF
+dev.off()
+```
+
+
+# MT eCLIP
+
+## split into weak and strong
+```{r weakstrong}
+MTab$Type <- "weak"
+MTab$Type[(MTab[,6] + MTab[,7] + MTab[,8])  > 0] <- "strong"
+```
+
+## all
+
+```{r allmtclip}
+mtalllist <- list(MTab[!duplicated(MTab$Target), "Target"],
+               singframe[, "geneName"])
+names(mtalllist) <- c("miRTarBase", "miR-eCLIP")
+
+```
+
+### Venn all mt
+```{r allmtvenn}
+plot(euler(mtalllist, shape="ellipse"), quantities = T, fills=c(farbe2, farbe3), main = "Overlap miRTarBase miR-eCLIP all-single")
+
+pdf("Venn_Overlap miRTarBase and miR-eCLIP all-single.pdf", width = 3, height = 3)
+plot(euler(mtalllist, shape="ellipse"), quantities = T, fills=c(farbe2, farbe3), main = "Overlap miRTarBase miR-eCLIP all-single")
+dev.off()
+```
+
+## strong
+```{r strongmtclip}
+mtstronglist <- list(MTab[!duplicated(MTab$Target) & MTab$Type == "strong", "Target"],
+               singframe[, "geneName"])
+names(mtstronglist) <- c("miRTarBase", "miR-eCLIP")
+
+```
+
+### Venn strong mt
+```{r strongmtvenn}
+plot(euler(mtstronglist, shape="ellipse"), quantities = T, fills=c(farbe2, farbe3), main = "Overlap miRTarBase miR-eCLIP strong-single")
+
+pdf("Venn_Overlap miRTarBase and miR-eCLIP strong-single.pdf", width = 3, height = 3)
+plot(euler(mtstronglist, shape="ellipse"), quantities = T, fills=c(farbe2, farbe3), main = "Overlap miRTarBase miR-eCLIP strong-single")
+dev.off()
+```
+
+
+
+## weak
+```{r weakmtclip}
+mtweaklist <- list(MTab[!duplicated(MTab$Target) & MTab$Type == "weak", "Target"],
+               singframe[, "geneName"])
+names(mtweaklist) <- c("miRTarBase", "miR-eCLIP")
+
+```
+
+### Venn strong mt
+```{r weakmtvenn}
+plot(euler(mtweaklist, shape="ellipse"), quantities = T, fills=c(farbe2, farbe3), main = "Overlap miRTarBase miR-eCLIP weak-single")
+
+pdf("Venn_Overlap miRTarBase and miR-eCLIP weak-single.pdf", width = 3, height = 3)
+plot(euler(mtweaklist, shape="ellipse"), quantities = T, fills=c(farbe2, farbe3), main = "Overlap miRTarBase miR-eCLIP weak-single")
+dev.off()
+```
+
+
+## ECDF plots strong weak
+
+### extra column in RNA and RF
+```{r strongweakcolumn}
+
+#strong
+
+#RNA
+RNA$strong <- "Non-target"
+RNA$strong[RNA$gene_symbol %in% MTab[MTab$Type == "strong", "Target"] &
+           !(RNA$gene_symbol %in% singframe$geneName)] <- "MT-strong" 
+RNA$strong[!(RNA$gene_symbol %in% MTab[MTab$Type == "strong", "Target"]) &
+           (RNA$gene_symbol %in% singframe$geneName)] <- "miR-eCLIP-single" 
+RNA$strong[RNA$gene_symbol %in% MTab[MTab$Type == "strong", "Target"] &
+           (RNA$gene_symbol %in% singframe$geneName)] <- "Overlap" 
+
+table(RNA$strong)
+
+#RF
+RPF$strong <- "Non-target"
+RPF$strong[RPF$gene_symbol %in% MTab[MTab$Type == "strong", "Target"] &
+           !(RPF$gene_symbol %in% singframe$geneName)] <- "MT-strong" 
+RPF$strong[!(RPF$gene_symbol %in% MTab[MTab$Type == "strong", "Target"]) &
+           (RPF$gene_symbol %in% singframe$geneName)] <- "miR-eCLIP-single" 
+RPF$strong[RPF$gene_symbol %in% MTab[MTab$Type == "strong", "Target"] &
+           (RPF$gene_symbol %in% singframe$geneName)] <- "Overlap" 
+
+table(RPF$strong)
+
+
+#weak
+
+#RNA
+RNA$weak <- "Non-target"
+RNA$weak[RNA$gene_symbol %in% MTab[MTab$Type == "weak", "Target"] &
+           !(RNA$gene_symbol %in% singframe$geneName)] <- "MT-weak" 
+RNA$weak[!(RNA$gene_symbol %in% MTab[MTab$Type == "weak", "Target"]) &
+           (RNA$gene_symbol %in% singframe$geneName)] <- "miR-eCLIP-single" 
+RNA$weak[RNA$gene_symbol %in% MTab[MTab$Type == "weak", "Target"] &
+           (RNA$gene_symbol %in% singframe$geneName)] <- "Overlap" 
+
+table(RNA$weak)
+
+#RF
+RPF$weak <- "Non-target"
+RPF$weak[RPF$gene_symbol %in% MTab[MTab$Type == "weak", "Target"] &
+           !(RPF$gene_symbol %in% singframe$geneName)] <- "MT-weak" 
+RPF$weak[!(RPF$gene_symbol %in% MTab[MTab$Type == "weak", "Target"]) &
+           (RPF$gene_symbol %in% singframe$geneName)] <- "miR-eCLIP-single" 
+RPF$weak[RPF$gene_symbol %in% MTab[MTab$Type == "weak", "Target"] &
+           (RPF$gene_symbol %in% singframe$geneName)] <- "Overlap" 
+
+table(RPF$weak)
+```
+
+### plot
+```{r mteclipecdf}
+
+# strong
+#RNA
+OLstrongecdfRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(strong, 
+                                                                        levels = c("Non-target", "MT-strong", "miR-eCLIP-single", "Overlap")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("miRTarBase-strong vs eCLIP RNAseq")
+
+OLstrongecdfRNA
+
+
+OLstrongecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(strong, 
+                                                                        levels = c("Non-target", "MT-strong", "miR-eCLIP-single", "Overlap")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("miRTarBase-strong vs eCLIP RF")
+
+OLstrongecdfRPF
+
+
+pdf("miRTarBase-strong_vs_eCLIP_RNAseq.pdf", width=2, height = 2)
+OLstrongecdfRNA
+dev.off()
+
+pdf("miRTarBase-strong_vs_eCLIP_RF.pdf", width=2, height = 2)
+OLstrongecdfRPF
+dev.off()
+
+# weak
+#RNA
+OLweakecdfRNA <- ggplot(RNA, aes(as.numeric(log2FoldChange), colour=factor(weak, 
+                                                                        levels = c("Non-target", "MT-weak", "miR-eCLIP-single", "Overlap")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("miRTarBase-weak vs eCLIP RNAseq")
+
+OLweakecdfRNA
+
+
+OLweakecdfRPF <- ggplot(RPF, aes(as.numeric(log2FoldChange), colour=factor(weak, 
+                                                                        levels = c("Non-target", "MT-weak", "miR-eCLIP-single", "Overlap")))) + 
+  stat_ecdf(geom="step", linewidth=2) +
+  geom_vline(xintercept = 0, linewidth=1, linetype="dashed", colour=farbeneg) +
+  scale_colour_manual(values = c("black", farbe1, farbe2, farbe3)) +
+  coord_cartesian(xlim = c(-xlim, xlim)) + 
+  theme_paper() +
+  scale_y_continuous("Cumulative density") + scale_x_continuous("log2FoldChange KO vs WT") +
+  ggtitle("miRTarBase-weak vs eCLIP RF")
+
+OLweakecdfRPF
+
+
+pdf("miRTarBase-weak_vs_eCLIP_RNAseq.pdf", width=2, height = 2)
+OLweakecdfRNA
+dev.off()
+
+pdf("miRTarBase-weak_vs_eCLIP_RF.pdf", width=2, height = 2)
+OLweakecdfRPF
+dev.off()
+
+```
+
+# Wobble
+do the same graphs split by wobble (A-U non conventional seed)
+
+```{r wobble}
+singwobfram <- largetframe[largetframe$geneName %in% numframe[numframe$number_MREs_total == 1, "geneName"],]
+head(singwobfram)
+```
+
+
+## Venn diagrams
+
+### vlists
+```{r wobblevlist}
+woblist <- list(TS[!duplicated(TS$`Target gene`), "Target gene"],
+               MTab[!duplicated(MTab$Target), "Target"],
+               singwobfram[singwobfram$first_seed_200down.wobble %in% TRUE, "geneName"])
+names(woblist) <- c("TargetScan", "miRTarBase", "miR-eCLIP")
+
+AAlist <- list(TS[!duplicated(TS$`Target gene`), "Target gene"],
+               MTab[!duplicated(MTab$Target), "Target"],
+               singwobfram[singwobfram$first_seed_200down.wobble %in% FALSE, "geneName"])
+names(AAlist) <- c("TargetScan", "miRTarBase", "miR-eCLIP")
+
+NTlist <- list(TS[!duplicated(TS$`Target gene`), "Target gene"],
+               MTab[!duplicated(MTab$Target), "Target"],
+               singwobfram[singwobfram$first_seed_200down.wobble %in% NA, "geneName"])
+names(NTlist) <- c("TargetScan", "miRTarBase", "miR-eCLIP")
+
+```
+
+### plots
+```{r wobblevenn}
+plot(euler(woblist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP only AU seed")
+
+pdf("Venn_Overlap TargetScan miRTarBase and miR-eCLIP Wobble.pdf", width = 3, height = 3)
+plot(euler(woblist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP only AU seed")
+dev.off()
+
+
+plot(euler(AAlist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP only AA seed")
+
+pdf("Venn_Overlap TargetScan miRTarBase and miR-eCLIP Canonical.pdf", width = 3, height = 3)
+plot(euler(AAlist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP only AA seed")
+dev.off()
+
+
+plot(euler(NTlist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP only No seed")
+
+pdf("Venn_Overlap TargetScan miRTarBase and miR-eCLIP NoSeed.pdf", width = 3, height = 3)
+plot(euler(NTlist, shape="ellipse"), quantities = T, fills=c(farbe1, farbe2, farbe3), main = "Overlap TargetScan and miRTarBase miR-eCLIP only No seed")
+dev.off()
+```
+
+
+
+## Extra column for functional data
+I think this is not finiished yet, finnish this
+```{r wobbletargets}
+#RNA
+RNA$wobble <- "Non-target"
+RNA$wobble[RNA$gene_symbol %in% singwobfram[singwobfram$first_seed_200down.wobble == TRUE, "geneName"]] <- "AU seed"
+RNA$wobble[RNA$gene_symbol %in% singwobfram[singwobfram$first_seed_200down.wobble == FALSE, "geneName"]] <- "AA seed"
+RNA$wobble[RNA$gene_symbol %in% singwobfram[is.na(singwobfram$first_seed_200down.wobble), "geneName"]] <- "No seed"
+RNA$wobble[RNA$gene_symbol %in% numframe[numframe$number_MREs_total > 1, "geneName"]] <- "Multiple MREs"
+
+table(RNA$wobble)
+
+
+#RPF
+RPF$wobble <- "Non-target"
+RPF$wobble[RPF$gene_symbol %in% singwobfram[singwobfram$first_seed_200down.wobble == TRUE, "geneName"]] <- "AU seed"
+RPF$wobble[RPF$gene_symbol %in% singwobfram[singwobfram$first_seed_200down.wobble == FALSE, "geneName"]] <- "AA seed"
+RPF$wobble[RPF$gene_symbol %in% singwobfram[is.na(singwobfram$first_seed_200down.wobble), "geneName"]] <- "No seed"
+RPF$wobble[RPF$gene_symbol %in% numframe[numframe$number_MREs_total > 1, "geneName"]] <- "Multiple MREs"
+
+table(RPF$wobble)
+
+
+
+
+```
+
+
+
+
+
+
+# Eclip vs MT by expression
+
+## get overlaps of miR-eCLIp with mirTarBase
+doing this again because here we can take all transcripts and not just the ones that only have one MRE
+
+```{r overlapexpressionmt}
+#RNA
+RNA$expressionvenn <- "Non-target"
+RNA$expressionvenn[RNA$gene_symbol %in% largetframe$geneName] <- "miR-eCLIP"
+RNA$expressionvenn[RNA$gene_symbol %in% MTab$Target] <- "miRTarBase"
+RNA$expressionvenn[RNA$gene_symbol %in% largetframe$geneName & RNA$gene_symbol %in% MTab$Target] <- "Overlap"
+
+
+#RPF
+RPF$expressionvenn <- "Non-target"
+RPF$expressionvenn[RPF$gene_symbol %in% largetframe$geneName] <- "miR-eCLIP"
+RPF$expressionvenn[RPF$gene_symbol %in% MTab$Target] <- "miRTarBase"
+RPF$expressionvenn[RPF$gene_symbol %in% largetframe$geneName & RPF$gene_symbol %in% MTab$Target] <- "Overlap"
+
+
+```
+
+
+## plot expression levels (base mean) split by overlap
+
+```{r plotexprmt}
+mycomp <- list(c("miRTarBase", "miR-eCLIP"), c("miRTarBase", "Overlap"))
+
+#RNA
+exprplotRNA <- ggplot(RNA, aes(y=log2(baseMean), x=factor(expressionvenn, levels = c("Non-target", "miRTarBase", "miR-eCLIP", "Overlap") ))) + geom_boxplot() +
+  stat_compare_means(comparisons = mycomp) +
+  theme_paper() + scale_x_discrete("") +
+  ggtitle("Expression in RNA by overlapt MT - eCLIP")
+exprplotRNA
+
+
+#RPF
+exprplotRPF <- ggplot(RPF, aes(y=log2(baseMean), x=factor(expressionvenn, levels = c("Non-target", "miRTarBase", "miR-eCLIP", "Overlap") ))) + geom_boxplot() +
+  stat_compare_means(comparisons = mycomp) +
+  theme_paper() + scale_x_discrete("") +
+  ggtitle("Expression in RF by overlapt MT - eCLIP")
+exprplotRPF
+
+#export
+pdf("Expression in RNA by overlapt MT_eCLIP.pdf", width = 3, height = 3)
+exprplotRNA
+dev.off()
+
+pdf("Expression in RPF by overlapt MT_eCLIP.pdf", width = 3, height = 3)
+exprplotRPF
+dev.off()
+
+
+```
+# Eclip vs TS by expression
+
+## get overlaps of miR-eCLIp with mirTarBase
+doing this again because here we can take all transcripts and not just the ones that only have one MRE
+
+```{r overlapexpressionts}
+#RNA
+RNA$expressionTSvenn <- "Non-target"
+RNA$expressionTSvenn[RNA$gene_symbol %in% largetframe$geneName] <- "miR-eCLIP"
+RNA$expressionTSvenn[RNA$gene_symbol %in% TS$`Target gene`] <- "TargetScan"
+RNA$expressionTSvenn[RNA$gene_symbol %in% largetframe$geneName & RNA$gene_symbol %in% TS$`Target gene`] <- "Overlap"
+
+
+#RPF
+RPF$expressionTSvenn <- "Non-target"
+RPF$expressionTSvenn[RPF$gene_symbol %in% largetframe$geneName] <- "miR-eCLIP"
+RPF$expressionTSvenn[RPF$gene_symbol %in% TS$`Target gene`] <- "TargetScan"
+RPF$expressionTSvenn[RPF$gene_symbol %in% largetframe$geneName & RPF$gene_symbol %in% TS$`Target gene`] <- "Overlap"
+
+
+```
+
+
+## plot expression levels (base mean) split by overlap
+
+```{r plotexprts}
+mycomp <- list(c("TargetScan", "miR-eCLIP"), c("TargetScan", "Overlap"))
+
+#RNA
+exprplotRNA <- ggplot(RNA, aes(y=log2(baseMean), x=factor(expressionTSvenn, levels = c("Non-target", "TargetScan", "miR-eCLIP", "Overlap") ))) + geom_boxplot() +
+  stat_compare_means(comparisons = mycomp) +
+  theme_paper() + scale_x_discrete("") +
+  ggtitle("Expression in RNA by overlapt TS - eCLIP")
+exprplotRNA
+
+
+#RPF
+exprplotRPF <- ggplot(RPF, aes(y=log2(baseMean), x=factor(expressionTSvenn, levels = c("Non-target", "TargetScan", "miR-eCLIP", "Overlap") ))) + geom_boxplot() +
+  stat_compare_means(comparisons = mycomp) +
+  theme_paper() + scale_x_discrete("") +
+  ggtitle("Expression in RF by overlapt TS - eCLIP")
+exprplotRPF
+
+#export
+pdf("Expression in RNA by overlapt TS_eCLIP.pdf", width = 3, height = 3)
+exprplotRNA
+dev.off()
+
+pdf("Expression in RPF by overlapt TS_eCLIP.pdf", width = 3, height = 3)
+exprplotRPF
+dev.off()
+
+
+```
+
+# Eclip vs TS by expression No x cutoff and no non-targets
+
+## get overlaps of miR-eCLIp with mirTarBase
+doing this again because here we can take all transcripts and not just the ones that only have one MRE
+
+```{r overlapexpressionts2}
+#RNAnolim
+RNAnolim$expressionTSvenn <- "Non-target"
+RNAnolim$expressionTSvenn[RNAnolim$gene_symbol %in% largetframe$geneName] <- "miR-eCLIP"
+RNAnolim$expressionTSvenn[RNAnolim$gene_symbol %in% TS$`Target gene`] <- "TargetScan"
+RNAnolim$expressionTSvenn[RNAnolim$gene_symbol %in% largetframe$geneName & RNAnolim$gene_symbol %in% TS$`Target gene`] <- "Overlap"
+
+
+#RPFnolim
+RPFnolim$expressionTSvenn <- "Non-target"
+RPFnolim$expressionTSvenn[RPFnolim$gene_symbol %in% largetframe$geneName] <- "miR-eCLIP"
+RPFnolim$expressionTSvenn[RPFnolim$gene_symbol %in% TS$`Target gene`] <- "TargetScan"
+RPFnolim$expressionTSvenn[RPFnolim$gene_symbol %in% largetframe$geneName & RPFnolim$gene_symbol %in% TS$`Target gene`] <- "Overlap"
+
+
+```
+
+
+## plot expression levels (base mean) split by overlap
+
+```{r plotexprts2}
+mycomp <- list(c("TargetScan", "miR-eCLIP"), c("TargetScan", "Overlap"))
+
+#RNAnolim
+exprplotRNAnolim <- ggplot(RNAnolim, aes(y=log2(baseMean), x=factor(expressionTSvenn, levels = c("Non-target", "TargetScan", "miR-eCLIP", "Overlap") ))) + geom_boxplot() +
+  stat_compare_means(comparisons = mycomp) +
+  theme_paper() + scale_x_discrete("") +
+  ggtitle("Expression in RNA no cutoff by overlapt TS - eCLIP")
+exprplotRNAnolim
+
+
+#RPFnolim
+exprplotRPFnolim <- ggplot(RPFnolim, aes(y=log2(baseMean), x=factor(expressionTSvenn, levels = c("Non-target", "TargetScan", "miR-eCLIP", "Overlap") ))) + geom_boxplot() +
+  stat_compare_means(comparisons = mycomp) +
+  theme_paper() + scale_x_discrete("") +
+  ggtitle("Expression in RF no cutoff by overlapt TS - eCLIP")
+exprplotRPFnolim
+
+#export
+pdf("Expression in RNAnolim by overlapt TS_eCLIP.pdf", width = 3, height = 3)
+exprplotRNAnolim
+dev.off()
+
+pdf("Expression in RPFnolim by overlapt TS_eCLIP.pdf", width = 3, height = 3)
+exprplotRPFnolim
+dev.off()
+
+
+
+#also remove non targets
+mycomp2 <- list(c("TargetScan", "miR-eCLIP"), c("TargetScan", "Overlap"), c("miR-eCLIP", "Overlap"))
+
+#RNAnolim
+exprplotRNAnolimnnt <- ggplot(RNAnolim[!(RNAnolim$expressionTSvenn == "Non-target"),], aes(y=log2(baseMean), x=factor(expressionTSvenn, levels = c("TargetScan", "miR-eCLIP", "Overlap") ))) + geom_boxplot() +
+  stat_compare_means(comparisons = mycomp2) +
+  theme_paper() + scale_x_discrete("") +
+  ggtitle("Expression in RNA no cutoff by overlapt TS - eCLIP")
+exprplotRNAnolimnnt
+
+
+#RPFnolim
+exprplotRPFnolimnnt <- ggplot(RPFnolim[!(RPFnolim$expressionTSvenn == "Non-target"),], aes(y=log2(baseMean), x=factor(expressionTSvenn, levels = c("TargetScan", "miR-eCLIP", "Overlap") ))) + geom_boxplot() +
+  stat_compare_means(comparisons = mycomp2) +
+  theme_paper() + scale_x_discrete("") +
+  ggtitle("Expression in RF no cutoff by overlapt TS - eCLIP")
+exprplotRPFnolimnnt
+
+#export
+pdf("Expression in RNAnolim and no nontargets by overlapt TS_eCLIP.pdf", width = 3, height = 3)
+exprplotRNAnolimnnt
+dev.off()
+
+pdf("Expression in RPFnolim and no nontargets by overlapt TS_eCLIP.pdf", width = 3, height = 3)
+exprplotRPFnolimnnt
+dev.off()
+
+
+```
+
+
+
+
+# Wobble for only non TS genes
+
+## categorize by wobble
+
+```{r overlapCLIPtswobble}
+nonts <- largetframe[!(largetframe$geneName %in% TS$`Target gene`),]
+olts <- largetframe[largetframe$geneName %in% TS$`Target gene`, ]
+#RNA
+nontsRNA <- RNA[RNA$gene_symbol %in% nonts$geneName,]
+cnontsRNA <- as.data.frame(table(nontsRNA$wobble))
+oltsRNA <- RNA[RNA$gene_symbol %in% olts$geneName,]
+coltsRNA  <- as.data.frame(table(oltsRNA$wobble))
+
+cnontsRNA$overlap <- "miR-eCLIP exclusive"
+coltsRNA$overlap <- "miR-eCLIP TargetScan overlap"
+#combine
+tsRNA <- rbind(cnontsRNA, coltsRNA)
+colnames(tsRNA) <- c("Seed", "Number_of_genes", "Type")
+
+
+# stacked barchart
+tsRNAplot <- ggplot(tsRNA, aes(y=Number_of_genes, x=Type, fill=Seed)) + geom_bar(stat="identity") +
+  theme_paper() + scale_x_discrete("") + ggtitle("RNA TS overlap vs exclusive")
+tsRNAplot
+
+
+#RPF
+nontsRPF <- RPF[RPF$gene_symbol %in% nonts$geneName,]
+cnontsRPF <- as.data.frame(table(nontsRPF$wobble))
+oltsRPF <- RPF[RPF$gene_symbol %in% olts$geneName,]
+coltsRPF  <- as.data.frame(table(oltsRPF$wobble))
+
+cnontsRPF$overlap <- "miR-eCLIP exclusive"
+coltsRPF$overlap <- "miR-eCLIP TargetScan overlap"
+#combine
+tsRPF <- rbind(cnontsRPF, coltsRPF)
+colnames(tsRPF) <- c("Seed", "Number_of_genes", "Type")
+
+
+# stacked barchart
+tsRPFplot <- ggplot(tsRPF, aes(y=Number_of_genes, x=Type, fill=Seed)) + geom_bar(stat="identity") +
+  theme_paper() + scale_x_discrete("") + ggtitle("RF TS overlap vs exclusive")
+tsRPFplot
+
+pdf("Barplot_RNA_TS_overlap_vs_exclusive_wobble.pdf", width = 3, height = 3)
+tsRNAplot
+dev.off()
+
+pdf("Barplot_RF_TS_overlap_vs_exclusive_wobble.pdf", width = 3, height = 3)
+tsRPFplot
+dev.off()
+```
+
+
+## repeat without RF or RNA, just eclip data
+
+we are not using this right now but I dont want to delete the code in case we will use it
+```{r wobbleeclip}
+# nonts$vennpart <- "nonts"
+# olts$vennpart <- "olts"
+# 
+# allts <- rbind(nonts, olts)
+
+```
+
+
+# Region for only non TS genes
+
+## categorize by Region
+
+```{r overlapCLIPtsregion}
+#RNA
+RNA$region <- "Non-target"
+RNA$region[RNA$gene_symbol %in% largetframe[largetframe$region == "utr5", "geneName"]] <- "utr5"
+RNA$region[RNA$gene_symbol %in% largetframe[largetframe$region == "cds", "geneName"]] <- "cds"
+RNA$region[RNA$gene_symbol %in% largetframe[largetframe$region == "utr3", "geneName"]] <- "utr3"
+
+table(RNA$region)
+
+
+#RPF
+RPF$region <- "Non-target"
+RPF$region[RPF$gene_symbol %in% largetframe[largetframe$region == "utr5", "geneName"]] <- "utr5"
+RPF$region[RPF$gene_symbol %in% largetframe[largetframe$region == "cds", "geneName"]] <- "cds"
+RPF$region[RPF$gene_symbol %in% largetframe[largetframe$region == "utr3", "geneName"]] <- "utr3"
+
+table(RPF$region)
+
+
+
+#RNA
+nonregtsRNA <- RNA[RNA$gene_symbol %in% nonts$geneName,]
+cnontsregRNA <- as.data.frame(table(nonregtsRNA$region))
+olregtsRNA <- RNA[RNA$gene_symbol %in% olts$geneName,]
+coltsregRNA  <- as.data.frame(table(olregtsRNA$region))
+
+cnontsregRNA$overlap <- "miR-eCLIP exclusive"
+coltsregRNA$overlap <- "miR-eCLIP TargetScan overlap"
+#combine
+tsregRNA <- rbind(cnontsregRNA, coltsregRNA)
+colnames(tsregRNA) <- c("Region", "Number_of_genes", "Type")
+
+
+# stacked barchart
+tsregRNAplot <- ggplot(tsregRNA, aes(y=Number_of_genes, x=Type, fill=Region)) + geom_bar(stat="identity") +
+  theme_paper() + scale_x_discrete("") + ggtitle("RNA TS overlap vs exclusive")
+tsregRNAplot
+
+#RPF
+nonregtsRPF <- RPF[RPF$gene_symbol %in% nonts$geneName,]
+cnontsregRPF <- as.data.frame(table(nonregtsRPF$region))
+olregtsRPF <- RPF[RPF$gene_symbol %in% olts$geneName,]
+coltsregRPF  <- as.data.frame(table(olregtsRPF$region))
+
+cnontsregRPF$overlap <- "miR-eCLIP exclusive"
+coltsregRPF$overlap <- "miR-eCLIP TargetScan overlap"
+#combine
+tsregRPF <- rbind(cnontsregRPF, coltsregRPF)
+colnames(tsregRPF) <- c("Region", "Number_of_genes", "Type")
+
+
+# stacked barchart
+tsregRPFplot <- ggplot(tsregRPF, aes(y=Number_of_genes, x=Type, fill=Region)) + geom_bar(stat="identity") +
+  theme_paper() + scale_x_discrete("") + ggtitle("RF TS overlap vs exclusive")
+tsregRPFplot
+
+
+
+pdf("Barplot_RNA_TS_overlap_vs_exclusive_region.pdf", width = 3, height = 3)
+tsregRNAplot
+dev.off()
+
+pdf("Barplot_RF_TS_overlap_vs_exclusive_region.pdf", width = 3, height = 3)
+tsregRPFplot
+dev.off()
+```
+
+
+
+# Sattelite repreats overlap miRTarbase
+
+## data
+```{r repeatdata}
+#melina repeats
+melrep <- readRDS("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Figure4/04_MMsat4/rep_on_transcripts.rds")
+MMSAT4 <- melrep[melrep$repName == "MMSAT4"]
+MurSatRep1 <- melrep[melrep$repName == "MurSatRep1"]
+
+mmsat4frame <- as.data.frame(MMSAT4)
+MurSatRep1frame <- as.data.frame(MurSatRep1)
+
+```
+
+## get gene ids
+unfortunately the datasets don't have a matching type of name so we have to get the IDs for miRtarBase using biomart
+```{r dbids}
+mart <- useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = "https://jul2019.archive.ensembl.org")
+genes <- MTab[!duplicated(MTab$Target), "Target"]
+G_list <- getBM(filters= "mgi_symbol", attributes= c("ensembl_gene_id","mgi_symbol"),values=genes,mart= mart)
+colnames(G_list) <- c("Gene", "Target")
+MTabid <- left_join(MTab,G_list[!duplicated(G_list$Target),],by="Target")
+head(MTabid)
+
+
+```
+
+
+```{r mmsat4venn}
+#MMSAT4
+vmmsat <- list(MTabid[!duplicated(MTabid$Gene), "Gene"],
+               mmsat4frame[!duplicated(mmsat4frame$gene_id) & mmsat4frame$gene_id %in% largetframe$geneID,"gene_id"])
+names(vmmsat) <- c("miRTarBase", "MMsat4 targets")
+
+#MurSatRep1
+vmur <- list(MTabid[!duplicated(MTabid$Gene), "Gene"],
+             MurSatRep1frame[!duplicated(MurSatRep1frame$gene_id) & MurSatRep1frame$gene_id %in% largetframe$geneID,"gene_id"])
+names(vmur) <- c("miRTarBase", "MurSatRep1 targets")
+
+#Both
+vboth <- list(MTabid[!duplicated(MTabid$Gene), "Gene"],
+              mmsat4frame[!duplicated(mmsat4frame$gene_id) & mmsat4frame$gene_id %in% largetframe$geneID,"gene_id"],
+              MurSatRep1frame[!duplicated(MurSatRep1frame$gene_id) & MurSatRep1frame$gene_id %in% largetframe$geneID,"gene_id"])
+names(vboth) <- c("miRTarBase", "MMsat4 targets", "MurSatRep1 targets")
+
+
+vmmsatp <- plot(euler(vmmsat, shape = "ellipse"), quantities = T, main="miRTarBase overlaps sattelite repeats", fills=c(farbe2, farbe1))
+vmmsatp
+
+vmurp <- plot(euler(vmur, shape = "ellipse"), quantities = T, main="miRTarBase overlaps sattelite repeats", fills=c(farbe2, farbe3))
+vmurp
+
+vbothp <- plot(euler(vboth, shape = "ellipse"), quantities = T, main="miRTarBase overlaps sattelite repeats", fills=c(farbe2, farbe1, farbe3))
+vbothp
+
+
+pdf("Venn_mmsat4_mirtarbase.pdf", width=4, height = 3)
+vmmsatp
+dev.off()
+
+pdf("Venn_mursatrep1_mirtarbase.pdf", width=4, height = 3)
+vmurp
+dev.off()
+
+pdf("Venn_mmsat4_mursatrep1_mirtarbase.pdf", width=4, height = 3)
+vbothp
+dev.off()
+```
+
+
+
+# Session info
+```{r sessioninfo}
+sessionInfo()
+```

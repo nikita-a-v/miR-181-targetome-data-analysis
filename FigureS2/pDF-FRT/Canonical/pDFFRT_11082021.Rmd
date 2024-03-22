@@ -1,0 +1,210 @@
+---
+title: "NikitaChiara_pDFFRT_11082021"
+author:
+- name: Nikita Verheyden
+  affiliation: GU Frankfurt
+  date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+      toc: TRUE
+      toc_float: TRUE
+      code_folding: hide
+
+header-includes:
+- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+- \usepackage{placeins}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# transfection of pDF-FRT without wobble Seeds vectors into mDH hCD2 mir181 SCID
+
+# Setup
+
+dir
+```{r dir}
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper_revisions/pDF-FRT/Chiara")
+```
+
+## Pakcages
+```{r packages}
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+library(flowCore)
+library(flowStats)
+library(ggcyto)
+library(ggplot2)
+library(dplyr)
+library(ggpubr)
+library(stringr)
+library(tidyr)
+```
+
+## Data
+
+check here if the column pattern is set correctly
+```{r data}
+#!enter target directory here!
+FCS.dir <- "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper_revisions/pDF-FRT/Chiara/pDF-FRT sort turbo dnase 11082021/renamed for R"
+
+#create flowset and exclude PE....apparently one of the sponges has it and the other doesnt
+fs <-read.flowSet(path = FCS.dir, pattern = ".fcs", 
+                  column.pattern = "PE-A", invert.pattern=TRUE, truncate_max_range = FALSE)
+fs
+```
+# Gating
+
+Find out which colour is which (they are all called FL something and you can look up the description)
+FL9-A: GFP-A
+FL13-A: mCherry
+FL17-A: APC hCD2
+Gating etc.
+
+## transform the colours
+this still needs to be changed to the correct colour
+```{r transform}
+
+lobi <- logicleTransform(transformationId = "lobi")
+
+fsT <- transform(fs, transformList(c("mCherry-A", "FITC-A", "APC-A"), lobi))
+
+```
+
+
+
+
+
+
+## Gating
+```{r gating}
+#live cells requires two gates
+#fsc high
+fslive <- split(fsT, kmeansFilter("FSC-A"=c("Low","High"), filterId="myKMeans"))
+#auto gate on population
+morphGate <- norm2Filter("FSC-A", "SSC-A", filterId="SCID")
+fslive <- Subset(fslive$High, morphGate)
+
+#single cells
+singfilter <- norm2Filter("FSC-A", "FSC-H", filterId = "single cells")
+fssing <- Subset(fslive, singfilter)
+
+#plot to find distribution
+autoplot(fssing, "mCherry-A", "FITC-A") + geom_vline(xintercept = 1.8, colour="red")
+
+``` 
+
+
+# Mean analysis
+
+## make cutoff for positive values
+```{r positives}
+#gate out untransfected manually
+rectGateFRTM <- rectangleGate(filterId = "FRT", "mCherry-A"=c(1.8, 5))
+fsFRTM <- Subset(fssing, rectGateFRTM)
+
+#gate out untransfected (not used because not rlieably gates out negatives)
+#fsFRT <- split(fssing, kmeansFilter("PE-Texas Red (561)-A"=c("Low", "High"), filterId = "pDF-FRT"))
+
+autoplot(fsFRTM, "mCherry-A", "APC-A") 
+
+
+#gate for APC high (hCD2 or Thy1.1) (if using split, change data to $High)
+fsAPCM <- split(fsFRTM, kmeansFilter("APC-A"=c("Low", "High"), filterId = "APC"))
+
+
+#make two objects: high and low
+fsAPChM <- (fsAPCM$High)
+fsAPClM <- (fsAPCM$Low)
+
+
+#add identifier columns for APC and Sample
+#PB
+fsAPChiM <-  fsApply(fsAPChM, transform, APC = "high" , use.exprs=TRUE)
+fsAPCliM <-  fsApply(fsAPClM, transform, APC = "low" , use.exprs=TRUE)
+
+```
+
+
+## Combine
+Combine data into larget mega data.frame
+```{r megaframe}
+#Sample
+fsAPChiiM <- mapply(`[<-`, fsAPChiM, 'Sample', value = names(fsAPChiM), SIMPLIFY = FALSE)
+fsAPCliiM <- mapply(`[<-`, fsAPCliM, 'Sample', value = names(fsAPCliM), SIMPLIFY = FALSE)
+
+megaframeM <- bind_rows(c(fsAPChiiM, fsAPCliiM))
+head(megaframeM)
+names(megaframeM)[names(megaframeM) == 'FITC.A'] <- 'GFP.A'
+names(megaframeM)[names(megaframeM) == 'mCherry.A'] <- 'mCherry.A'
+
+
+
+megaplotM <- ggplot(megaframeM, aes(x=mCherry.A, y=GFP.A, color=APC)) +
+  facet_wrap(Sample ~ ., ncol=3) + 
+  geom_point(size=1) + scale_x_continuous(expand = c(0,0), "mCherry") + 
+  scale_y_continuous( "eGFP") + theme_classic() + 
+  theme(axis.title=element_text(size=20), axis.text = element_text(size = 15),
+        plot.title = element_text(size=20, face = "bold"),
+        legend.text = element_text(size = 15), legend.title = element_blank())
+
+
+megaplotM
+```
+
+## get mean of gfp expression normalized to mCherry
+```{r getmeans}
+megaframeM$ratio <- megaframeM$GFP.A / megaframeM$mCherry.A
+head(megaframeM[,c("GFP.A", "mCherry.A", "ratio")])
+
+head(megaframeM[, c("APC", "Sample", "ratio")])
+
+# get mean split by sample and apc(181)
+mratio <- aggregate(ratio ~ APC + Sample, data=megaframeM[, c("APC", "Sample", "ratio")], mean)
+
+mratio
+```
+
+## substract wt from overexpression
+```{r substract}
+#substract ratios
+mdiff <- aggregate(ratio ~ Sample, data = mratio, FUN = function(x) x[1] - x[2])
+
+#change names
+rownames(mdiff) <- mdiff$Sample
+mdiff$Sample <- str_sub(rownames(mdiff),10,12)
+
+
+mdiff
+```
+
+## plot results
+```{r meanplots}
+#my_comparisons <- list( c("nnn", "nny"), c("nnn", "nyn"), c("nnn", "ynn"), c("nnn", "nyy"), c("nnn", "yny"), c("nnn", "yyn"), c("nnn", "yyy") )
+
+
+mplot <- ggplot(mdiff, aes(x=factor(Sample, levels = c("FRT", "nnn", "nny", "nyn", "ynn", "nyy", "yny", "yyn", "yyy")), y=ratio)) + 
+  geom_boxplot(width=0) +
+  stat_mean(aes(x = Sample, y = ratio , group = Sample), shape = "-", size = 10) +
+  geom_point(shape=21, colour="black", fill="#b4b4b4") +
+  scale_y_continuous("GFP signal normalized to mCherry") + scale_x_discrete("3'UTR type") +
+  theme_paper() + ggtitle("Canonical seed reporter") +
+ stat_compare_means(label = "p.format", method = "t.test", ref.group = "nnn", paired=F, method.args = list(alternative = "less"))
+
+mplot
+
+
+
+pdf("canonical_seed_reporter.pdf", width = 7, height = 5)
+mplot
+dev.off()
+```
+
+
+
+
+# Session Info
+```{r session_info}
+sessionInfo()
+```

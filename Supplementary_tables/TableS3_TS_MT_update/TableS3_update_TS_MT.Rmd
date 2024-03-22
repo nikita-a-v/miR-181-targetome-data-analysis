@@ -1,0 +1,83 @@
+---
+title: "TableS3_update_TS_MT"
+author:
+- name: Nikita Verheyden
+  affiliation: GU Frankfurt
+  date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+      toc: TRUE
+      toc_float: TRUE
+      code_folding: hide
+
+header-includes:
+- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+- \usepackage{placeins}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Setup
+dir
+```{r dir}
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper_revisions/TableS3_TS_MT_update")
+```
+
+## Packages
+```{r packages}
+library(readxl)
+library(writexl)
+```
+
+## Data
+Import Table S3, TargetScan and MiRTarBase results for miR-181
+```{r data}
+#Table S3
+ts3 <- read_xlsx("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supplementary_tables/SupplementaryTable_3.xlsx", sheet = 2)
+
+#TS
+TS <- as.data.frame(read_xlsx("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper_revisions/TS-MT_plots/TargetScan7.2__miR-181-5p.predicted_targets.xlsx"))
+
+head(TS)
+# miRTarBase
+MT <- read.csv("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper_revisions/TS-MT_plots/all-miR-181_mirtarbase.csv")
+#only use a and b
+MTab <- MT[MT$miRNA %in% c("mmu-miR-181a", "mmu-miR-181b", "mmu-miR-181a-5p", "mmu-miR-181b-5p"),]
+
+head(MTab)
+
+
+```
+
+
+# Add columns
+## Add columns
+```{r add}
+#TS
+ts3$TargetScan <- "Non-target"
+ts3$TargetScan[ts3$gene_symbol %in% TS$`Target gene`] <- "Target"
+
+#MTB
+ts3$miRTarBase <- "Non-target"
+ts3$miRTarBase[ts3$gene_symbol %in% MTab$Target] <- "Target"
+
+head(ts3, 10)
+
+```
+
+## Export
+```{r export}
+write_xlsx(ts3, "TableS3_MT_TS.xlsx")
+```
+
+
+
+# Session Info
+```{r sessioninfo}
+sessionInfo()
+```
+

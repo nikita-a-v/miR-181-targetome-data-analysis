@@ -1,0 +1,217 @@
+---
+title: "Hanna_pDFFRT_wobble_01022024"
+author:
+- name: Nikita Verheyden
+  affiliation: GU Frankfurt
+  date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+      toc: TRUE
+      toc_float: TRUE
+      code_folding: hide
+
+header-includes:
+- \makeatletter\renewcommand*{\fps@figure}{h}\makeatother
+- \usepackage{placeins}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# transfection of pDF-FRT with Wobble Seeds vectors into mDH hCD2 mir181 SCID
+
+# Setup
+
+dir
+```{r dir}
+setwd("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper_revisions/pDF-FRT/Hannah/R")
+```
+
+## Pakcages
+```{r packages}
+source("C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper/Supporting_scripts/themes/theme_paper.R")
+library(flowCore)
+library(flowStats)
+library(ggcyto)
+library(ggplot2)
+library(dplyr)
+library(ggpubr)
+library(stringr)
+library(tidyr)
+```
+
+## Data
+
+check here if the column pattern is set correctly
+```{r data}
+#!enter target directory here!
+FCS.dir <- "C:/Users/nikit/Documents/Krueger_Lab/Publications/miR181_paper_revisions/pDF-FRT/Hannah/FACS_data/01022024_triplicates"
+
+#create flowset and exclude PE....apparently one of the sponges has it and the other doesnt
+fs <-read.flowSet(path = FCS.dir, pattern = ".fcs", 
+                  column.pattern = "PE-A", invert.pattern=TRUE, truncate_max_range = FALSE)
+fs
+```
+# Gating
+
+Find out which colour is which (they are all called FL something and you can look up the description)
+FL9-A: GFP-A
+FL13-A: mCherry
+FL17-A: APC hCD2
+Gating etc.
+
+## transform the colours
+this still needs to be changed to the correct colour
+```{r transform}
+
+lobi <- logicleTransform(transformationId = "lobi")
+
+fsT <- transform(fs, transformList(c("FL13-A", "FL9-A", "FL17-A"), lobi))
+
+```
+
+
+
+
+
+
+## Gating
+```{r gating}
+#live cells requires two gates
+#fsc high
+fslive <- split(fsT, kmeansFilter("FSC-A"=c("Low","High"), filterId="myKMeans"))
+#auto gate on population
+morphGate <- norm2Filter("FSC-A", "SSC-A", filterId="SCID")
+fslive <- Subset(fslive$High, morphGate)
+
+#single cells
+singfilter <- norm2Filter("FSC-A", "FSC-H", filterId = "single cells")
+fssing <- Subset(fslive, singfilter)
+
+#plot to find distribution
+autoplot(fssing, "FL13-A", "FL9-A") + coord_cartesian(ylim = c(2.5,7), xlim = c(2,7)) + geom_vline(xintercept = 3.5, colour="red")
+
+``` 
+
+
+# Mean analysis
+
+## make cutoff for positive values
+```{r positives}
+#gate out untransfected manually
+rectGateFRTM <- rectangleGate(filterId = "FRT", "FL13-A"=c(3.5, 7))
+fsFRTM <- Subset(fssing, rectGateFRTM)
+
+#gate out untransfected (not used because not rlieably gates out negatives)
+#fsFRT <- split(fssing, kmeansFilter("PE-Texas Red (561)-A"=c("Low", "High"), filterId = "pDF-FRT"))
+
+autoplot(fsFRTM, "FL13-A", "FL17-A") + coord_cartesian(xlim = c(2,7))
+
+
+#gate for APC high (hCD2 or Thy1.1) (if using split, change data to $High)
+fsAPCM <- split(fsFRTM, kmeansFilter("FL17-A"=c("Low", "High"), filterId = "APC"))
+
+
+#make two objects: high and low
+fsAPChM <- (fsAPCM$High)
+fsAPClM <- (fsAPCM$Low)
+
+
+#add identifier columns for APC and Sample
+#PB
+fsAPChiM <-  fsApply(fsAPChM, transform, APC = "high" , use.exprs=TRUE)
+fsAPCliM <-  fsApply(fsAPClM, transform, APC = "low" , use.exprs=TRUE)
+
+```
+
+
+## Combine
+Combine data into larget mega data.frame
+```{r megaframe}
+#Sample
+fsAPChiiM <- mapply(`[<-`, fsAPChiM, 'Sample', value = names(fsAPChiM), SIMPLIFY = FALSE)
+fsAPCliiM <- mapply(`[<-`, fsAPCliM, 'Sample', value = names(fsAPCliM), SIMPLIFY = FALSE)
+
+megaframeM <- bind_rows(c(fsAPChiiM, fsAPCliiM))
+head(megaframeM)
+names(megaframeM)[names(megaframeM) == 'FL9.A'] <- 'GFP.A'
+names(megaframeM)[names(megaframeM) == 'FL13.A'] <- 'mCherry.A'
+
+
+
+megaplotM <- ggplot(megaframeM, aes(x=mCherry.A, y=GFP.A, color=APC)) +
+  facet_wrap(Sample ~ ., ncol=3) + 
+  geom_point(size=1) + scale_x_continuous(expand = c(0,0), "mCherry") + 
+  scale_y_continuous( "eGFP") + theme_classic() + 
+  theme(axis.title=element_text(size=20), axis.text = element_text(size = 15),
+        plot.title = element_text(size=20, face = "bold"),
+        legend.text = element_text(size = 15), legend.title = element_blank())
+
+
+megaplotM
+```
+
+## get mean of gfp expression normalized to mCherry
+```{r getmeans}
+megaframeM$ratio <- megaframeM$GFP.A / megaframeM$mCherry.A
+head(megaframeM[,c("GFP.A", "mCherry.A", "ratio")])
+
+head(megaframeM[, c("APC", "Sample", "ratio")])
+
+# get mean split by sample and apc(181)
+mratio <- aggregate(ratio ~ APC + Sample, data=megaframeM[, c("APC", "Sample", "ratio")], mean)
+
+mratio
+```
+
+## substract wt from overexpression
+```{r substract}
+mdiff <- aggregate(ratio ~ Sample, data = mratio, FUN = function(x) x[1] - x[2])
+
+rownames(mdiff) <- mdiff$Sample
+mdiff$Sample <- str_sub(rownames(mdiff),3,5)
+mdiff$replicate <- substr(rownames(mdiff), 1, 1)
+
+
+mdiff
+```
+
+ggplot(wb_il6st_ddx6, aes(x = condition, y = relative_to_control,  group = condition),  line.size = 0.5)+
+  geom_point( aes(color = condition))+
+  stat_mean(aes(x = condition, y = relative_to_control , group = condition), shape = “-”, size = 10)
+
+
+## plot results
+```{r meanplots}
+# T tests
+#my_comparisons <- list( c("nnn", "AU_"), c("nnn", "yyy"), c("AU_", "yyy") )
+
+# ggpaired(data = mdiff, x="Sample", y="ratio", id="replicate") +
+#   stat_compare_means(label = "p.format", method = "wilcox.test", ref.group = "nnn", paired=T)
+
+
+mplot <- ggplot(mdiff, aes(x=factor(Sample, levels = c("nnn", "AU_", "yyy")), y=ratio)) +
+  scale_y_continuous("GFP signal normalized to mCherry") + scale_x_discrete("3'UTR type") +
+  theme_paper() + ggtitle("Noncanonical seed reporter") +
+  stat_mean(aes(x = factor(Sample, levels = c("nnn", "AU_", "yyy")), y = ratio , group = factor(Sample, levels = c("nnn", "AU_", "yyy"))), shape = "-", size = 10) +
+  geom_boxplot(width = 0) +
+  geom_point(shape=21, colour="black", fill="#b4b4b4") +
+  stat_compare_means(label = "p.format", method = "t.test", ref.group = "nnn", paired=F, method.args = list(alternative = "less"))
+
+mplot
+
+pdf("Noncanonical_seed_reporter.pdf", width = 3, height = 5)
+mplot
+dev.off()
+```
+
+
+
+
+# Session Info
+```{r session_info}
+sessionInfo()
+```
