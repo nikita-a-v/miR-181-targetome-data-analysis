@@ -1,0 +1,24 @@
+RANK	DB	ID	ALT_ID	CONSENSUS	TP	TP%	FP	FP%	ENR_RATIO	SCORE_THR	PVALUE	LOG_PVALUE	EVALUE	LOG_EVALUE	QVALUE	LOG_QVALUE
+1	streme_out/streme.xml	1-UWUGAWUGU	STREME-1	UWUGAWUGU	797	19.59	181	4.45	4.38	8.2	1.43e-104	-239.11	3.85e-103	-235.82	3.85e-103	-235.82
+2	meme_out/meme.xml	UWUGAAUGUA	MEME-1	UWUGAAUGUA	598	14.70	107	2.63	5.55	9.2	6.34e-91	-207.69	1.71e-89	-204.39	8.55e-90	-205.09
+3	motifs.meme	1	GAAUGU	GAAUGU	604	14.85	182	4.47	3.31	10	3.43e-59	-134.62	9.25e-58	-131.33	3.08e-58	-132.42
+4	streme_out/streme.xml	4-GAGAGAAACC	STREME-4	GAGAGAAACC	118	2.90	9	0.22	11.9	12	5.39e-26	-58.18	1.46e-24	-54.89	3.64e-25	-56.27
+5	meme_out/meme.xml	CAAUGUGGUA	MEME-6	CAAUGUGGUA	132	3.24	25	0.61	5.12	8.2	2.23e-19	-42.95	6.01e-18	-39.65	1.20e-18	-41.26
+6	streme_out/streme.xml	2-ARUGUGGUAA	STREME-2	ARUGUGGUAA	156	3.83	37	0.91	4.13	7.6	2.85e-19	-42.70	7.69e-18	-39.41	1.28e-18	-41.20
+7	meme_out/meme.xml	GGAGAGAAAC	MEME-2	GGAGAGAAAC	100	2.46	12	0.29	7.77	13	5.97e-19	-41.96	1.61e-17	-38.67	2.30e-18	-40.61
+8	meme_out/meme.xml	GAACWCAUAC	MEME-5	GAACWCAUAC	50	1.23	5	0.12	8.5	16	9.44e-11	-23.08	2.55e-9	-19.79	2.92e-10	-21.95
+9	streme_out/streme.xml	8-GGGGYGGGGR	STREME-8	GGGGYGGGGR	47	1.16	4	0.10	9.6	14	1.08e-10	-22.95	2.92e-9	-19.65	2.92e-10	-21.95
+10	streme_out/streme.xml	3-GCCUUUGCAM	STREME-3	GCCUUUGCAM	77	1.89	17	0.42	4.33	11	1.08e-10	-22.95	2.92e-9	-19.65	2.92e-10	-21.95
+11	streme_out/streme.xml	10-MGAACACAUA	STREME-10	MGAACACAUA	89	2.19	28	0.69	3.1	8	5.42e-9	-19.03	1.46e-7	-15.74	1.33e-8	-18.14
+12	meme_out/meme.xml	AAGCCUUUGC	MEME-4	AAGCCUUUGC	30	0.74	1	0.02	15.5	18	1.42e-8	-18.07	3.83e-7	-14.78	3.19e-8	-17.26
+13	streme_out/streme.xml	9-GAGGAGGMG	STREME-9	GAGGAGGMG	88	2.16	33	0.81	2.62	12	2.45e-7	-15.22	6.63e-6	-11.92	5.10e-7	-14.49
+14	streme_out/streme.xml	12-GAAGAUGA	STREME-12	GAAGAUGA	78	1.92	29	0.71	2.63	6.9	1.01e-6	-13.80	2.73e-5	-10.51	1.95e-6	-13.15
+15	streme_out/streme.xml	7-AAAUACAUAA	STREME-7	AAAUACAUAA	159	3.91	89	2.19	1.78	7.3	3.78e-6	-12.48	1.02e-4	-9.19	6.81e-6	-11.90
+16	streme_out/streme.xml	18-UWUWUAUUUU	STREME-18	UWUWUAUUUU	175	4.30	102	2.51	1.71	8.3	4.82e-6	-12.24	1.30e-4	-8.95	8.14e-6	-11.72
+17	streme_out/streme.xml	5-CACCGACA	STREME-5	CACCGACA	1989	48.89	1830	44.99	1.09	2.7	2.24e-4	-8.40	6.04e-3	-5.11	3.55e-4	-7.94
+18	streme_out/streme.xml	11-CAUCGU	STREME-11	CAUCGU	2241	55.09	2090	51.38	1.07	3.2	4.29e-4	-7.75	1.16e-2	-4.46	6.44e-4	-7.35
+19	meme_out/meme.xml	UUUUDUUUUU	MEME-3	UUUUDUUUUU	66	1.62	34	0.84	1.91	13	8.39e-4	-7.08	2.26e-2	-3.79	1.19e-3	-6.73
+
+# SEA (Simple Enrichment Analysis): Version 5.5.4 compiled on Aug 28 2023 at 09:08:28
+# The format of this file is described at https://meme-suite.org/meme/doc/sea-output-format.html.
+# sea --verbosity 1 --oc sea_out --thresh 0.05 --order 2 --bfile ./background --seed 0 --align center --motif-pseudo 0.01 --m meme_out/meme.xml --m streme_out/streme.xml --m motifs.meme --p mirBS_50_both_sides_transcripts.fasta

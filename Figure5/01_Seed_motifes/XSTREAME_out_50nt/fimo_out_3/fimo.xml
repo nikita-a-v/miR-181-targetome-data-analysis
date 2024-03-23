@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Begin document body -->
+<fimo version="5.5.4" release="Fri Jun 16 12:19:08 2023 -0700">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation=  xmlns:fimo="http://noble.gs.washington.edu/schema/fimo"
+>
+<command-line>fimo --verbosity 1 --oc fimo_out_3 --bgfile ./background --motif CAAUGUGGUA meme_out/meme.xml mirBS_50_both_sides_transcripts.fasta</command-line>
+<settings>
+<setting name="output directory">fimo_out_3</setting>
+<setting name="MEME file name">meme_out/meme.xml</setting>
+<setting name="sequence file name">mirBS_50_both_sides_transcripts.fasta</setting>
+<setting name="background file name">./background</setting>
+<setting name="allow clobber">true</setting>
+<setting name="compute q-values">true</setting>
+<setting name="parse genomic coord.">true</setting>
+<setting name="text only">false</setting>
+<setting name="scan both strands">false</setting>
+<setting name="output threshold">0.0001</setting>
+<setting name="threshold type">p-value</setting>
+<setting name="max stored scores">100000</setting>
+<setting name="pseudocount">0.1</setting>
+<setting name="verbosity">1</setting>
+<setting name="selected motif">CAAUGUGGUA</setting>
+</settings>
+<sequence-data num-sequences="4519" num-residues="456306" />
+<alphabet name="RNA" like="rna">
+<letter id="A" symbol="A" name="Adenine" colour="CC0000"/>
+<letter id="C" symbol="C" name="Cytosine" colour="0000CC"/>
+<letter id="G" symbol="G" name="Guanine" colour="FFB300"/>
+<letter id="U" symbol="U" aliases="T" name="Uracil" colour="008000"/>
+<letter id="N" symbol="N" aliases="X." equals="ACGU" name="Any base"/>
+<letter id="V" symbol="V" equals="ACG" name="Not U"/>
+<letter id="H" symbol="H" equals="ACU" name="Not G"/>
+<letter id="D" symbol="D" equals="AGU" name="Not C"/>
+<letter id="B" symbol="B" equals="CGU" name="Not A"/>
+<letter id="M" symbol="M" equals="AC" name="Amino"/>
+<letter id="R" symbol="R" equals="AG" name="Purine"/>
+<letter id="W" symbol="W" equals="AU" name="Weak"/>
+<letter id="S" symbol="S" equals="CG" name="Strong"/>
+<letter id="Y" symbol="Y" equals="CU" name="Pyrimidine"/>
+<letter id="K" symbol="K" equals="GU" name="Keto"/>
+</alphabet>
+<motif name="UWUGAAUGUA" alt="MEME-1" width="10" best-possible-match="UAUGAAUGUA"/>
+<motif name="GGAGAGAAAC" alt="MEME-2" width="10" best-possible-match="GGAGAGAAAC"/>
+<motif name="UUUUDUUUUU" alt="MEME-3" width="10" best-possible-match="UUUUUUUUUU"/>
+<motif name="AAGCCUUUGC" alt="MEME-4" width="10" best-possible-match="AAGCCUUUGC"/>
+<motif name="GAACWCAUAC" alt="MEME-5" width="10" best-possible-match="GAACACAUAC"/>
+<motif name="CAAUGUGGUA" alt="MEME-6" width="10" best-possible-match="CAAUGUGGUA"/>
+<background source="./background">
+<value letter="A">0.265</value>
+<value letter="C">0.232</value>
+<value letter="G">0.240</value>
+<value letter="U">0.263</value>
+</background>
+<cisml-file>cisml.xml</cisml-file>
+</fimo>

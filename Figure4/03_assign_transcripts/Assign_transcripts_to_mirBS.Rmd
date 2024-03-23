@@ -40,7 +40,7 @@ library(GenomicFeatures)
 
 here <- here::here()
 
-out <- paste0(here,"/Figure4/02_assign_transcripts/")
+out <- paste0(here,"/Figure4/03_assign_transcripts/")
 
 ```
 
@@ -181,7 +181,12 @@ mir181_bs_tx <- mapToTranscripts(mir181_bs, txdb, extractor.fun = GenomicFeature
 # Mapped position is computed by counting from the transcription start site (TSS) and is not affected by the value of ignore.strand.
 
 # readd metadata
-elementMetadata(mir181_bs_tx) <- c(elementMetadata(mir181_bs_tx), elementMetadata(mir181_bs[mir181_bs_tx$xHits]))
+gen_pos <- mir181_bs[mir181_bs_tx$xHits] %>%
+  as.data.frame() %>%
+  dplyr::select(start, end, strand, seqnames) %>%
+  rename( start = "genomic_start" , end = "genomic_end", strand = "genomic_strand", seqnames = "genomic_chr")
+
+elementMetadata(mir181_bs_tx) <- c(elementMetadata(mir181_bs_tx), elementMetadata(mir181_bs[mir181_bs_tx$xHits]), gen_pos)
 
 # change the seqnames to the transcript names
 names(mir181_bs_tx) <- 1: NROW(mir181_bs_tx)
